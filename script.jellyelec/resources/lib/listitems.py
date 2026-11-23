@@ -2,7 +2,8 @@
 
 import xbmcgui
 
-TICKS_PER_SECOND = 10_000_000
+from resources.lib.api import TICKS_PER_SECOND
+
 POSTER_HEIGHT = 450
 BACKDROP_WIDTH = 1280
 

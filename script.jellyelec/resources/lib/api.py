@@ -11,6 +11,9 @@ import urllib.request
 CLIENT_NAME = "JellyELEC"
 REQUEST_TIMEOUT = 10
 
+# Jellyfin measures time in ticks of 100 nanoseconds.
+TICKS_PER_SECOND = 10_000_000
+
 
 class JellyfinError(Exception):
     """Something went wrong talking to the server."""
@@ -96,6 +99,52 @@ class JellyfinClient:
             params["maxHeight"] = max_height
         query = urllib.parse.urlencode(params)
         return f"{self.server_url}/Items/{item_id}/Images/{image_type}?{query}"
+
+    # Playback ---------------------------------------------------------------
+
+    def get_playback_info(self, item_id):
+        """The item's media sources (its files) and a play session ID."""
+        query = urllib.parse.urlencode({"UserId": self.user_id})
+        return self._request("GET", f"/Items/{item_id}/PlaybackInfo?{query}")
+
+    def stream_url(self, item_id, media_source_id, play_session_id, container=None):
+        """Address of the original file, sent as-is with no transcoding."""
+        extension = f".{container.split(',')[0]}" if container else ""
+        query = urllib.parse.urlencode({
+            "static": "true",
+            "mediaSourceId": media_source_id,
+            "playSessionId": play_session_id,
+            "deviceId": self.device_id,
+            "api_key": self.token,
+        })
+        return f"{self.server_url}/Videos/{item_id}/stream{extension}?{query}"
+
+    def report_playback_start(self, item_id, media_source_id, play_session_id, position_ticks):
+        body = self._playback_report(item_id, media_source_id, play_session_id, position_ticks)
+        self._request("POST", "/Sessions/Playing", body=body)
+
+    def report_playback_progress(self, item_id, media_source_id, play_session_id, position_ticks, is_paused):
+        body = self._playback_report(
+            item_id, media_source_id, play_session_id, position_ticks, is_paused
+        )
+        self._request("POST", "/Sessions/Playing/Progress", body=body)
+
+    def report_playback_stopped(self, item_id, media_source_id, play_session_id, position_ticks):
+        """Saves the position. The server marks the item watched if it was nearly finished."""
+        body = self._playback_report(item_id, media_source_id, play_session_id, position_ticks)
+        self._request("POST", "/Sessions/Playing/Stopped", body=body)
+
+    @staticmethod
+    def _playback_report(item_id, media_source_id, play_session_id, position_ticks, is_paused=False):
+        return {
+            "ItemId": item_id,
+            "MediaSourceId": media_source_id,
+            "PlaySessionId": play_session_id,
+            "PositionTicks": int(position_ticks),
+            "IsPaused": is_paused,
+            "CanSeek": True,
+            "PlayMethod": "DirectPlay",
+        }
 
     # Internals --------------------------------------------------------------
 

@@ -7,6 +7,7 @@ from resources.lib import storage
 from resources.lib.api import JellyfinError
 from resources.lib.kodi import ADDON_NAME, ADDON_VERSION, log
 from resources.lib.listitems import library_item, media_item
+from resources.lib.playback import play
 
 # Control IDs, matching jellyelec-home.xml.
 LIBRARY_BAR = 100
@@ -25,6 +26,7 @@ class HomeWindow(xbmcgui.WindowXML):
 
     _loaded = False
     _library_id = None
+    _row_items = None  # Jellyfin data for the row's posters, keyed by item ID
 
     # Kodi events ------------------------------------------------------------------
 
@@ -45,6 +47,10 @@ class HomeWindow(xbmcgui.WindowXML):
             self._confirm_sign_out()
         elif self.getFocusId() == LIBRARY_BAR:
             self._show_selected_library()
+
+    def onClick(self, control_id):
+        if control_id == CONTINUE_WATCHING_ROW:
+            self._play_selected()
 
     # Libraries ------------------------------------------------------------------
 
@@ -85,9 +91,32 @@ class HomeWindow(xbmcgui.WindowXML):
             self._notify("Couldn't load Continue Watching.")
             items = []
 
+        self._row_items = {item["Id"]: item for item in items}
         row = self.getControl(CONTINUE_WATCHING_ROW)
         row.reset()
         row.addItems([media_item(self.client, item) for item in items])
+
+    # Playback -------------------------------------------------------------------
+
+    def _play_selected(self):
+        selected = self.getControl(CONTINUE_WATCHING_ROW).getSelectedItem()
+        if selected is None:
+            return
+        data = self._row_items.get(selected.getProperty("id"))
+        if data is None:
+            return
+
+        play(self.client, data)
+        self._refresh_rows()
+
+    def _refresh_rows(self):
+        """Reload the rows so positions and watched items are up to date."""
+        self._library_id = None
+        self._show_selected_library()
+        if self.getControl(CONTINUE_WATCHING_ROW).size():
+            self.setFocusId(CONTINUE_WATCHING_ROW)
+        else:
+            self.setFocusId(LIBRARY_BAR)
 
     # Helpers --------------------------------------------------------------------
 
