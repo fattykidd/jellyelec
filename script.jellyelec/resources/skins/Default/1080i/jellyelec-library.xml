@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    JellyELEC library grid: every movie or show in one library, A to Z.
+    Control IDs here must match the constants in resources/lib/library.py:
+      500  poster grid
+-->
+<window>
+    <defaultcontrol always="true">500</defaultcontrol>
+    <backgroundcolor>0xFF101418</backgroundcolor>
+    <controls>
+
+        <!-- Backdrop of the focused poster, faint -->
+        <control type="image">
+            <left>0</left>
+            <top>0</top>
+            <width>1920</width>
+            <height>1080</height>
+            <aspectratio>scale</aspectratio>
+            <colordiffuse>26FFFFFF</colordiffuse>
+            <fadetime>300</fadetime>
+            <texture background="true">$INFO[Container(500).ListItem.Art(fanart)]</texture>
+        </control>
+
+        <!-- Header: library name and count -->
+        <control type="label">
+            <left>80</left>
+            <top>40</top>
+            <width>1000</width>
+            <height>60</height>
+            <aligny>center</aligny>
+            <textcolor>FFFFFFFF</textcolor>
+            <label>$INFO[Window.Property(library_name)]</label>
+        </control>
+        <control type="label">
+            <left>1040</left>
+            <top>40</top>
+            <width>800</width>
+            <height>60</height>
+            <align>right</align>
+            <aligny>center</aligny>
+            <textcolor>FF8A93A0</textcolor>
+            <label>$INFO[Container(500).CurrentItem]$INFO[Window.Property(item_count), of ,]</label>
+        </control>
+
+        <!-- Focused title and year -->
+        <control type="label">
+            <left>80</left>
+            <top>110</top>
+            <width>1760</width>
+            <height>50</height>
+            <textcolor>FFCFD6DE</textcolor>
+            <label>$INFO[Container(500).ListItem.Label]$INFO[Container(500).ListItem.Year,  (,)]</label>
+        </control>
+
+        <!-- Poster grid -->
+        <control type="panel" id="500">
+            <left>70</left>
+            <top>180</top>
+            <width>1780</width>
+            <height>880</height>
+            <orientation>vertical</orientation>
+            <scrolltime>200</scrolltime>
+            <itemlayout width="222" height="330">
+                <control type="image">
+                    <left>11</left>
+                    <top>10</top>
+                    <width>200</width>
+                    <height>300</height>
+                    <aspectratio>scale</aspectratio>
+                    <texture background="true">$INFO[ListItem.Art(poster)]</texture>
+                </control>
+            </itemlayout>
+            <focusedlayout width="222" height="330">
+                <control type="image">
+                    <left>5</left>
+                    <top>4</top>
+                    <width>212</width>
+                    <height>312</height>
+                    <texture>jellyelec-white.png</texture>
+                    <colordiffuse>FFAA5CC3</colordiffuse>
+                </control>
+                <control type="image">
+                    <left>11</left>
+                    <top>10</top>
+                    <width>200</width>
+                    <height>300</height>
+                    <aspectratio>scale</aspectratio>
+                    <texture background="true">$INFO[ListItem.Art(poster)]</texture>
+                </control>
+            </focusedlayout>
+        </control>
+
+    </controls>
+</window>

@@ -3,7 +3,11 @@
     JellyELEC home screen.
     Control IDs here must match the constants in resources/lib/home.py:
       100  library bar
+      150  scrolling stack of rows
       200  Continue Watching row
+      210  Recently Added row
+      220  Random row
+    The spotlight is filled by home.py through window properties (spot_*).
 -->
 <window>
     <defaultcontrol always="true">100</defaultcontrol>
@@ -19,7 +23,7 @@
             <aspectratio>scale</aspectratio>
             <colordiffuse>59FFFFFF</colordiffuse>
             <fadetime>300</fadetime>
-            <texture background="true">$INFO[Container(200).ListItem.Art(fanart)]</texture>
+            <texture background="true">$INFO[Window.Property(spot_backdrop)]</texture>
         </control>
 
         <!-- Library bar -->
@@ -29,7 +33,7 @@
             <width>1500</width>
             <height>70</height>
             <orientation>horizontal</orientation>
-            <ondown>200</ondown>
+            <ondown>150</ondown>
             <scrolltime>200</scrolltime>
             <itemlayout width="260" height="70">
                 <control type="label">
@@ -90,14 +94,14 @@
         <!-- Spotlight: details of the focused poster -->
         <control type="group">
             <left>80</left>
-            <top>170</top>
+            <top>150</top>
             <control type="label">
                 <left>0</left>
                 <top>0</top>
                 <width>900</width>
                 <height>40</height>
                 <textcolor>FF8A93A0</textcolor>
-                <label>$INFO[Container(200).ListItem.TVShowTitle]</label>
+                <label>$INFO[Window.Property(spot_show_title)]</label>
             </control>
             <control type="label">
                 <left>0</left>
@@ -105,7 +109,7 @@
                 <width>900</width>
                 <height>70</height>
                 <textcolor>FFFFFFFF</textcolor>
-                <label>$INFO[Container(200).ListItem.Title]</label>
+                <label>$INFO[Window.Property(spot_title)]</label>
             </control>
             <control type="label">
                 <left>0</left>
@@ -113,83 +117,202 @@
                 <width>900</width>
                 <height>40</height>
                 <textcolor>FFCFD6DE</textcolor>
-                <label>$INFO[Container(200).ListItem.Season,Season , · ]$INFO[Container(200).ListItem.Episode,Episode , · ]$INFO[Container(200).ListItem.Year,, · ]$INFO[Container(200).ListItem.Duration(mins),, min]</label>
+                <label>$INFO[Window.Property(spot_meta)]</label>
             </control>
             <control type="textbox">
                 <left>0</left>
                 <top>165</top>
                 <width>820</width>
-                <height>200</height>
+                <height>180</height>
                 <textcolor>FFAAB2BC</textcolor>
-                <label>$INFO[Container(200).ListItem.Plot]</label>
+                <label>$INFO[Window.Property(spot_plot)]</label>
             </control>
         </control>
 
-        <!-- Continue Watching row -->
+        <!-- Shown when every row is empty -->
         <control type="label">
             <left>80</left>
             <top>600</top>
-            <width>900</width>
-            <height>40</height>
-            <textcolor>FFFFFFFF</textcolor>
-            <label>Continue watching</label>
-        </control>
-        <control type="label">
-            <left>80</left>
-            <top>700</top>
             <width>1200</width>
             <height>40</height>
             <textcolor>FF6B7480</textcolor>
-            <label>Nothing in progress in this library.</label>
-            <visible>Integer.IsEqual(Container(200).NumItems,0)</visible>
+            <label>Nothing to show in this library yet.</label>
+            <visible>Integer.IsEqual(Container(200).NumItems,0) + Integer.IsEqual(Container(210).NumItems,0) + Integer.IsEqual(Container(220).NumItems,0)</visible>
         </control>
-        <control type="list" id="200">
-            <left>70</left>
-            <top>650</top>
-            <width>1840</width>
-            <height>350</height>
-            <orientation>horizontal</orientation>
+
+        <!-- Stack of rows. Scrolls to keep the focused row in view; empty rows are hidden. -->
+        <control type="grouplist" id="150">
+            <left>0</left>
+            <top>530</top>
+            <width>1920</width>
+            <height>480</height>
+            <orientation>vertical</orientation>
+            <itemgap>10</itemgap>
             <onup>100</onup>
             <scrolltime>200</scrolltime>
-            <itemlayout width="220" height="350">
-                <control type="image">
-                    <left>10</left>
-                    <top>10</top>
-                    <width>200</width>
-                    <height>300</height>
-                    <aspectratio>scale</aspectratio>
-                    <texture background="true">$INFO[ListItem.Art(poster)]</texture>
+
+            <control type="group">
+                <width>1920</width>
+                <height>330</height>
+                <visible>Integer.IsGreater(Container(200).NumItems,0)</visible>
+                <control type="label">
+                    <left>80</left>
+                    <top>0</top>
+                    <width>900</width>
+                    <height>40</height>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <label>Continue watching</label>
                 </control>
-            </itemlayout>
-            <focusedlayout width="220" height="350">
-                <control type="image">
-                    <left>4</left>
-                    <top>4</top>
-                    <width>212</width>
-                    <height>312</height>
-                    <texture>jellyelec-white.png</texture>
-                    <colordiffuse>FFAA5CC3</colordiffuse>
-                    <visible>Control.HasFocus(200)</visible>
+                <control type="list" id="200">
+                    <left>70</left>
+                    <top>40</top>
+                    <width>1840</width>
+                    <height>290</height>
+                    <orientation>horizontal</orientation>
+                    <scrolltime>200</scrolltime>
+                    <itemlayout width="200" height="290">
+                        <control type="image">
+                            <left>10</left>
+                            <top>10</top>
+                            <width>180</width>
+                            <height>270</height>
+                            <aspectratio>scale</aspectratio>
+                            <texture background="true">$INFO[ListItem.Art(poster)]</texture>
+                        </control>
+                    </itemlayout>
+                    <focusedlayout width="200" height="290">
+                        <control type="image">
+                            <left>4</left>
+                            <top>4</top>
+                            <width>192</width>
+                            <height>282</height>
+                            <texture>jellyelec-white.png</texture>
+                            <colordiffuse>FFAA5CC3</colordiffuse>
+                            <visible>Control.HasFocus(200)</visible>
+                        </control>
+                        <control type="image">
+                            <left>10</left>
+                            <top>10</top>
+                            <width>180</width>
+                            <height>270</height>
+                            <aspectratio>scale</aspectratio>
+                            <texture background="true">$INFO[ListItem.Art(poster)]</texture>
+                        </control>
+                    </focusedlayout>
                 </control>
-                <control type="image">
-                    <left>10</left>
-                    <top>10</top>
-                    <width>200</width>
-                    <height>300</height>
-                    <aspectratio>scale</aspectratio>
-                    <texture background="true">$INFO[ListItem.Art(poster)]</texture>
+            </control>
+
+            <control type="group">
+                <width>1920</width>
+                <height>330</height>
+                <visible>Integer.IsGreater(Container(210).NumItems,0)</visible>
+                <control type="label">
+                    <left>80</left>
+                    <top>0</top>
+                    <width>900</width>
+                    <height>40</height>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <label>Recently added</label>
                 </control>
-            </focusedlayout>
+                <control type="list" id="210">
+                    <left>70</left>
+                    <top>40</top>
+                    <width>1840</width>
+                    <height>290</height>
+                    <orientation>horizontal</orientation>
+                    <scrolltime>200</scrolltime>
+                    <itemlayout width="200" height="290">
+                        <control type="image">
+                            <left>10</left>
+                            <top>10</top>
+                            <width>180</width>
+                            <height>270</height>
+                            <aspectratio>scale</aspectratio>
+                            <texture background="true">$INFO[ListItem.Art(poster)]</texture>
+                        </control>
+                    </itemlayout>
+                    <focusedlayout width="200" height="290">
+                        <control type="image">
+                            <left>4</left>
+                            <top>4</top>
+                            <width>192</width>
+                            <height>282</height>
+                            <texture>jellyelec-white.png</texture>
+                            <colordiffuse>FFAA5CC3</colordiffuse>
+                            <visible>Control.HasFocus(210)</visible>
+                        </control>
+                        <control type="image">
+                            <left>10</left>
+                            <top>10</top>
+                            <width>180</width>
+                            <height>270</height>
+                            <aspectratio>scale</aspectratio>
+                            <texture background="true">$INFO[ListItem.Art(poster)]</texture>
+                        </control>
+                    </focusedlayout>
+                </control>
+            </control>
+
+            <control type="group">
+                <width>1920</width>
+                <height>330</height>
+                <visible>Integer.IsGreater(Container(220).NumItems,0)</visible>
+                <control type="label">
+                    <left>80</left>
+                    <top>0</top>
+                    <width>900</width>
+                    <height>40</height>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <label>Random</label>
+                </control>
+                <control type="list" id="220">
+                    <left>70</left>
+                    <top>40</top>
+                    <width>1840</width>
+                    <height>290</height>
+                    <orientation>horizontal</orientation>
+                    <scrolltime>200</scrolltime>
+                    <itemlayout width="200" height="290">
+                        <control type="image">
+                            <left>10</left>
+                            <top>10</top>
+                            <width>180</width>
+                            <height>270</height>
+                            <aspectratio>scale</aspectratio>
+                            <texture background="true">$INFO[ListItem.Art(poster)]</texture>
+                        </control>
+                    </itemlayout>
+                    <focusedlayout width="200" height="290">
+                        <control type="image">
+                            <left>4</left>
+                            <top>4</top>
+                            <width>192</width>
+                            <height>282</height>
+                            <texture>jellyelec-white.png</texture>
+                            <colordiffuse>FFAA5CC3</colordiffuse>
+                            <visible>Control.HasFocus(220)</visible>
+                        </control>
+                        <control type="image">
+                            <left>10</left>
+                            <top>10</top>
+                            <width>180</width>
+                            <height>270</height>
+                            <aspectratio>scale</aspectratio>
+                            <texture background="true">$INFO[ListItem.Art(poster)]</texture>
+                        </control>
+                    </focusedlayout>
+                </control>
+            </control>
         </control>
 
         <!-- Footer -->
         <control type="label">
             <left>80</left>
-            <top>1020</top>
+            <top>1030</top>
             <width>1760</width>
             <height>40</height>
             <textcolor>FF4E5560</textcolor>
-            <label>JellyELEC $INFO[Window.Property(version)]  ·  Menu (C on a keyboard) to sign out</label>
+            <label>JellyELEC $INFO[Window.Property(version)]  ·  OK on a library to browse it  ·  Menu (C on a keyboard) to sign out</label>
         </control>
 
     </controls>

@@ -90,6 +90,47 @@ class JellyfinClient:
         })
         return self._request("GET", f"/Users/{self.user_id}/Items/Resume?{query}")["Items"]
 
+    def get_latest_items(self, library_id, limit=24):
+        """Most recently added items in one library. New episodes are grouped under their show."""
+        query = urllib.parse.urlencode({
+            "ParentId": library_id,
+            "Limit": limit,
+            "GroupItems": "true",
+            "Fields": "Overview",
+            "ImageTypeLimit": 1,
+            "EnableImageTypes": "Primary,Backdrop",
+        })
+        return self._request("GET", f"/Users/{self.user_id}/Items/Latest?{query}") or []
+
+    def get_random_items(self, library_id, item_type, limit=24):
+        """A random selection of movies or shows from one library."""
+        return self._get_items(library_id, item_type, sort_by="Random", limit=limit)
+
+    def get_library_items(self, library_id, item_type):
+        """Every movie or show in one library, A to Z."""
+        return self._get_items(library_id, item_type, sort_by="SortName")
+
+    def get_next_up(self, series_id):
+        """The next episode to watch in a show, or None if there isn't one."""
+        query = urllib.parse.urlencode({
+            "UserId": self.user_id,
+            "SeriesId": series_id,
+            "Limit": 1,
+            "Fields": "Overview",
+        })
+        items = self._request("GET", f"/Shows/NextUp?{query}")["Items"]
+        return items[0] if items else None
+
+    def get_first_episode(self, series_id):
+        """The show's first episode, or None if it has none."""
+        query = urllib.parse.urlencode({
+            "UserId": self.user_id,
+            "Limit": 1,
+            "Fields": "Overview",
+        })
+        items = self._request("GET", f"/Shows/{series_id}/Episodes?{query}")["Items"]
+        return items[0] if items else None
+
     def get_item(self, item_id):
         """Full details of one item, including its files and their audio and video tracks."""
         return self._request("GET", f"/Users/{self.user_id}/Items/{item_id}")
@@ -145,6 +186,22 @@ class JellyfinClient:
         """Saves the position. The server marks the item watched if it was nearly finished."""
         body = self._playback_report(item_id, media_source_id, play_session_id, position_ticks)
         self._request("POST", "/Sessions/Playing/Stopped", body=body)
+
+    def _get_items(self, library_id, item_type, sort_by, limit=None):
+        params = {
+            "ParentId": library_id,
+            "IncludeItemTypes": item_type,
+            "Recursive": "true",
+            "SortBy": sort_by,
+            "SortOrder": "Ascending",
+            "Fields": "Overview",
+            "ImageTypeLimit": 1,
+            "EnableImageTypes": "Primary,Backdrop",
+        }
+        if limit:
+            params["Limit"] = limit
+        query = urllib.parse.urlencode(params)
+        return self._request("GET", f"/Users/{self.user_id}/Items?{query}")["Items"]
 
     @staticmethod
     def _playback_report(item_id, media_source_id, play_session_id, position_ticks, is_paused=False):

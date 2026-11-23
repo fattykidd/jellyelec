@@ -34,7 +34,9 @@ def media_item(client, data):
     if data.get("RunTimeTicks"):
         tag.setDuration(int(data["RunTimeTicks"] // TICKS_PER_SECOND))
 
-    if data.get("Type") == "Episode":
+    if data.get("Type") == "Series":
+        tag.setMediaType("tvshow")
+    elif data.get("Type") == "Episode":
         tag.setMediaType("episode")
         tag.setTvShowTitle(data.get("SeriesName", ""))
         if data.get("ParentIndexNumber") is not None:

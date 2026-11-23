@@ -1,4 +1,4 @@
-"""The detail page for a movie or episode: info, play buttons, trailer and special features."""
+"""The detail page for a movie, episode or show: info, play buttons, trailer and special features."""
 
 import xbmc
 import xbmcgui
@@ -18,6 +18,7 @@ CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
 # What each action button does.
 RESUME = "resume"
 PLAY = "play"
+NEXT_EPISODE = "next_episode"
 TRAILER = "trailer"
 
 
@@ -38,6 +39,7 @@ class DetailWindow(xbmcgui.WindowXML):
 
     _loaded = False
     _item = None
+    _next_episode = None  # for shows: the episode Play next episode starts
     _trailers = ()
     _extras = None  # Jellyfin data for the special features, keyed by item ID
 
@@ -102,13 +104,10 @@ class DetailWindow(xbmcgui.WindowXML):
         self.setProperty("backdrop", backdrop_url(self.client, item) or "")
 
     def _show_actions(self):
-        resume_ticks = (self._item.get("UserData") or {}).get("PlaybackPositionTicks") or 0
-        actions = []
-        if resume_ticks:
-            actions.append((RESUME, f"Resume from {format_time(resume_ticks / TICKS_PER_SECOND)}"))
-            actions.append((PLAY, "Play from beginning"))
+        if self._item.get("Type") == "Series":
+            actions = self._series_actions()
         else:
-            actions.append((PLAY, "Play"))
+            actions = self._video_actions()
         if self._trailers:
             actions.append((TRAILER, "Trailer"))
 
@@ -118,6 +117,36 @@ class DetailWindow(xbmcgui.WindowXML):
             button = xbmcgui.ListItem(label=label, offscreen=True)
             button.setProperty("action", action)
             buttons.addItem(button)
+
+    def _series_actions(self):
+        """A show gets one button: the next episode to watch, or the first one if it's unstarted."""
+        try:
+            self._next_episode = (
+                self.client.get_next_up(self.item_id)
+                or self.client.get_first_episode(self.item_id)
+            )
+        except JellyfinError as error:
+            log(f"Couldn't find the next episode of {self.item_id}: {error}", xbmc.LOGWARNING)
+            self._next_episode = None
+        if not self._next_episode:
+            return []
+
+        season = self._next_episode.get("ParentIndexNumber")
+        episode = self._next_episode.get("IndexNumber")
+        if season is not None and episode is not None:
+            return [(NEXT_EPISODE, f"Play S{season} E{episode}")]
+        return [(NEXT_EPISODE, "Play next episode")]
+
+    def _video_actions(self):
+        """A movie or episode gets Resume and Play from beginning, or just Play."""
+        resume_ticks = (self._item.get("UserData") or {}).get("PlaybackPositionTicks") or 0
+        actions = []
+        if resume_ticks:
+            actions.append((RESUME, f"Resume from {format_time(resume_ticks / TICKS_PER_SECOND)}"))
+            actions.append((PLAY, "Play from beginning"))
+        else:
+            actions.append((PLAY, "Play"))
+        return actions
 
     def _show_special_features(self):
         try:
@@ -144,7 +173,9 @@ class DetailWindow(xbmcgui.WindowXML):
             play(self.client, self._trailers[0], start_seconds=0)
             return
 
-        if action == RESUME:
+        if action == NEXT_EPISODE:
+            play(self.client, self._next_episode)
+        elif action == RESUME:
             ticks = (self._item.get("UserData") or {}).get("PlaybackPositionTicks") or 0
             play(self.client, self._item, start_seconds=ticks / TICKS_PER_SECOND)
         else:

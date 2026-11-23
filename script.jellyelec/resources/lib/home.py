@@ -1,4 +1,4 @@
-"""The home screen: library bar, spotlight and poster rows."""
+"""The home screen: library bar, spotlight and stacked poster rows."""
 
 import xbmc
 import xbmcgui
@@ -6,14 +6,20 @@ import xbmcgui
 from resources.lib import storage
 from resources.lib.api import JellyfinError
 from resources.lib.detail import show_details
+from resources.lib.formatting import episode_line, meta_line
 from resources.lib.kodi import ADDON_NAME, ADDON_VERSION, log
-from resources.lib.listitems import library_item, media_item
+from resources.lib.library import show_library
+from resources.lib.listitems import backdrop_url, library_item, media_item
 
 # Control IDs, matching jellyelec-home.xml.
 LIBRARY_BAR = 100
 CONTINUE_WATCHING_ROW = 200
+RECENTLY_ADDED_ROW = 210
+RANDOM_ROW = 220
+ROWS = (CONTINUE_WATCHING_ROW, RECENTLY_ADDED_ROW, RANDOM_ROW)
 
-SUPPORTED_LIBRARY_TYPES = {"movies", "tvshows"}
+# The item type each library holds, as Jellyfin names it.
+LIBRARY_ITEM_TYPES = {"movies": "Movie", "tvshows": "Series"}
 CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
 
 
@@ -26,6 +32,7 @@ class HomeWindow(xbmcgui.WindowXML):
 
     _loaded = False
     _library_id = None
+    _row_data = None  # {row ID: {item ID: Jellyfin data}}
 
     # Kodi events ------------------------------------------------------------------
 
@@ -36,20 +43,29 @@ class HomeWindow(xbmcgui.WindowXML):
         # onInit runs again whenever a dialog closes over this window; load only once.
         if not self._loaded:
             self._loaded = True
+            self._row_data = {row: {} for row in ROWS}
             self._load_libraries()
 
     def onAction(self, action):
         action_id = action.getId()
         if action_id in CLOSE_ACTIONS:
             self.close()
-        elif action_id == xbmcgui.ACTION_CONTEXT_MENU:
+            return
+        if action_id == xbmcgui.ACTION_CONTEXT_MENU:
             self._confirm_sign_out()
-        elif self.getFocusId() == LIBRARY_BAR:
+            return
+
+        focus = self.getFocusId()
+        if focus == LIBRARY_BAR:
             self._show_selected_library()
+        elif focus in ROWS:
+            self._update_spotlight(focus)
 
     def onClick(self, control_id):
-        if control_id == CONTINUE_WATCHING_ROW:
-            self._open_selected()
+        if control_id == LIBRARY_BAR:
+            self._open_selected_library()
+        elif control_id in ROWS:
+            self._open_selected_item(control_id)
 
     # Libraries ------------------------------------------------------------------
 
@@ -58,7 +74,7 @@ class HomeWindow(xbmcgui.WindowXML):
             libraries = [
                 library
                 for library in self.client.get_libraries()
-                if library.get("CollectionType") in SUPPORTED_LIBRARY_TYPES
+                if library.get("CollectionType") in LIBRARY_ITEM_TYPES
             ]
         except JellyfinError as error:
             log(f"Couldn't load libraries: {error}", xbmc.LOGWARNING)
@@ -73,42 +89,82 @@ class HomeWindow(xbmcgui.WindowXML):
             self._show_selected_library()
             self.setFocusId(LIBRARY_BAR)
 
+    def _selected_library(self):
+        return self.getControl(LIBRARY_BAR).getSelectedItem()
+
     def _show_selected_library(self):
         """Reload the rows when the selected library changes."""
-        selected = self.getControl(LIBRARY_BAR).getSelectedItem()
+        selected = self._selected_library()
         if selected is None:
             return
         library_id = selected.getProperty("id")
         if library_id == self._library_id:
             return
         self._library_id = library_id
+        item_type = LIBRARY_ITEM_TYPES[selected.getProperty("collection_type")]
 
+        self._fill_row(CONTINUE_WATCHING_ROW, lambda: self.client.get_resume_items(library_id))
+        self._fill_row(RECENTLY_ADDED_ROW, lambda: self.client.get_latest_items(library_id))
+        self._fill_row(RANDOM_ROW, lambda: self.client.get_random_items(library_id, item_type))
+        self._update_spotlight()
+
+    def _fill_row(self, row_id, fetch):
         try:
-            items = self.client.get_resume_items(library_id)
+            items = fetch()
         except JellyfinError as error:
-            log(f"Couldn't load Continue Watching for {selected.getLabel()}: {error}", xbmc.LOGWARNING)
-            self._notify("Couldn't load Continue Watching.")
+            log(f"Couldn't load row {row_id}: {error}", xbmc.LOGWARNING)
             items = []
 
-        row = self.getControl(CONTINUE_WATCHING_ROW)
+        self._row_data[row_id] = {item["Id"]: item for item in items}
+        row = self.getControl(row_id)
         row.reset()
         row.addItems([media_item(self.client, item) for item in items])
 
+    def _open_selected_library(self):
+        selected = self._selected_library()
+        if selected is None:
+            return
+        item_type = LIBRARY_ITEM_TYPES[selected.getProperty("collection_type")]
+        show_library(self.client, selected.getProperty("id"), selected.getLabel(), item_type)
+        self._refresh_rows()
+
+    # Spotlight --------------------------------------------------------------------
+
+    def _update_spotlight(self, row_id=None):
+        """Show the focused poster's details. With no row given, use the first row with items."""
+        rows = (row_id,) if row_id else ROWS
+        data = None
+        for row in rows:
+            selected = self.getControl(row).getSelectedItem()
+            if selected is not None:
+                data = self._row_data[row].get(selected.getProperty("id"))
+                break
+
+        data = data or {}
+        is_episode = data.get("Type") == "Episode"
+        details = [part for part in (episode_line(data), meta_line(data)) if part]
+        self.setProperty("spot_show_title", data.get("SeriesName", "") if is_episode else "")
+        self.setProperty("spot_title", data.get("Name", ""))
+        self.setProperty("spot_meta", "     ".join(details))
+        self.setProperty("spot_plot", data.get("Overview", ""))
+        self.setProperty("spot_backdrop", (backdrop_url(self.client, data) if data else None) or "")
+
     # Details --------------------------------------------------------------------
 
-    def _open_selected(self):
-        selected = self.getControl(CONTINUE_WATCHING_ROW).getSelectedItem()
+    def _open_selected_item(self, row_id):
+        selected = self.getControl(row_id).getSelectedItem()
         if selected is None:
             return
         show_details(self.client, selected.getProperty("id"))
-        self._refresh_rows()
+        self._refresh_rows(focus_row=row_id)
 
-    def _refresh_rows(self):
+    def _refresh_rows(self, focus_row=None):
         """Reload the rows so positions and watched items are up to date."""
         self._library_id = None
         self._show_selected_library()
-        if self.getControl(CONTINUE_WATCHING_ROW).size():
-            self.setFocusId(CONTINUE_WATCHING_ROW)
+        if focus_row and self.getControl(focus_row).size():
+            self.setFocusId(focus_row)
+            self._update_spotlight(focus_row)
         else:
             self.setFocusId(LIBRARY_BAR)
 
