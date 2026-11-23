@@ -5,9 +5,9 @@ import xbmcgui
 
 from resources.lib import storage
 from resources.lib.api import JellyfinError
+from resources.lib.detail import show_details
 from resources.lib.kodi import ADDON_NAME, ADDON_VERSION, log
 from resources.lib.listitems import library_item, media_item
-from resources.lib.playback import play
 
 # Control IDs, matching jellyelec-home.xml.
 LIBRARY_BAR = 100
@@ -26,7 +26,6 @@ class HomeWindow(xbmcgui.WindowXML):
 
     _loaded = False
     _library_id = None
-    _row_items = None  # Jellyfin data for the row's posters, keyed by item ID
 
     # Kodi events ------------------------------------------------------------------
 
@@ -50,7 +49,7 @@ class HomeWindow(xbmcgui.WindowXML):
 
     def onClick(self, control_id):
         if control_id == CONTINUE_WATCHING_ROW:
-            self._play_selected()
+            self._open_selected()
 
     # Libraries ------------------------------------------------------------------
 
@@ -91,22 +90,17 @@ class HomeWindow(xbmcgui.WindowXML):
             self._notify("Couldn't load Continue Watching.")
             items = []
 
-        self._row_items = {item["Id"]: item for item in items}
         row = self.getControl(CONTINUE_WATCHING_ROW)
         row.reset()
         row.addItems([media_item(self.client, item) for item in items])
 
-    # Playback -------------------------------------------------------------------
+    # Details --------------------------------------------------------------------
 
-    def _play_selected(self):
+    def _open_selected(self):
         selected = self.getControl(CONTINUE_WATCHING_ROW).getSelectedItem()
         if selected is None:
             return
-        data = self._row_items.get(selected.getProperty("id"))
-        if data is None:
-            return
-
-        play(self.client, data)
+        show_details(self.client, selected.getProperty("id"))
         self._refresh_rows()
 
     def _refresh_rows(self):

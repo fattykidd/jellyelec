@@ -3,9 +3,11 @@
 import xbmcgui
 
 from resources.lib.api import TICKS_PER_SECOND
+from resources.lib.formatting import extra_type_name, runtime_text
 
 POSTER_HEIGHT = 450
 BACKDROP_WIDTH = 1280
+EXTRA_THUMB_WIDTH = 480
 
 
 def library_item(library):
@@ -21,7 +23,7 @@ def media_item(client, data):
     item = xbmcgui.ListItem(label=data.get("Name", ""), offscreen=True)
     item.setProperty("id", data["Id"])
 
-    art = {"poster": _poster_url(client, data), "fanart": _backdrop_url(client, data)}
+    art = {"poster": poster_url(client, data), "fanart": backdrop_url(client, data)}
     item.setArt({kind: url for kind, url in art.items() if url})
 
     tag = item.getVideoInfoTag()
@@ -45,7 +47,22 @@ def media_item(client, data):
     return item
 
 
-def _poster_url(client, data):
+def extra_item(client, data, fallback_thumb=None):
+    """A special feature tile: its own image if it has one, otherwise the parent's backdrop."""
+    item = xbmcgui.ListItem(label=data.get("Name", ""), offscreen=True)
+    item.setProperty("id", data["Id"])
+    item.setProperty("extra_type", extra_type_name(data.get("ExtraType")))
+    if data.get("RunTimeTicks"):
+        item.setProperty("runtime", runtime_text(data["RunTimeTicks"]))
+
+    tag = data.get("ImageTags", {}).get("Primary")
+    thumb = client.image_url(data["Id"], "Primary", tag, max_width=EXTRA_THUMB_WIDTH) if tag else fallback_thumb
+    if thumb:
+        item.setArt({"thumb": thumb})
+    return item
+
+
+def poster_url(client, data):
     """Episodes use their show's poster; everything else uses its own."""
     if data.get("Type") == "Episode" and data.get("SeriesPrimaryImageTag"):
         return client.image_url(
@@ -57,7 +74,7 @@ def _poster_url(client, data):
     return None
 
 
-def _backdrop_url(client, data):
+def backdrop_url(client, data):
     """The item's own backdrop, or its parent's (an episode borrows its show's)."""
     if data.get("BackdropImageTags"):
         return client.image_url(

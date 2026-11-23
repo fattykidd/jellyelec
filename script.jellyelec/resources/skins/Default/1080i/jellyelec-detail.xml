@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    JellyELEC detail page for a movie or episode.
+    Control IDs here must match the constants in resources/lib/detail.py:
+      300  action buttons (Resume, Play, Trailer)
+      400  Special Features row
+-->
+<window>
+    <defaultcontrol always="true">300</defaultcontrol>
+    <backgroundcolor>0xFF101418</backgroundcolor>
+    <controls>
+
+        <!-- Backdrop, dimmed so text stays readable -->
+        <control type="image">
+            <left>0</left>
+            <top>0</top>
+            <width>1920</width>
+            <height>1080</height>
+            <aspectratio>scale</aspectratio>
+            <colordiffuse>40FFFFFF</colordiffuse>
+            <fadetime>300</fadetime>
+            <texture background="true">$INFO[Window.Property(backdrop)]</texture>
+        </control>
+
+        <!-- Poster -->
+        <control type="image">
+            <left>80</left>
+            <top>100</top>
+            <width>340</width>
+            <height>510</height>
+            <aspectratio>keep</aspectratio>
+            <fadetime>300</fadetime>
+            <texture background="true">$INFO[Window.Property(poster)]</texture>
+        </control>
+
+        <!-- Info -->
+        <control type="group">
+            <left>480</left>
+            <top>100</top>
+            <control type="label">
+                <left>0</left>
+                <top>0</top>
+                <width>1360</width>
+                <height>40</height>
+                <textcolor>FF8A93A0</textcolor>
+                <label>$INFO[Window.Property(show_title)]</label>
+            </control>
+            <control type="label">
+                <left>0</left>
+                <top>40</top>
+                <width>1360</width>
+                <height>70</height>
+                <textcolor>FFFFFFFF</textcolor>
+                <label>$INFO[Window.Property(title)]</label>
+            </control>
+            <control type="label">
+                <left>0</left>
+                <top>115</top>
+                <width>1360</width>
+                <height>40</height>
+                <textcolor>FFCFD6DE</textcolor>
+                <label>$INFO[Window.Property(episode),,     ]$INFO[Window.Property(meta)]</label>
+            </control>
+            <control type="label">
+                <left>0</left>
+                <top>160</top>
+                <width>1360</width>
+                <height>40</height>
+                <textcolor>FF8A93A0</textcolor>
+                <label>$INFO[Window.Property(genres)]</label>
+            </control>
+            <control type="label">
+                <left>0</left>
+                <top>205</top>
+                <width>1360</width>
+                <height>40</height>
+                <textcolor>FFAA5CC3</textcolor>
+                <label>$INFO[Window.Property(media)]</label>
+            </control>
+            <control type="textbox">
+                <left>0</left>
+                <top>265</top>
+                <width>1300</width>
+                <height>230</height>
+                <textcolor>FFAAB2BC</textcolor>
+                <label>$INFO[Window.Property(plot)]</label>
+            </control>
+        </control>
+
+        <!-- Action buttons -->
+        <control type="list" id="300">
+            <left>480</left>
+            <top>620</top>
+            <width>1360</width>
+            <height>70</height>
+            <orientation>horizontal</orientation>
+            <ondown>400</ondown>
+            <scrolltime>200</scrolltime>
+            <itemlayout width="340" height="70">
+                <control type="image">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>320</width>
+                    <height>64</height>
+                    <texture>jellyelec-white.png</texture>
+                    <colordiffuse>33FFFFFF</colordiffuse>
+                </control>
+                <control type="label">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>320</width>
+                    <height>64</height>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <textcolor>FFCFD6DE</textcolor>
+                    <label>$INFO[ListItem.Label]</label>
+                </control>
+            </itemlayout>
+            <focusedlayout width="340" height="70">
+                <control type="image">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>320</width>
+                    <height>64</height>
+                    <texture>jellyelec-white.png</texture>
+                    <colordiffuse>FFAA5CC3</colordiffuse>
+                    <visible>Control.HasFocus(300)</visible>
+                </control>
+                <control type="image">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>320</width>
+                    <height>64</height>
+                    <texture>jellyelec-white.png</texture>
+                    <colordiffuse>33FFFFFF</colordiffuse>
+                    <visible>!Control.HasFocus(300)</visible>
+                </control>
+                <control type="label">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>320</width>
+                    <height>64</height>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <label>$INFO[ListItem.Label]</label>
+                </control>
+            </focusedlayout>
+        </control>
+
+        <!-- Special Features row (hidden when there are none) -->
+        <control type="group">
+            <visible>Integer.IsGreater(Container(400).NumItems,0)</visible>
+            <control type="label">
+                <left>80</left>
+                <top>720</top>
+                <width>900</width>
+                <height>40</height>
+                <textcolor>FFFFFFFF</textcolor>
+                <label>Special features</label>
+            </control>
+            <control type="list" id="400">
+                <left>70</left>
+                <top>770</top>
+                <width>1840</width>
+                <height>300</height>
+                <orientation>horizontal</orientation>
+                <onup>300</onup>
+                <scrolltime>200</scrolltime>
+                <itemlayout width="400" height="300">
+                    <control type="image">
+                        <left>10</left>
+                        <top>10</top>
+                        <width>380</width>
+                        <height>214</height>
+                        <aspectratio>scale</aspectratio>
+                        <texture background="true">$INFO[ListItem.Art(thumb)]</texture>
+                    </control>
+                    <control type="label">
+                        <left>10</left>
+                        <top>230</top>
+                        <width>380</width>
+                        <height>34</height>
+                        <textcolor>FFCFD6DE</textcolor>
+                        <label>$INFO[ListItem.Label]</label>
+                    </control>
+                    <control type="label">
+                        <left>10</left>
+                        <top>262</top>
+                        <width>380</width>
+                        <height>30</height>
+                        <textcolor>FF6B7480</textcolor>
+                        <label>$INFO[ListItem.Property(extra_type)]$INFO[ListItem.Property(runtime), · ,]</label>
+                    </control>
+                </itemlayout>
+                <focusedlayout width="400" height="300">
+                    <control type="image">
+                        <left>4</left>
+                        <top>4</top>
+                        <width>392</width>
+                        <height>226</height>
+                        <texture>jellyelec-white.png</texture>
+                        <colordiffuse>FFAA5CC3</colordiffuse>
+                        <visible>Control.HasFocus(400)</visible>
+                    </control>
+                    <control type="image">
+                        <left>10</left>
+                        <top>10</top>
+                        <width>380</width>
+                        <height>214</height>
+                        <aspectratio>scale</aspectratio>
+                        <texture background="true">$INFO[ListItem.Art(thumb)]</texture>
+                    </control>
+                    <control type="label">
+                        <left>10</left>
+                        <top>230</top>
+                        <width>380</width>
+                        <height>34</height>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <label>$INFO[ListItem.Label]</label>
+                    </control>
+                    <control type="label">
+                        <left>10</left>
+                        <top>262</top>
+                        <width>380</width>
+                        <height>30</height>
+                        <textcolor>FF8A93A0</textcolor>
+                        <label>$INFO[ListItem.Property(extra_type)]$INFO[ListItem.Property(runtime), · ,]</label>
+                    </control>
+                </focusedlayout>
+            </control>
+        </control>
+
+    </controls>
+</window>

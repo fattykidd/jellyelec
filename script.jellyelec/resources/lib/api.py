@@ -90,6 +90,18 @@ class JellyfinClient:
         })
         return self._request("GET", f"/Users/{self.user_id}/Items/Resume?{query}")["Items"]
 
+    def get_item(self, item_id):
+        """Full details of one item, including its files and their audio and video tracks."""
+        return self._request("GET", f"/Users/{self.user_id}/Items/{item_id}")
+
+    def get_special_features(self, item_id):
+        """The item's extras: behind the scenes, deleted scenes, featurettes and so on."""
+        return self._request("GET", f"/Users/{self.user_id}/Items/{item_id}/SpecialFeatures") or []
+
+    def get_local_trailers(self, item_id):
+        """Trailer files stored alongside the item (not online trailers)."""
+        return self._request("GET", f"/Users/{self.user_id}/Items/{item_id}/LocalTrailers") or []
+
     def image_url(self, item_id, image_type, tag, max_width=None, max_height=None):
         """Address of an item's image, resized by the server. Images don't need sign-in."""
         params = {"tag": tag, "quality": 90}

@@ -10,6 +10,7 @@ import xbmc
 import xbmcgui
 
 from resources.lib.api import TICKS_PER_SECOND, JellyfinError
+from resources.lib.formatting import format_time
 from resources.lib.kodi import ADDON_NAME, log
 from resources.lib.listitems import media_item
 
@@ -17,11 +18,15 @@ START_TIMEOUT_SECONDS = 30
 PROGRESS_INTERVAL_SECONDS = 10
 
 
-def play(client, data):
-    """Play a movie or episode. Returns once playback has finished."""
-    start_seconds = _ask_start_position(data)
+def play(client, data, start_seconds=None):
+    """Play a movie, episode, trailer or extra. Returns once playback has finished.
+
+    start_seconds: where to start. Leave it out to ask the user whether to resume.
+    """
     if start_seconds is None:
-        return
+        start_seconds = _ask_start_position(data)
+        if start_seconds is None:
+            return
 
     try:
         info = client.get_playback_info(data["Id"])
@@ -138,16 +143,6 @@ def _ask_start_position(data):
     if choice < 0:
         return None
     return seconds if choice == 0 else 0
-
-
-def format_time(seconds):
-    """1:02:03 or 2:03."""
-    total = int(seconds)
-    hours, remainder = divmod(total, 3600)
-    minutes, secs = divmod(remainder, 60)
-    if hours:
-        return f"{hours}:{minutes:02d}:{secs:02d}"
-    return f"{minutes}:{secs:02d}"
 
 
 def _notify(message):
