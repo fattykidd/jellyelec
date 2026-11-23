@@ -4,7 +4,7 @@
     <controls>
         <control type="label">
             <left>0</left>
-            <top>470</top>
+            <top>440</top>
             <width>1920</width>
             <height>80</height>
             <align>center</align>
@@ -13,12 +13,21 @@
         </control>
         <control type="label">
             <left>0</left>
-            <top>550</top>
+            <top>520</top>
             <width>1920</width>
             <height>50</height>
             <align>center</align>
-            <textcolor>FF8A93A0</textcolor>
-            <label>Version $INFO[Window.Property(version)]</label>
+            <textcolor>FFCFD6DE</textcolor>
+            <label>Signed in as $INFO[Window.Property(user_name)] on $INFO[Window.Property(server_name)]</label>
+        </control>
+        <control type="label">
+            <left>0</left>
+            <top>980</top>
+            <width>1920</width>
+            <height>40</height>
+            <align>center</align>
+            <textcolor>FF6B7480</textcolor>
+            <label>Version $INFO[Window.Property(version)]  ·  Press Menu (C on a keyboard) to sign out</label>
         </control>
     </controls>
 </window>
