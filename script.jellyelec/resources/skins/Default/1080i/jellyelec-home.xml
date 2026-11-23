@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window>
+    <backgroundcolor>0xFF101418</backgroundcolor>
+    <controls>
+        <control type="label">
+            <left>0</left>
+            <top>470</top>
+            <width>1920</width>
+            <height>80</height>
+            <align>center</align>
+            <textcolor>FFFFFFFF</textcolor>
+            <label>JellyELEC</label>
+        </control>
+        <control type="label">
+            <left>0</left>
+            <top>550</top>
+            <width>1920</width>
+            <height>50</height>
+            <align>center</align>
+            <textcolor>FF8A93A0</textcolor>
+            <label>Version $INFO[Window.Property(version)]</label>
+        </control>
+    </controls>
+</window>
