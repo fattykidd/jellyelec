@@ -1,0 +1,103 @@
+"""The home screen: library bar, spotlight and poster rows."""
+
+import xbmc
+import xbmcgui
+
+from resources.lib import storage
+from resources.lib.api import JellyfinError
+from resources.lib.kodi import ADDON_NAME, ADDON_VERSION, log
+from resources.lib.listitems import library_item, media_item
+
+# Control IDs, matching jellyelec-home.xml.
+LIBRARY_BAR = 100
+CONTINUE_WATCHING_ROW = 200
+
+SUPPORTED_LIBRARY_TYPES = {"movies", "tvshows"}
+CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
+
+
+class HomeWindow(xbmcgui.WindowXML):
+    """Set client and connection before calling doModal()."""
+
+    client = None
+    connection = None
+    signed_out = False
+
+    _loaded = False
+    _library_id = None
+
+    # Kodi events ------------------------------------------------------------------
+
+    def onInit(self):
+        self.setProperty("version", ADDON_VERSION)
+        self.setProperty("user_name", self.connection.user_name)
+
+        # onInit runs again whenever a dialog closes over this window; load only once.
+        if not self._loaded:
+            self._loaded = True
+            self._load_libraries()
+
+    def onAction(self, action):
+        action_id = action.getId()
+        if action_id in CLOSE_ACTIONS:
+            self.close()
+        elif action_id == xbmcgui.ACTION_CONTEXT_MENU:
+            self._confirm_sign_out()
+        elif self.getFocusId() == LIBRARY_BAR:
+            self._show_selected_library()
+
+    # Libraries ------------------------------------------------------------------
+
+    def _load_libraries(self):
+        try:
+            libraries = [
+                library
+                for library in self.client.get_libraries()
+                if library.get("CollectionType") in SUPPORTED_LIBRARY_TYPES
+            ]
+        except JellyfinError as error:
+            log(f"Couldn't load libraries: {error}", xbmc.LOGWARNING)
+            self._notify("Couldn't load your libraries.")
+            return
+
+        bar = self.getControl(LIBRARY_BAR)
+        bar.reset()
+        bar.addItems([library_item(library) for library in libraries])
+
+        if libraries:
+            self._show_selected_library()
+            self.setFocusId(LIBRARY_BAR)
+
+    def _show_selected_library(self):
+        """Reload the rows when the selected library changes."""
+        selected = self.getControl(LIBRARY_BAR).getSelectedItem()
+        if selected is None:
+            return
+        library_id = selected.getProperty("id")
+        if library_id == self._library_id:
+            return
+        self._library_id = library_id
+
+        try:
+            items = self.client.get_resume_items(library_id)
+        except JellyfinError as error:
+            log(f"Couldn't load Continue Watching for {selected.getLabel()}: {error}", xbmc.LOGWARNING)
+            self._notify("Couldn't load Continue Watching.")
+            items = []
+
+        row = self.getControl(CONTINUE_WATCHING_ROW)
+        row.reset()
+        row.addItems([media_item(self.client, item) for item in items])
+
+    # Helpers --------------------------------------------------------------------
+
+    def _confirm_sign_out(self):
+        if xbmcgui.Dialog().yesno(ADDON_NAME, f"Sign out of {self.connection.server_name}?"):
+            self.connection.sign_out()
+            storage.save(self.connection)
+            self.signed_out = True
+            self.close()
+
+    @staticmethod
+    def _notify(message):
+        xbmcgui.Dialog().notification(ADDON_NAME, message, xbmcgui.NOTIFICATION_WARNING)

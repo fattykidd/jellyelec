@@ -5,6 +5,7 @@ This module has no Kodi imports, so it can be tested on a PC.
 
 import json
 import urllib.error
+import urllib.parse
 import urllib.request
 
 CLIENT_NAME = "JellyELEC"
@@ -67,6 +68,34 @@ class JellyfinClient:
     def get_current_user(self):
         """The signed-in user. Fails with AuthenticationFailed if the token is no longer valid."""
         return self._request("GET", "/Users/Me")
+
+    # Libraries and items ----------------------------------------------------
+
+    def get_libraries(self):
+        """The signed-in user's libraries (Movies, TV shows, and so on)."""
+        return self._request("GET", f"/Users/{self.user_id}/Views")["Items"]
+
+    def get_resume_items(self, library_id, limit=24):
+        """Partly watched movies and episodes in one library, most recent first."""
+        query = urllib.parse.urlencode({
+            "ParentId": library_id,
+            "Limit": limit,
+            "MediaTypes": "Video",
+            "Fields": "Overview",
+            "ImageTypeLimit": 1,
+            "EnableImageTypes": "Primary,Backdrop",
+        })
+        return self._request("GET", f"/Users/{self.user_id}/Items/Resume?{query}")["Items"]
+
+    def image_url(self, item_id, image_type, tag, max_width=None, max_height=None):
+        """Address of an item's image, resized by the server. Images don't need sign-in."""
+        params = {"tag": tag, "quality": 90}
+        if max_width:
+            params["maxWidth"] = max_width
+        if max_height:
+            params["maxHeight"] = max_height
+        query = urllib.parse.urlencode(params)
+        return f"{self.server_url}/Items/{item_id}/Images/{image_type}?{query}"
 
     # Internals --------------------------------------------------------------
 
