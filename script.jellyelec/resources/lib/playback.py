@@ -12,7 +12,7 @@ import xbmcgui
 
 from resources.lib.api import TICKS_PER_SECOND, JellyfinError
 from resources.lib.formatting import format_time
-from resources.lib.kodi import ADDON_NAME, log
+from resources.lib.kodi import ADDON_NAME, log, setting_enabled
 from resources.lib.listitems import media_item
 
 START_TIMEOUT_SECONDS = 30
@@ -162,17 +162,21 @@ def _resolve_channel_stream(client, channel):
     name = channel.get("Name", channel["Id"])
 
     # 1. The provider's own stream URL, played directly the way IPTV Simple does.
-    try:
-        info = client.get_playback_info(channel["Id"])
-        source = (info.get("MediaSources") or [{}])[0]
-    except JellyfinError as error:
-        log(f"Live TV: {name}: couldn't get playback details: {error}", xbmc.LOGWARNING)
-        source = {}
-    log(f"Live TV: {name}: before tuning, server offers {_describe_source(source)}.")
-    path = source.get("Path") or ""
-    if _is_stream_url(path) and not _points_at_server(client, path):
-        log(f"Live TV: {name}: playing the provider's stream directly.")
-        return path, None
+    #    Skipped when the user has chosen to play Live TV through Jellyfin.
+    if setting_enabled("livetv_through_jellyfin"):
+        log(f"Live TV: {name}: set to play through Jellyfin.")
+    else:
+        try:
+            info = client.get_playback_info(channel["Id"])
+            source = (info.get("MediaSources") or [{}])[0]
+        except JellyfinError as error:
+            log(f"Live TV: {name}: couldn't get playback details: {error}", xbmc.LOGWARNING)
+            source = {}
+        log(f"Live TV: {name}: before tuning, server offers {_describe_source(source)}.")
+        path = source.get("Path") or ""
+        if _is_stream_url(path) and not _points_at_server(client, path):
+            log(f"Live TV: {name}: playing the provider's stream directly.")
+            return _with_required_headers(path, source), None
 
     # 2. Jellyfin tunes the channel and relays it.
     try:
@@ -195,6 +199,16 @@ def _resolve_channel_stream(client, channel):
         return client.server_url + source["TranscodingUrl"], live_stream_id
 
     return None, live_stream_id
+
+
+def _with_required_headers(url, source):
+    """Add any request headers the stream needs (such as a User-Agent), in Kodi's URL|Header=value form."""
+    headers = source.get("RequiredHttpHeaders") or {}
+    if not headers:
+        return url
+    log(f"Live TV: sending the headers the stream requires: {', '.join(sorted(headers))}.")
+    encoded = "&".join(f"{name}={urllib.parse.quote(value)}" for name, value in headers.items())
+    return f"{url}|{encoded}"
 
 
 def _release_live_stream(client, live_stream_id):

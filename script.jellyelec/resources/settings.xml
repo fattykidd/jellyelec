@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<settings>
+    <category label="Live TV">
+        <setting id="livetv_through_jellyfin" type="bool" default="false"
+                 label="Play Live TV through Jellyfin (try this if channels stall when played directly)"/>
+    </category>
+</settings>
