@@ -12,7 +12,7 @@ import xbmcgui
 
 from resources.lib.api import TICKS_PER_SECOND, JellyfinError
 from resources.lib.formatting import format_time
-from resources.lib.kodi import ADDON_NAME, log, setting_enabled
+from resources.lib.kodi import ADDON_NAME, log
 from resources.lib.listitems import media_item
 
 START_TIMEOUT_SECONDS = 30
@@ -162,21 +162,17 @@ def _resolve_channel_stream(client, channel):
     name = channel.get("Name", channel["Id"])
 
     # 1. The provider's own stream URL, played directly the way IPTV Simple does.
-    #    Skipped when the user has chosen to play Live TV through Jellyfin.
-    if setting_enabled("livetv_through_jellyfin"):
-        log(f"Live TV: {name}: set to play through Jellyfin.")
-    else:
-        try:
-            info = client.get_playback_info(channel["Id"])
-            source = (info.get("MediaSources") or [{}])[0]
-        except JellyfinError as error:
-            log(f"Live TV: {name}: couldn't get playback details: {error}", xbmc.LOGWARNING)
-            source = {}
-        log(f"Live TV: {name}: before tuning, server offers {_describe_source(source)}.")
-        path = source.get("Path") or ""
-        if _is_stream_url(path) and not _points_at_server(client, path):
-            log(f"Live TV: {name}: playing the provider's stream directly.")
-            return _with_required_headers(path, source), None
+    try:
+        info = client.get_playback_info(channel["Id"])
+        source = (info.get("MediaSources") or [{}])[0]
+    except JellyfinError as error:
+        log(f"Live TV: {name}: couldn't get playback details: {error}", xbmc.LOGWARNING)
+        source = {}
+    log(f"Live TV: {name}: before tuning, server offers {_describe_source(source)}.")
+    path = source.get("Path") or ""
+    if _is_stream_url(path) and not _points_at_server(client, path):
+        log(f"Live TV: {name}: playing the provider's stream directly.")
+        return _with_required_headers(path, source), None
 
     # 2. Jellyfin tunes the channel and relays it.
     try:
@@ -189,6 +185,12 @@ def _resolve_channel_stream(client, channel):
     live_stream_id = source.get("LiveStreamId")
 
     path = source.get("Path") or ""
+    if _is_stream_url(path) and not _points_at_server(client, path):
+        # Tuning just handed back the provider's own URL. Release Jellyfin's connection
+        # so the provider never sees two at once, and play the URL directly.
+        _release_live_stream(client, live_stream_id)
+        log(f"Live TV: {name}: tuning returned the provider's stream; playing it directly.")
+        return _with_required_headers(path, source), None
     if _is_stream_url(path):
         log(f"Live TV: {name}: playing Jellyfin's relayed stream.")
         return _reachable_url(client, path), live_stream_id

@@ -18,11 +18,6 @@ def device_name():
     return name.replace('"', "")
 
 
-def setting_enabled(setting_id):
-    """Read an on/off setting fresh, so changes apply without restarting JellyELEC."""
-    return xbmcaddon.Addon().getSettingBool(setting_id)
-
-
 def log(message, level=xbmc.LOGINFO):
     """Write a line to kodi.log, tagged with the add-on ID."""
     xbmc.log(f"[{ADDON_ID}] {message}", level)
