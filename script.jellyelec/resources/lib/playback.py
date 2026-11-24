@@ -18,6 +18,17 @@ from resources.lib.listitems import media_item
 START_TIMEOUT_SECONDS = 30
 PROGRESS_INTERVAL_SECONDS = 10
 
+# Live TV watchdog: a channel whose picture hasn't moved for this long is reconnected,
+# up to MAX_RECONNECTS times in a row before giving up. A minute of smooth playback
+# resets the count.
+STALL_SECONDS = 8
+MAX_RECONNECTS = 3
+SMOOTH_SECONDS_TO_RESET = 60
+
+# How long full-screen video may be out of view before Live TV counts it as Back = stop.
+# Long enough to ignore the moment between a channel starting and going full-screen.
+LEFT_FULLSCREEN_SECONDS = 2
+
 
 def play(client, data, start_seconds=None):
     """Play a movie, episode, trailer or extra. Returns once playback has finished.
@@ -125,7 +136,7 @@ LOOPBACK_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
 
 def play_channel(client, channel, make_item):
-    """Play one Live TV channel full-screen. Returns once it stops.
+    """Play one Live TV channel full-screen. Returns once it stops (Back stops it).
 
     make_item(channel) builds the ListItem Kodi shows while the channel plays.
     """
@@ -146,11 +157,81 @@ def play_channel(client, channel, make_item):
         if not wait_for_video(player, monitor):
             _notify("Couldn't play this channel.")
             return
-        # Keep the tuned stream open on the server until playback stops.
-        while live_stream_id and player.isPlayingVideo() and not monitor.waitForAbort(1):
-            pass
+        _watch_live(player, monitor, url, item, name)
     finally:
         _release_live_stream(client, live_stream_id)
+
+
+def _watch_live(player, monitor, url, item, name):
+    """Stay with a playing channel until it stops.
+
+    Reconnects automatically if the picture stops moving (the provider stopped sending),
+    and stops the channel when the user presses Back out of full-screen, so a channel
+    never keeps one of your provider's streams busy in the background.
+    """
+    reconnects = 0
+    last_time = None
+    still_seconds = 0
+    smooth_seconds = 0
+    out_of_view_seconds = 0
+
+    while player.isPlayingVideo():
+        if monitor.waitForAbort(1):
+            return
+
+        # Back out of full-screen means stop.
+        if xbmc.getCondVisibility("Window.IsActive(fullscreenvideo)"):
+            out_of_view_seconds = 0
+        else:
+            out_of_view_seconds += 1
+            if out_of_view_seconds >= LEFT_FULLSCREEN_SECONDS:
+                log(f"Live TV: {name}: left full-screen; stopping.")
+                player.stop()
+                return
+
+        # A picture that isn't moving (and isn't paused) means the stream has stalled.
+        try:
+            current_time = player.getTime()
+        except RuntimeError:
+            return
+        if xbmc.getCondVisibility("Player.Paused") or last_time is None or current_time > last_time:
+            still_seconds = 0
+            smooth_seconds += 1
+            if smooth_seconds >= SMOOTH_SECONDS_TO_RESET:
+                reconnects = 0
+        else:
+            still_seconds += 1
+            smooth_seconds = 0
+        last_time = current_time
+
+        if still_seconds < STALL_SECONDS:
+            continue
+        if reconnects >= MAX_RECONNECTS:
+            log(f"Live TV: {name}: still stalled after {MAX_RECONNECTS} reconnects; giving up.", xbmc.LOGWARNING)
+            player.stop()
+            _notify("This channel keeps stalling. Try again in a minute.")
+            return
+
+        reconnects += 1
+        log(f"Live TV: {name}: stalled for {STALL_SECONDS} seconds; reconnecting ({reconnects} of {MAX_RECONNECTS}).")
+        _stop_and_wait(player, monitor)
+        player.play(url, item)
+        if not wait_for_video(player, monitor):
+            _notify("Couldn't reconnect to this channel.")
+            return
+        last_time = None
+        still_seconds = 0
+        out_of_view_seconds = 0
+
+
+def _stop_and_wait(player, monitor, timeout_seconds=5):
+    """Stop playback and wait for it to finish, so the old connection closes before a new one opens."""
+    player.stop()
+    waited = 0.0
+    while player.isPlaying() and waited < timeout_seconds:
+        if monitor.waitForAbort(0.25):
+            return
+        waited += 0.25
 
 
 def _resolve_channel_stream(client, channel):
@@ -274,9 +355,21 @@ def wait_for_video(player, monitor):
         if waited >= START_TIMEOUT_SECONDS:
             log("Playback didn't start in time.", xbmc.LOGWARNING)
             return False
-    if not xbmc.getCondVisibility("Window.IsActive(fullscreenvideo)"):
-        xbmc.executebuiltin("ActivateWindow(fullscreenvideo)")
+    _go_fullscreen(monitor)
     return True
+
+
+def _go_fullscreen(monitor, timeout_seconds=5):
+    """Switch to full-screen video, retrying while Kodi refuses (it does while a busy dialog is up)."""
+    waited = 0.0
+    while not xbmc.getCondVisibility("Window.IsActive(fullscreenvideo)"):
+        if waited >= timeout_seconds:
+            log("Couldn't switch to full-screen video.", xbmc.LOGWARNING)
+            return
+        xbmc.executebuiltin("ActivateWindow(fullscreenvideo)")
+        if monitor.waitForAbort(0.5):
+            return
+        waited += 0.5
 
 
 def _ask_start_position(data):
