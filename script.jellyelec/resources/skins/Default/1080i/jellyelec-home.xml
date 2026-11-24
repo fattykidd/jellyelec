@@ -164,6 +164,8 @@
                     <label>Continue watching</label>
                 </control>
                 <control type="list" id="200">
+                    <onup>100</onup>
+                    <ondown>210</ondown>
                     <left>70</left>
                     <top>40</top>
                     <width>1840</width>
@@ -215,6 +217,8 @@
                     <label>Recently added</label>
                 </control>
                 <control type="list" id="210">
+                    <onup>200</onup>
+                    <ondown>220</ondown>
                     <left>70</left>
                     <top>40</top>
                     <width>1840</width>
@@ -266,6 +270,7 @@
                     <label>Random</label>
                 </control>
                 <control type="list" id="220">
+                    <onup>210</onup>
                     <left>70</left>
                     <top>40</top>
                     <width>1840</width>
