@@ -5,6 +5,7 @@
       100  library bar
       150  scrolling stack of rows
       200  Continue Watching row
+      205  Next Up row (TV libraries only)
       210  Recently Added row
       220  Random row
     The spotlight is filled by home.py through window properties (spot_*).
@@ -137,7 +138,7 @@
             <height>40</height>
             <textcolor>FF6B7480</textcolor>
             <label>Nothing to show in this library yet.</label>
-            <visible>Integer.IsEqual(Container(200).NumItems,0) + Integer.IsEqual(Container(210).NumItems,0) + Integer.IsEqual(Container(220).NumItems,0)</visible>
+            <visible>Integer.IsEqual(Container(200).NumItems,0) + Integer.IsEqual(Container(205).NumItems,0) + Integer.IsEqual(Container(210).NumItems,0) + Integer.IsEqual(Container(220).NumItems,0)</visible>
         </control>
 
         <!-- Stack of rows. Scrolls to keep the focused row in view; empty rows are hidden. -->
@@ -165,7 +166,7 @@
                 </control>
                 <control type="list" id="200">
                     <onup>100</onup>
-                    <ondown>210</ondown>
+                    <ondown>205</ondown>
                     <left>70</left>
                     <top>40</top>
                     <width>1840</width>
@@ -207,6 +208,59 @@
             <control type="group">
                 <width>1920</width>
                 <height>330</height>
+                <visible>Integer.IsGreater(Container(205).NumItems,0)</visible>
+                <control type="label">
+                    <left>80</left>
+                    <top>0</top>
+                    <width>900</width>
+                    <height>40</height>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <label>Next up</label>
+                </control>
+                <control type="list" id="205">
+                    <onup>200</onup>
+                    <ondown>210</ondown>
+                    <left>70</left>
+                    <top>40</top>
+                    <width>1840</width>
+                    <height>290</height>
+                    <orientation>horizontal</orientation>
+                    <scrolltime>200</scrolltime>
+                    <itemlayout width="200" height="290">
+                        <control type="image">
+                            <left>10</left>
+                            <top>10</top>
+                            <width>180</width>
+                            <height>270</height>
+                            <aspectratio>scale</aspectratio>
+                            <texture background="true">$INFO[ListItem.Art(poster)]</texture>
+                        </control>
+                    </itemlayout>
+                    <focusedlayout width="200" height="290">
+                        <control type="image">
+                            <left>4</left>
+                            <top>4</top>
+                            <width>192</width>
+                            <height>282</height>
+                            <texture>jellyelec-white.png</texture>
+                            <colordiffuse>FFAA5CC3</colordiffuse>
+                            <visible>Control.HasFocus(205)</visible>
+                        </control>
+                        <control type="image">
+                            <left>10</left>
+                            <top>10</top>
+                            <width>180</width>
+                            <height>270</height>
+                            <aspectratio>scale</aspectratio>
+                            <texture background="true">$INFO[ListItem.Art(poster)]</texture>
+                        </control>
+                    </focusedlayout>
+                </control>
+            </control>
+
+            <control type="group">
+                <width>1920</width>
+                <height>330</height>
                 <visible>Integer.IsGreater(Container(210).NumItems,0)</visible>
                 <control type="label">
                     <left>80</left>
@@ -217,7 +271,7 @@
                     <label>Recently added</label>
                 </control>
                 <control type="list" id="210">
-                    <onup>200</onup>
+                    <onup>205</onup>
                     <ondown>220</ondown>
                     <left>70</left>
                     <top>40</top>

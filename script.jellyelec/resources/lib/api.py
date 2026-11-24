@@ -112,23 +112,24 @@ class JellyfinClient:
 
     def get_next_up(self, series_id):
         """The next episode to watch in a show, or None if there isn't one."""
-        query = urllib.parse.urlencode({
-            "UserId": self.user_id,
-            "SeriesId": series_id,
-            "Limit": 1,
-            "Fields": "Overview",
-        })
-        items = self._request("GET", f"/Shows/NextUp?{query}")["Items"]
+        items = self._get_shows_items("/Shows/NextUp", SeriesId=series_id, Limit=1)
         return items[0] if items else None
+
+    def get_next_up_items(self, library_id, limit=24):
+        """The next episode to watch in each show you're partway through, in one library."""
+        return self._get_shows_items("/Shows/NextUp", ParentId=library_id, Limit=limit)
+
+    def get_seasons(self, series_id):
+        """A show's seasons, with how many episodes in each are unwatched."""
+        return self._get_shows_items(f"/Shows/{series_id}/Seasons")
+
+    def get_episodes(self, series_id, season_id):
+        """Every episode in one season, in order."""
+        return self._get_shows_items(f"/Shows/{series_id}/Episodes", SeasonId=season_id)
 
     def get_first_episode(self, series_id):
         """The show's first episode, or None if it has none."""
-        query = urllib.parse.urlencode({
-            "UserId": self.user_id,
-            "Limit": 1,
-            "Fields": "Overview",
-        })
-        items = self._request("GET", f"/Shows/{series_id}/Episodes?{query}")["Items"]
+        items = self._get_shows_items(f"/Shows/{series_id}/Episodes", Limit=1)
         return items[0] if items else None
 
     def get_item(self, item_id):
@@ -202,6 +203,17 @@ class JellyfinClient:
             params["Limit"] = limit
         query = urllib.parse.urlencode(params)
         return self._request("GET", f"/Users/{self.user_id}/Items?{query}")["Items"]
+
+    def _get_shows_items(self, path, **extra_params):
+        params = {
+            "UserId": self.user_id,
+            "Fields": "Overview",
+            "ImageTypeLimit": 1,
+            "EnableImageTypes": "Primary,Backdrop",
+            **extra_params,
+        }
+        query = urllib.parse.urlencode(params)
+        return self._request("GET", f"{path}?{query}")["Items"]
 
     @staticmethod
     def _playback_report(item_id, media_source_id, play_session_id, position_ticks, is_paused=False):

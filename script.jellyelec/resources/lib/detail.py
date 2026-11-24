@@ -6,12 +6,13 @@ import xbmcgui
 from resources.lib.api import TICKS_PER_SECOND, JellyfinError
 from resources.lib.formatting import episode_line, format_time, media_summary, meta_line
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log
-from resources.lib.listitems import backdrop_url, extra_item, poster_url
+from resources.lib.listitems import backdrop_url, extra_item, poster_url, season_item
 from resources.lib.playback import play
 
 # Control IDs, matching jellyelec-detail.xml.
 ACTION_BUTTONS = 300
 SPECIAL_FEATURES_ROW = 400
+SEASONS_ROW = 410
 
 CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
 
@@ -42,6 +43,7 @@ class DetailWindow(xbmcgui.WindowXML):
     _next_episode = None  # for shows: the episode Play next episode starts
     _trailers = ()
     _extras = None  # Jellyfin data for the special features, keyed by item ID
+    _seasons = None  # for shows: Jellyfin data for the seasons, keyed by item ID
 
     # Kodi events ------------------------------------------------------------------
 
@@ -62,6 +64,8 @@ class DetailWindow(xbmcgui.WindowXML):
             self._run_selected_action()
         elif control_id == SPECIAL_FEATURES_ROW:
             self._play_selected_extra()
+        elif control_id == SEASONS_ROW:
+            self._open_selected_season()
 
     # Loading --------------------------------------------------------------------
 
@@ -77,6 +81,7 @@ class DetailWindow(xbmcgui.WindowXML):
         self._trailers = self._fetch_trailers()
         self._show_item()
         self._show_actions()
+        self._show_seasons()
         self._show_special_features()
         self.setFocusId(ACTION_BUTTONS)
         return True
@@ -148,6 +153,20 @@ class DetailWindow(xbmcgui.WindowXML):
             actions.append((PLAY, "Play"))
         return actions
 
+    def _show_seasons(self):
+        """Shows get a row of seasons. Other items leave it empty, which hides it."""
+        seasons = []
+        if self._item.get("Type") == "Series":
+            try:
+                seasons = self.client.get_seasons(self.item_id)
+            except JellyfinError as error:
+                log(f"Couldn't load seasons of {self.item_id}: {error}", xbmc.LOGWARNING)
+
+        self._seasons = {season["Id"]: season for season in seasons}
+        row = self.getControl(SEASONS_ROW)
+        row.reset()
+        row.addItems([season_item(self.client, season) for season in seasons])
+
     def _show_special_features(self):
         try:
             extras = self.client.get_special_features(self.item_id)
@@ -181,6 +200,24 @@ class DetailWindow(xbmcgui.WindowXML):
         else:
             play(self.client, self._item, start_seconds=0)
         self._refresh_after_playback()
+
+    def _open_selected_season(self):
+        # Imported here because the episodes screen opens detail pages itself.
+        from resources.lib.episodes import show_episodes
+
+        selected = self.getControl(SEASONS_ROW).getSelectedItem()
+        if selected is None:
+            return
+        show_episodes(self.client, self._item, selected.getProperty("id"))
+
+        # Watching episodes changes the next episode and the unwatched counts.
+        position = self.getControl(SEASONS_ROW).getSelectedPosition()
+        self._show_actions()
+        self._show_seasons()
+        row = self.getControl(SEASONS_ROW)
+        if row.size():
+            row.selectItem(min(position, row.size() - 1))
+            self.setFocusId(SEASONS_ROW)
 
     def _play_selected_extra(self):
         selected = self.getControl(SPECIAL_FEATURES_ROW).getSelectedItem()

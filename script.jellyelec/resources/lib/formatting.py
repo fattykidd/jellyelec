@@ -97,6 +97,22 @@ def media_summary(item):
     return "  ·  ".join(part for part in parts if part)
 
 
+def watch_status(item):
+    """Watched, 45% watched, or nothing."""
+    user_data = item.get("UserData") or {}
+    if user_data.get("Played"):
+        return "Watched"
+    if user_data.get("PlaybackPositionTicks") and user_data.get("PlayedPercentage"):
+        return f"{round(user_data['PlayedPercentage'])}% watched"
+    return ""
+
+
+def unwatched_text(item):
+    """3 unwatched, for a season or show."""
+    count = (item.get("UserData") or {}).get("UnplayedItemCount") or 0
+    return f"{count} unwatched" if count else ""
+
+
 def extra_type_name(extra_type):
     return EXTRA_TYPE_NAMES.get(extra_type or "", "Extra")
 

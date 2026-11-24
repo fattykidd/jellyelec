@@ -14,9 +14,10 @@ from resources.lib.listitems import backdrop_url, library_item, media_item
 # Control IDs, matching jellyelec-home.xml.
 LIBRARY_BAR = 100
 CONTINUE_WATCHING_ROW = 200
+NEXT_UP_ROW = 205
 RECENTLY_ADDED_ROW = 210
 RANDOM_ROW = 220
-ROWS = (CONTINUE_WATCHING_ROW, RECENTLY_ADDED_ROW, RANDOM_ROW)
+ROWS = (CONTINUE_WATCHING_ROW, NEXT_UP_ROW, RECENTLY_ADDED_ROW, RANDOM_ROW)
 
 # The item type each library holds, as Jellyfin names it.
 LIBRARY_ITEM_TYPES = {"movies": "Movie", "tvshows": "Series"}
@@ -102,8 +103,10 @@ class HomeWindow(xbmcgui.WindowXML):
             return
         self._library_id = library_id
         item_type = LIBRARY_ITEM_TYPES[selected.getProperty("collection_type")]
+        is_tv = item_type == "Series"
 
         self._fill_row(CONTINUE_WATCHING_ROW, lambda: self.client.get_resume_items(library_id))
+        self._fill_row(NEXT_UP_ROW, lambda: self.client.get_next_up_items(library_id) if is_tv else [])
         self._fill_row(RECENTLY_ADDED_ROW, lambda: self.client.get_latest_items(library_id))
         self._fill_row(RANDOM_ROW, lambda: self.client.get_random_items(library_id, item_type))
         self._update_spotlight()
