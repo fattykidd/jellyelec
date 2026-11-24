@@ -6,6 +6,7 @@ real stream address when that channel is actually played (see channel_resolver.p
 changing channel only ever has one stream open at a time.
 """
 
+import json
 import threading
 import traceback
 import urllib.parse
@@ -58,6 +59,9 @@ TS_CONTAINERS = {"ts", "mpegts", "m2ts"}
 # can release it. Kept on Kodi's Home window, which both parts of JellyELEC can see.
 LIVE_STREAM_PROPERTY = f"{ADDON_ID}.live_stream_id"
 HOME_WINDOW_ID = 10000
+
+# Kodi's ID for the video playlist, as used by its JSON-RPC interface.
+VIDEO_PLAYLIST_ID = 1
 
 STREAM_SCHEMES = ("http://", "https://", "rtmp://", "rtsp://", "udp://", "rtp://")
 LOOPBACK_HOSTS = {"localhost", "127.0.0.1", "::1"}
@@ -116,7 +120,7 @@ class LiveSession:
     def switch_to(self, index):
         """Change channel without leaving the guide."""
         if index != self.position:
-            self._player.playselected(index)
+            play_playlist_position(index)
 
     def show_fullscreen(self):
         """Close the guide and return to full-screen video."""
@@ -197,7 +201,7 @@ class LiveSession:
     def _change_channel_by(self, step):
         """Channel Up/Down, wrapping around at either end of the list."""
         if self.channels:
-            self._thread_player.playselected((self.position + step) % len(self.channels))
+            play_playlist_position((self.position + step) % len(self.channels))
 
     # Back = stop, unless the guide is open --------------------------------------------
 
@@ -296,7 +300,7 @@ class LiveSession:
         _release_tuned_stream(self.client)
         if self._monitor.waitForAbort(RECONNECT_PAUSE_SECONDS):
             return False
-        player.playselected(self.position)
+        play_playlist_position(self.position)
         if not wait_for_video(player, self._monitor, fullscreen=not in_guide):
             notify("Couldn't reconnect to this channel.")
             return False
@@ -320,6 +324,25 @@ class LiveSession:
         if 0 <= self.position < len(self.channels):
             return self.channels[self.position].get("Name", "")
         return "channel"
+
+
+def play_playlist_position(position):
+    """Play one entry of Kodi's video playlist.
+
+    Done through Kodi's JSON-RPC interface because it names the video playlist outright.
+    Player.playselected() can't be used here: a Player object other than the one that
+    started the playlist assumes the music playlist, so it would switch Kodi to that
+    (empty) playlist instead, which also breaks Kodi's own Next/Previous keys.
+    """
+    request = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "Player.Open",
+        "params": {"item": {"playlistid": VIDEO_PLAYLIST_ID, "position": position}},
+    }
+    response = json.loads(xbmc.executeJSONRPC(json.dumps(request)))
+    if "error" in response:
+        log(f"Live TV: Kodi couldn't play playlist entry {position}: {response['error']}", xbmc.LOGWARNING)
 
 
 def channel_url(channel):
