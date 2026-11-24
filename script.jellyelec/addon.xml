@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.jellyelec" name="JellyELEC" version="0.0.16" provider-name="fattykidd">
+<addon id="script.jellyelec" name="JellyELEC" version="0.0.18" provider-name="fattykidd">
     <requires>
         <import addon="xbmc.python" version="3.0.1"/>
     </requires>
     <extension point="xbmc.python.script" library="default.py">
         <provides>executable</provides>
     </extension>
+    <!-- Kodi calls this to get a Live TV channel's stream when the channel is played. -->
+    <extension point="xbmc.python.pluginsource" library="plugin.py"/>
     <extension point="xbmc.addon.metadata">
         <summary lang="en_GB">A Jellyfin-first client for CoreELEC</summary>
         <description lang="en_GB">JellyELEC is a full-screen Jellyfin client for CoreELEC. It uses Kodi only as the playback engine, so Dolby Vision and FEL playback work exactly as they do in CoreELEC.</description>

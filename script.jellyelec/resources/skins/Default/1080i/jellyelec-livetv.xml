@@ -1,217 +1,322 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-    JellyELEC Live TV screen: channel list on the left, the highlighted
-    channel's current programme in detail on the right.
+    JellyELEC Live TV screen. While a channel is playing it is the guide: the live picture
+    sits in the top-right corner (or top-left, when the video_left property is set) and
+    the channel list stays browsable beside it.
     Control IDs here must match the constants in resources/lib/live_tv.py:
       700  channel list
-    The right-hand panel is filled by live_tv.py through window properties.
+    The right-hand column is filled by live_tv.py through window properties.
 -->
 <window>
     <defaultcontrol always="true">700</defaultcontrol>
     <backgroundcolor>0xFF101418</backgroundcolor>
     <controls>
 
-        <!-- Header -->
-        <control type="label">
-            <left>80</left>
-            <top>40</top>
-            <width>1000</width>
-            <height>60</height>
-            <aligny>center</aligny>
-            <textcolor>FFFFFFFF</textcolor>
-            <label>Live TV</label>
-        </control>
-        <control type="label">
-            <left>1040</left>
-            <top>40</top>
-            <width>800</width>
-            <height>60</height>
-            <align>right</align>
-            <aligny>center</aligny>
-            <textcolor>FF6B7480</textcolor>
-            <label>OK to watch</label>
+        <!-- Left side: header and channel list. Slides right when the picture is top-left. -->
+        <control type="group">
+            <left>60</left>
+            <top>0</top>
+            <animation effect="slide" end="820,0" time="0" condition="String.IsEqual(Window.Property(video_left),true)">Conditional</animation>
+
+            <control type="label">
+                <left>20</left>
+                <top>40</top>
+                <width>400</width>
+                <height>60</height>
+                <aligny>center</aligny>
+                <textcolor>FFFFFFFF</textcolor>
+                <label>Live TV</label>
+            </control>
+            <control type="label">
+                <left>420</left>
+                <top>40</top>
+                <width>560</width>
+                <height>60</height>
+                <align>right</align>
+                <aligny>center</aligny>
+                <textcolor>FF6B7480</textcolor>
+                <label>OK to watch</label>
+                <visible>!Player.HasVideo</visible>
+            </control>
+            <control type="label">
+                <left>420</left>
+                <top>40</top>
+                <width>560</width>
+                <height>60</height>
+                <align>right</align>
+                <aligny>center</aligny>
+                <textcolor>FF6B7480</textcolor>
+                <label>OK to switch  ·  Back for full screen</label>
+                <visible>Player.HasVideo</visible>
+            </control>
+
+            <!-- Shown when there are no channels -->
+            <control type="label">
+                <left>20</left>
+                <top>160</top>
+                <width>960</width>
+                <height>40</height>
+                <textcolor>FF6B7480</textcolor>
+                <label>No channels found. Check Live TV in your Jellyfin dashboard.</label>
+                <visible>Integer.IsEqual(Container(700).NumItems,0)</visible>
+            </control>
+
+            <!-- Channel list -->
+            <control type="list" id="700">
+                <left>20</left>
+                <top>130</top>
+                <width>980</width>
+                <height>920</height>
+                <orientation>vertical</orientation>
+                <scrolltime>150</scrolltime>
+                <itemlayout width="980" height="115">
+                    <control type="label">
+                        <left>0</left>
+                        <top>0</top>
+                        <width>80</width>
+                        <height>105</height>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <textcolor>FF6B7480</textcolor>
+                        <label>$INFO[ListItem.Property(number)]</label>
+                    </control>
+                    <control type="image">
+                        <left>90</left>
+                        <top>12</top>
+                        <width>140</width>
+                        <height>80</height>
+                        <aspectratio>keep</aspectratio>
+                        <texture background="true">$INFO[ListItem.Art(thumb)]</texture>
+                    </control>
+                    <control type="label">
+                        <left>260</left>
+                        <top>8</top>
+                        <width>560</width>
+                        <height>36</height>
+                        <textcolor>FFCFD6DE</textcolor>
+                        <label>$INFO[ListItem.Property(now_title)]</label>
+                    </control>
+                    <control type="label">
+                        <left>820</left>
+                        <top>8</top>
+                        <width>150</width>
+                        <height>36</height>
+                        <align>right</align>
+                        <textcolor>FFAA5CC3</textcolor>
+                        <label>Watching</label>
+                        <visible>String.IsEqual(ListItem.Property(playing),true)</visible>
+                    </control>
+                    <control type="label">
+                        <left>260</left>
+                        <top>44</top>
+                        <width>710</width>
+                        <height>30</height>
+                        <textcolor>FF6B7480</textcolor>
+                        <label>$INFO[ListItem.Label]$INFO[ListItem.Property(next_title),  ·  Next: ,]</label>
+                    </control>
+                    <control type="progress">
+                        <left>260</left>
+                        <top>84</top>
+                        <width>300</width>
+                        <height>6</height>
+                        <texturebg colordiffuse="26FFFFFF">jellyelec-white.png</texturebg>
+                        <midtexture colordiffuse="FF6B7480">jellyelec-white.png</midtexture>
+                        <info>ListItem.PercentPlayed</info>
+                    </control>
+                </itemlayout>
+                <focusedlayout width="980" height="115">
+                    <control type="image">
+                        <left>-10</left>
+                        <top>0</top>
+                        <width>990</width>
+                        <height>105</height>
+                        <texture>jellyelec-white.png</texture>
+                        <colordiffuse>1FFFFFFF</colordiffuse>
+                        <visible>Control.HasFocus(700)</visible>
+                    </control>
+                    <control type="image">
+                        <left>-10</left>
+                        <top>0</top>
+                        <width>5</width>
+                        <height>105</height>
+                        <texture>jellyelec-white.png</texture>
+                        <colordiffuse>FFAA5CC3</colordiffuse>
+                        <visible>Control.HasFocus(700)</visible>
+                    </control>
+                    <control type="label">
+                        <left>0</left>
+                        <top>0</top>
+                        <width>80</width>
+                        <height>105</height>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <textcolor>FFCFD6DE</textcolor>
+                        <label>$INFO[ListItem.Property(number)]</label>
+                    </control>
+                    <control type="image">
+                        <left>90</left>
+                        <top>12</top>
+                        <width>140</width>
+                        <height>80</height>
+                        <aspectratio>keep</aspectratio>
+                        <texture background="true">$INFO[ListItem.Art(thumb)]</texture>
+                    </control>
+                    <control type="label">
+                        <left>260</left>
+                        <top>8</top>
+                        <width>560</width>
+                        <height>36</height>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <label>$INFO[ListItem.Property(now_title)]</label>
+                    </control>
+                    <control type="label">
+                        <left>820</left>
+                        <top>8</top>
+                        <width>150</width>
+                        <height>36</height>
+                        <align>right</align>
+                        <textcolor>FFAA5CC3</textcolor>
+                        <label>Watching</label>
+                        <visible>String.IsEqual(ListItem.Property(playing),true)</visible>
+                    </control>
+                    <control type="label">
+                        <left>260</left>
+                        <top>44</top>
+                        <width>710</width>
+                        <height>30</height>
+                        <textcolor>FF8A93A0</textcolor>
+                        <label>$INFO[ListItem.Label]$INFO[ListItem.Property(next_title),  ·  Next: ,]</label>
+                    </control>
+                    <control type="progress">
+                        <left>260</left>
+                        <top>84</top>
+                        <width>300</width>
+                        <height>6</height>
+                        <texturebg colordiffuse="26FFFFFF">jellyelec-white.png</texturebg>
+                        <midtexture colordiffuse="FFAA5CC3">jellyelec-white.png</midtexture>
+                        <info>ListItem.PercentPlayed</info>
+                    </control>
+                </focusedlayout>
+            </control>
         </control>
 
-        <!-- Shown when there are no channels -->
-        <control type="label">
-            <left>80</left>
-            <top>160</top>
-            <width>1200</width>
-            <height>40</height>
-            <textcolor>FF6B7480</textcolor>
-            <label>No channels found. Check Live TV in your Jellyfin dashboard.</label>
-            <visible>Integer.IsEqual(Container(700).NumItems,0)</visible>
-        </control>
+        <!-- Right side: the live picture (while watching) and the highlighted channel's details.
+             Slides left when the picture is top-left. -->
+        <control type="group">
+            <left>1100</left>
+            <top>40</top>
+            <animation effect="slide" end="-1040,0" time="0" condition="String.IsEqual(Window.Property(video_left),true)">Conditional</animation>
 
-        <!-- Channel list -->
-        <control type="list" id="700">
-            <left>80</left>
-            <top>130</top>
-            <width>1060</width>
-            <height>920</height>
-            <orientation>vertical</orientation>
-            <scrolltime>150</scrolltime>
-            <itemlayout width="1060" height="115">
-                <control type="label">
-                    <left>0</left>
-                    <top>0</top>
-                    <width>80</width>
-                    <height>105</height>
-                    <align>center</align>
-                    <aligny>center</aligny>
-                    <textcolor>FF6B7480</textcolor>
-                    <label>$INFO[ListItem.Property(number)]</label>
-                </control>
+            <!-- While watching: live picture, then details underneath -->
+            <control type="group">
+                <visible>Player.HasVideo</visible>
                 <control type="image">
-                    <left>90</left>
-                    <top>12</top>
-                    <width>140</width>
-                    <height>80</height>
-                    <aspectratio>keep</aspectratio>
-                    <texture background="true">$INFO[ListItem.Art(thumb)]</texture>
-                </control>
-                <control type="label">
-                    <left>260</left>
-                    <top>8</top>
-                    <width>780</width>
-                    <height>36</height>
-                    <textcolor>FFCFD6DE</textcolor>
-                    <label>$INFO[ListItem.Property(now_title)]</label>
-                </control>
-                <control type="label">
-                    <left>260</left>
-                    <top>44</top>
-                    <width>780</width>
-                    <height>30</height>
-                    <textcolor>FF6B7480</textcolor>
-                    <label>$INFO[ListItem.Label]$INFO[ListItem.Property(next_title),  ·  Next: ,]</label>
-                </control>
-                <control type="progress">
-                    <left>260</left>
-                    <top>84</top>
-                    <width>300</width>
-                    <height>6</height>
-                    <texturebg colordiffuse="26FFFFFF">jellyelec-white.png</texturebg>
-                    <midtexture colordiffuse="FF6B7480">jellyelec-white.png</midtexture>
-                    <info>ListItem.PercentPlayed</info>
-                </control>
-            </itemlayout>
-            <focusedlayout width="1060" height="115">
-                <control type="image">
-                    <left>-10</left>
-                    <top>0</top>
-                    <width>1070</width>
-                    <height>105</height>
-                    <texture>jellyelec-white.png</texture>
-                    <colordiffuse>1FFFFFFF</colordiffuse>
-                    <visible>Control.HasFocus(700)</visible>
-                </control>
-                <control type="image">
-                    <left>-10</left>
-                    <top>0</top>
-                    <width>5</width>
-                    <height>105</height>
+                    <left>-4</left>
+                    <top>-4</top>
+                    <width>768</width>
+                    <height>436</height>
                     <texture>jellyelec-white.png</texture>
                     <colordiffuse>FFAA5CC3</colordiffuse>
-                    <visible>Control.HasFocus(700)</visible>
+                </control>
+                <control type="videowindow">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>760</width>
+                    <height>428</height>
                 </control>
                 <control type="label">
                     <left>0</left>
-                    <top>0</top>
-                    <width>80</width>
-                    <height>105</height>
-                    <align>center</align>
-                    <aligny>center</aligny>
-                    <textcolor>FFCFD6DE</textcolor>
-                    <label>$INFO[ListItem.Property(number)]</label>
-                </control>
-                <control type="image">
-                    <left>90</left>
-                    <top>12</top>
-                    <width>140</width>
-                    <height>80</height>
-                    <aspectratio>keep</aspectratio>
-                    <texture background="true">$INFO[ListItem.Art(thumb)]</texture>
-                </control>
-                <control type="label">
-                    <left>260</left>
-                    <top>8</top>
-                    <width>780</width>
-                    <height>36</height>
-                    <textcolor>FFFFFFFF</textcolor>
-                    <label>$INFO[ListItem.Property(now_title)]</label>
-                </control>
-                <control type="label">
-                    <left>260</left>
-                    <top>44</top>
-                    <width>780</width>
-                    <height>30</height>
+                    <top>450</top>
+                    <width>760</width>
+                    <height>40</height>
                     <textcolor>FF8A93A0</textcolor>
-                    <label>$INFO[ListItem.Label]$INFO[ListItem.Property(next_title),  ·  Next: ,]</label>
+                    <label>$INFO[Window.Property(channel_name)]</label>
                 </control>
-                <control type="progress">
-                    <left>260</left>
-                    <top>84</top>
-                    <width>300</width>
-                    <height>6</height>
-                    <texturebg colordiffuse="26FFFFFF">jellyelec-white.png</texturebg>
-                    <midtexture colordiffuse="FFAA5CC3">jellyelec-white.png</midtexture>
-                    <info>ListItem.PercentPlayed</info>
+                <control type="textbox">
+                    <left>0</left>
+                    <top>490</top>
+                    <width>760</width>
+                    <height>90</height>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <label>$INFO[Window.Property(now_title)]</label>
                 </control>
-            </focusedlayout>
-        </control>
+                <control type="label">
+                    <left>0</left>
+                    <top>585</top>
+                    <width>760</width>
+                    <height>40</height>
+                    <textcolor>FFCFD6DE</textcolor>
+                    <label>$INFO[Window.Property(now_episode),,  ·  ]$INFO[Window.Property(now_time)]</label>
+                </control>
+                <control type="textbox">
+                    <left>0</left>
+                    <top>635</top>
+                    <width>760</width>
+                    <height>290</height>
+                    <textcolor>FFAAB2BC</textcolor>
+                    <label>$INFO[Window.Property(now_plot)]</label>
+                </control>
+                <control type="label">
+                    <left>0</left>
+                    <top>950</top>
+                    <width>760</width>
+                    <height>40</height>
+                    <textcolor>FFAA5CC3</textcolor>
+                    <label>$INFO[Window.Property(next_line)]</label>
+                </control>
+            </control>
 
-        <!-- Highlighted channel, on the right -->
-        <control type="group">
-            <left>1220</left>
-            <top>140</top>
-            <control type="image">
-                <left>0</left>
-                <top>0</top>
-                <width>320</width>
-                <height>180</height>
-                <aspectratio align="left">keep</aspectratio>
-                <texture background="true">$INFO[Window.Property(channel_logo)]</texture>
-            </control>
-            <control type="label">
-                <left>0</left>
-                <top>200</top>
-                <width>620</width>
-                <height>40</height>
-                <textcolor>FF8A93A0</textcolor>
-                <label>$INFO[Window.Property(channel_name)]</label>
-            </control>
-            <control type="textbox">
-                <left>0</left>
-                <top>245</top>
-                <width>620</width>
-                <height>110</height>
-                <textcolor>FFFFFFFF</textcolor>
-                <label>$INFO[Window.Property(now_title)]</label>
-            </control>
-            <control type="label">
-                <left>0</left>
-                <top>360</top>
-                <width>620</width>
-                <height>40</height>
-                <textcolor>FFCFD6DE</textcolor>
-                <label>$INFO[Window.Property(now_episode),,  ·  ]$INFO[Window.Property(now_time)]</label>
-            </control>
-            <control type="textbox">
-                <left>0</left>
-                <top>415</top>
-                <width>620</width>
-                <height>380</height>
-                <textcolor>FFAAB2BC</textcolor>
-                <label>$INFO[Window.Property(now_plot)]</label>
-            </control>
-            <control type="label">
-                <left>0</left>
-                <top>820</top>
-                <width>620</width>
-                <height>40</height>
-                <textcolor>FFAA5CC3</textcolor>
-                <label>$INFO[Window.Property(next_line)]</label>
+            <!-- Not watching: channel logo, then details -->
+            <control type="group">
+                <visible>!Player.HasVideo</visible>
+                <control type="image">
+                    <left>0</left>
+                    <top>100</top>
+                    <width>320</width>
+                    <height>180</height>
+                    <aspectratio align="left">keep</aspectratio>
+                    <texture background="true">$INFO[Window.Property(channel_logo)]</texture>
+                </control>
+                <control type="label">
+                    <left>0</left>
+                    <top>300</top>
+                    <width>760</width>
+                    <height>40</height>
+                    <textcolor>FF8A93A0</textcolor>
+                    <label>$INFO[Window.Property(channel_name)]</label>
+                </control>
+                <control type="textbox">
+                    <left>0</left>
+                    <top>345</top>
+                    <width>760</width>
+                    <height>110</height>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <label>$INFO[Window.Property(now_title)]</label>
+                </control>
+                <control type="label">
+                    <left>0</left>
+                    <top>460</top>
+                    <width>760</width>
+                    <height>40</height>
+                    <textcolor>FFCFD6DE</textcolor>
+                    <label>$INFO[Window.Property(now_episode),,  ·  ]$INFO[Window.Property(now_time)]</label>
+                </control>
+                <control type="textbox">
+                    <left>0</left>
+                    <top>515</top>
+                    <width>760</width>
+                    <height>380</height>
+                    <textcolor>FFAAB2BC</textcolor>
+                    <label>$INFO[Window.Property(now_plot)]</label>
+                </control>
+                <control type="label">
+                    <left>0</left>
+                    <top>920</top>
+                    <width>760</width>
+                    <height>40</height>
+                    <textcolor>FFAA5CC3</textcolor>
+                    <label>$INFO[Window.Property(next_line)]</label>
+                </control>
             </control>
         </control>
 

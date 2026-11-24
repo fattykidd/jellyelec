@@ -1,12 +1,14 @@
-"""Application startup: sign in, then show the home screen."""
+"""Application startup: install the key map, sign in, then show the home screen."""
 
 from resources.lib import storage
 from resources.lib.home import HomeWindow
+from resources.lib.keymap import install_keymap
 from resources.lib.kodi import ADDON_PATH
 from resources.lib.session import start_session
 
 
 def run():
+    install_keymap()
     connection = storage.load()
     while True:
         client = start_session(connection)

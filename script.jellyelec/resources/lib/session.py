@@ -20,7 +20,8 @@ def start_session(connection):
     return _restore_session(connection) or _sign_in(connection)
 
 
-def _make_client(connection, server_url=None):
+def make_client(connection, server_url=None):
+    """A client for the saved server and sign-in (or another server address)."""
     return JellyfinClient(
         server_url or connection.server_url,
         device_id=connection.device_id,
@@ -38,7 +39,7 @@ def _restore_session(connection):
     if not connection.signed_in:
         return None
 
-    client = _make_client(connection)
+    client = make_client(connection)
     while True:
         try:
             user = client.get_current_user()
@@ -77,7 +78,7 @@ def _sign_in(connection):
         if server_url is None:
             return None
 
-        client = _make_client(connection, server_url)
+        client = make_client(connection, server_url)
         client.token = ""
         try:
             info = client.get_public_info()

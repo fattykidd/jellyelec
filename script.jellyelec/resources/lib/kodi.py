@@ -2,6 +2,7 @@
 
 import xbmc
 import xbmcaddon
+import xbmcgui
 import xbmcvfs
 
 ADDON = xbmcaddon.Addon()
@@ -16,6 +17,16 @@ def device_name():
     """The box's name as set in Kodi, shown on the server's Devices page."""
     name = xbmc.getInfoLabel("System.FriendlyName") or "CoreELEC"
     return name.replace('"', "")
+
+
+def setting(setting_id):
+    """Read a setting fresh, so changes apply without restarting JellyELEC."""
+    return xbmcaddon.Addon().getSetting(setting_id)
+
+
+def notify(message):
+    """A short warning pop-up in the corner of the screen."""
+    xbmcgui.Dialog().notification(ADDON_NAME, message, xbmcgui.NOTIFICATION_WARNING)
 
 
 def log(message, level=xbmc.LOGINFO):

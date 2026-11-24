@@ -1,4 +1,9 @@
-"""The Live TV screen: channel list with what's on now and next."""
+"""The Live TV screen: channel list with what's on now and next.
+
+While a channel is playing, the same screen works as the guide: the live picture shrinks
+into a corner (top right by default, or top left), the list stays browsable, and picking
+another channel switches the picture right there.
+"""
 
 from datetime import datetime, timedelta, timezone
 
@@ -6,15 +11,19 @@ import xbmc
 import xbmcgui
 
 from resources.lib.api import JellyfinError
-from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log
+from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log, setting
 from resources.lib.listitems import channel_item
-from resources.lib.playback import play_channel
+from resources.lib.live_playback import LiveSession
 
 # Control IDs, matching jellyelec-livetv.xml.
 CHANNEL_LIST = 700
 
 # How far ahead to look for each channel's next programme.
 GUIDE_LOOKAHEAD = timedelta(hours=6)
+
+# The setting that puts the guide's live picture in the top-left corner instead of top-right.
+VIDEO_CORNER_SETTING = "guide_video_corner"
+TOP_LEFT = "Top left"
 
 CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
 
@@ -35,29 +44,70 @@ class LiveTvWindow(xbmcgui.WindowXML):
     _loaded = False
     _channels = ()
     _next_programs = None  # {channel ID: Jellyfin data for its next programme}
+    _session = None  # the LiveSession while a channel is playing
 
     # Kodi events ------------------------------------------------------------------
 
     def onInit(self):
-        # onInit also runs whenever playback hands the screen back, including briefly
-        # during a reconnect, so only the first one loads anything.
+        # Read every time the screen shows, so a changed corner setting applies straight away.
+        self.setProperty("video_left", "true" if setting(VIDEO_CORNER_SETTING) == TOP_LEFT else "")
+        # onInit also runs whenever playback hands the screen back, so only the first
+        # one loads anything.
         if not self._loaded:
             self._loaded = True
             self._load()
 
     def onAction(self, action):
         if action.getId() in CLOSE_ACTIONS:
-            self.close()
+            if self._watching():
+                self._session.show_fullscreen()  # Back closes the guide
+            else:
+                self.close()
         elif self.getFocusId() == CHANNEL_LIST:
             self._update_panel()
 
     def onClick(self, control_id):
-        if control_id == CHANNEL_LIST:
-            position = self.getControl(CHANNEL_LIST).getSelectedPosition()
-            if 0 <= position < len(self._channels):
-                play_channel(self.client, self._channels[position], self._make_item)
-                # Finished watching: what's on has probably moved on, so refresh it.
-                self._load(keep_position=position)
+        if control_id != CHANNEL_LIST:
+            return
+        position = self.getControl(CHANNEL_LIST).getSelectedPosition()
+        if not 0 <= position < len(self._channels):
+            return
+
+        if self._watching():
+            # In the guide: OK on the playing channel returns to full-screen,
+            # OK on another channel switches the picture to it.
+            if position == self._session.position:
+                self._session.show_fullscreen()
+            else:
+                self._session.switch_to(position)
+            return
+
+        session = LiveSession(self.client, self._channels, self._make_item)
+        session.on_channel_changed = self._mark_playing
+        session.on_finished = lambda last_position: self._on_session_finished(session, last_position)
+        self._session = session
+        self._mark_playing(position)
+        session.start(position)
+
+    # Watching ---------------------------------------------------------------------
+
+    def _watching(self):
+        return self._session is not None and self._session.running
+
+    def _mark_playing(self, position):
+        """Highlight the channel that's playing (None for none). Called from the session's thread."""
+        channel_list = self.getControl(CHANNEL_LIST)
+        for index in range(channel_list.size()):
+            channel_list.getListItem(index).setProperty("playing", "true" if index == position else "")
+
+    def _on_session_finished(self, session, last_position):
+        """Playback stopped. Called from the session's thread."""
+        if session is not self._session:
+            return
+        self._session = None
+        self._mark_playing(None)
+        # What's on has probably moved on, so refresh, landing on the last channel watched.
+        self._load(keep_position=last_position)
 
     # Loading --------------------------------------------------------------------
 

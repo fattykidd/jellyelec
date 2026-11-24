@@ -1,10 +1,9 @@
-"""Play items and Live TV channels through Kodi's player, and keep Jellyfin up to date.
+"""Play movies, episodes, trailers and extras through Kodi's player, and keep Jellyfin up to date.
 
 Kodi plays the original file streamed from the server (no transcoding), so
 CoreELEC's Dolby Vision, FEL and audio passthrough handling all apply.
 """
 
-import urllib.parse
 import uuid
 
 import xbmc
@@ -12,30 +11,11 @@ import xbmcgui
 
 from resources.lib.api import TICKS_PER_SECOND, JellyfinError
 from resources.lib.formatting import format_time
-from resources.lib.kodi import ADDON_NAME, log
+from resources.lib.kodi import log, notify
 from resources.lib.listitems import media_item
 
 START_TIMEOUT_SECONDS = 30
 PROGRESS_INTERVAL_SECONDS = 10
-
-# Live TV watchdog: a channel whose picture hasn't moved for this long is reconnected,
-# up to MAX_RECONNECTS times in a row before giving up. A minute of smooth playback
-# resets the count.
-STALL_SECONDS = 10
-MAX_RECONNECTS = 3
-SMOOTH_SECONDS_TO_RESET = 60
-
-# Pause between closing a stalled connection and opening a new one, so the provider
-# has counted the old one as closed (it may limit how many streams you can have open).
-RECONNECT_PAUSE_SECONDS = 3
-
-# Kodi's stream reader for live TV, as IPTV Simple can use. Used when it's installed.
-FFMPEG_DIRECT = "inputstream.ffmpegdirect"
-TS_CONTAINERS = {"ts", "mpegts", "m2ts"}
-
-# How long full-screen video may be out of view before Live TV counts it as Back = stop.
-# Long enough to ignore the moment between a channel starting and going full-screen.
-LEFT_FULLSCREEN_SECONDS = 2
 
 
 def play(client, data, start_seconds=None):
@@ -52,12 +32,12 @@ def play(client, data, start_seconds=None):
         info = client.get_playback_info(data["Id"])
     except JellyfinError as error:
         log(f"Couldn't get playback info for {data['Id']}: {error}", xbmc.LOGWARNING)
-        _notify("Couldn't get playback details from the server.")
+        notify("Couldn't get playback details from the server.")
         return
 
     sources = info.get("MediaSources") or []
     if not sources:
-        _notify("The server has no playable file for this item.")
+        notify("The server has no playable file for this item.")
         return
     source = sources[0]
 
@@ -92,7 +72,7 @@ class PlaybackSession:
     def run(self, item, url, start_seconds):
         self._player.play(url, item)
         if not wait_for_video(self._player, self._monitor):
-            _notify("Couldn't play this file.")
+            notify("Couldn't play this file.")
             return
 
         position = start_seconds
@@ -137,244 +117,13 @@ class PlaybackSession:
             log(f"Couldn't report playback {event}: {error}", xbmc.LOGWARNING)
 
 
-# Live TV ------------------------------------------------------------------------
-
-STREAM_SCHEMES = ("http://", "https://", "rtmp://", "rtsp://", "udp://", "rtp://")
-LOOPBACK_HOSTS = {"localhost", "127.0.0.1", "::1"}
-
-
-def play_channel(client, channel, make_item):
-    """Play one Live TV channel full-screen. Returns once it stops (Back stops it).
-
-    make_item(channel) builds the ListItem Kodi shows while the channel plays.
-    """
-    name = channel.get("Name", channel["Id"])
-    url, live_stream_id, container = _resolve_channel_stream(client, channel)
-    if not url:
-        log(f"Live TV: no playable stream for {name}.", xbmc.LOGWARNING)
-        _notify("Couldn't play this channel.")
-        _release_live_stream(client, live_stream_id)
-        return
-
-    item = make_item(channel)
-    item.setPath(url)
-    _prepare_live_item(item, container)
-    player = xbmc.Player()
-    monitor = xbmc.Monitor()
-    try:
-        player.play(url, item)
-        if not wait_for_video(player, monitor):
-            _notify("Couldn't play this channel.")
-            return
-        _watch_live(player, monitor, url, item, name)
-    finally:
-        _release_live_stream(client, live_stream_id)
-
-
-def _watch_live(player, monitor, url, item, name):
-    """Stay with a playing channel until it stops.
-
-    Reconnects automatically if the picture stops moving (the provider stopped sending),
-    and stops the channel when the user presses Back out of full-screen, so a channel
-    never keeps one of your provider's streams busy in the background.
-    """
-    reconnects = 0
-    last_time = None
-    still_seconds = 0
-    smooth_seconds = 0
-    out_of_view_seconds = 0
-
-    while player.isPlayingVideo():
-        if monitor.waitForAbort(1):
-            return
-
-        # Back out of full-screen means stop.
-        if xbmc.getCondVisibility("Window.IsActive(fullscreenvideo)"):
-            out_of_view_seconds = 0
-        else:
-            out_of_view_seconds += 1
-            if out_of_view_seconds >= LEFT_FULLSCREEN_SECONDS:
-                log(f"Live TV: {name}: left full-screen; stopping.")
-                player.stop()
-                return
-
-        # A picture that isn't moving (and isn't paused) means the stream has stalled.
-        try:
-            current_time = player.getTime()
-        except RuntimeError:
-            return
-        if xbmc.getCondVisibility("Player.Paused") or last_time is None or current_time > last_time:
-            still_seconds = 0
-            smooth_seconds += 1
-            if smooth_seconds >= SMOOTH_SECONDS_TO_RESET:
-                reconnects = 0
-        else:
-            still_seconds += 1
-            smooth_seconds = 0
-        last_time = current_time
-
-        if still_seconds < STALL_SECONDS:
-            continue
-        if reconnects >= MAX_RECONNECTS:
-            log(f"Live TV: {name}: still stalled after {MAX_RECONNECTS} reconnects; giving up.", xbmc.LOGWARNING)
-            player.stop()
-            _notify("This channel keeps stalling. Try again in a minute.")
-            return
-
-        reconnects += 1
-        log(f"Live TV: {name}: stalled for {STALL_SECONDS} seconds; reconnecting ({reconnects} of {MAX_RECONNECTS}).")
-        _stop_and_wait(player, monitor)
-        if monitor.waitForAbort(RECONNECT_PAUSE_SECONDS):
-            return
-        player.play(url, item)
-        if not wait_for_video(player, monitor):
-            _notify("Couldn't reconnect to this channel.")
-            return
-        last_time = None
-        still_seconds = 0
-        out_of_view_seconds = 0
-
-
-def _prepare_live_item(item, container):
-    """Tell Kodi up front what the stream is, so it doesn't make an extra request to find out.
-
-    Uses inputstream.ffmpegdirect when it's installed, as IPTV Simple can.
-    """
-    item.setContentLookup(False)
-    if (container or "").lower() in TS_CONTAINERS:
-        item.setMimeType("video/mp2t")
-    if xbmc.getCondVisibility(f"System.HasAddon({FFMPEG_DIRECT})"):
-        item.setProperty("inputstream", FFMPEG_DIRECT)
-        item.setProperty(f"{FFMPEG_DIRECT}.is_realtime_stream", "true")
-        log(f"Live TV: playing with {FFMPEG_DIRECT}.")
-    else:
-        log("Live TV: playing with Kodi's built-in stream reader.")
-
-
-def _stop_and_wait(player, monitor, timeout_seconds=5):
-    """Stop playback and wait for it to finish, so the old connection closes before a new one opens."""
-    player.stop()
-    waited = 0.0
-    while player.isPlaying() and waited < timeout_seconds:
-        if monitor.waitForAbort(0.25):
-            return
-        waited += 0.25
-
-
-def _resolve_channel_stream(client, channel):
-    """Work out what Kodi should play for a channel.
-
-    Returns (url, live_stream_id, container). live_stream_id is set when Jellyfin tuned
-    the channel for us, and must be released when playback ends. container is the stream
-    type Jellyfin reports, such as "ts".
-    """
-    name = channel.get("Name", channel["Id"])
-
-    # 1. The provider's own stream URL, played directly the way IPTV Simple does.
-    try:
-        info = client.get_playback_info(channel["Id"])
-        source = (info.get("MediaSources") or [{}])[0]
-    except JellyfinError as error:
-        log(f"Live TV: {name}: couldn't get playback details: {error}", xbmc.LOGWARNING)
-        source = {}
-    log(f"Live TV: {name}: before tuning, server offers {_describe_source(source)}.")
-    path = source.get("Path") or ""
-    if _is_stream_url(path) and not _points_at_server(client, path):
-        log(f"Live TV: {name}: playing the provider's stream directly.")
-        return _with_required_headers(path, source), None, source.get("Container")
-
-    # 2. Jellyfin tunes the channel and relays it.
-    try:
-        info = client.open_live_stream(channel["Id"])
-        source = (info.get("MediaSources") or [{}])[0]
-    except JellyfinError as error:
-        log(f"Live TV: {name}: couldn't tune: {error}", xbmc.LOGWARNING)
-        return None, None, None
-    log(f"Live TV: {name}: after tuning, server offers {_describe_source(source)}.")
-    live_stream_id = source.get("LiveStreamId")
-
-    path = source.get("Path") or ""
-    if _is_stream_url(path) and not _points_at_server(client, path):
-        # Tuning just handed back the provider's own URL. Release Jellyfin's connection
-        # so the provider never sees two at once, and play the URL directly.
-        _release_live_stream(client, live_stream_id)
-        log(f"Live TV: {name}: tuning returned the provider's stream; playing it directly.")
-        return _with_required_headers(path, source), None, source.get("Container")
-    if _is_stream_url(path):
-        log(f"Live TV: {name}: playing Jellyfin's relayed stream.")
-        return _reachable_url(client, path), live_stream_id, source.get("Container")
-
-    # 3. Jellyfin's repackaged (HLS) stream, as its other clients use.
-    if source.get("TranscodingUrl"):
-        log(f"Live TV: {name}: playing Jellyfin's repackaged stream.")
-        return client.server_url + source["TranscodingUrl"], live_stream_id, None
-
-    return None, live_stream_id, None
-
-
-def _with_required_headers(url, source):
-    """Add any request headers the stream needs (such as a User-Agent), in Kodi's URL|Header=value form."""
-    headers = source.get("RequiredHttpHeaders") or {}
-    if not headers:
-        return url
-    log(f"Live TV: sending the headers the stream requires: {', '.join(sorted(headers))}.")
-    encoded = "&".join(f"{name}={urllib.parse.quote(value)}" for name, value in headers.items())
-    return f"{url}|{encoded}"
-
-
-def _release_live_stream(client, live_stream_id):
-    if not live_stream_id:
-        return
-    try:
-        client.close_live_stream(live_stream_id)
-    except JellyfinError as error:
-        log(f"Couldn't release live stream: {error}", xbmc.LOGWARNING)
-
-
-def _is_stream_url(path):
-    return path.lower().startswith(STREAM_SCHEMES)
-
-
-def _points_at_server(client, url):
-    """True for URLs on the Jellyfin server itself (including its loopback address)."""
-    host = urllib.parse.urlsplit(url).hostname or ""
-    return host in LOOPBACK_HOSTS or host == urllib.parse.urlsplit(client.server_url).hostname
-
-
-def _reachable_url(client, url):
-    """Make a server URL usable from this box: fix a loopback host and add the sign-in token."""
-    if not _points_at_server(client, url):
-        return url
-    parts = urllib.parse.urlsplit(url)
-    server = urllib.parse.urlsplit(client.server_url)
-    query = urllib.parse.parse_qs(parts.query)
-    if "api_key" not in query and "ApiKey" not in query:
-        separator = "&" if parts.query else ""
-        parts = parts._replace(query=f"{parts.query}{separator}api_key={client.token}")
-    return urllib.parse.urlunsplit(parts._replace(scheme=server.scheme, netloc=server.netloc))
-
-
-def _describe_source(source):
-    """A log-safe summary of a media source: no tokens, passwords or query strings."""
-    if not source:
-        return "nothing"
-    path = source.get("Path") or ""
-    if _is_stream_url(path):
-        parts = urllib.parse.urlsplit(path)
-        path = f"{parts.scheme}://{parts.hostname}/…"
-    return (
-        f"protocol={source.get('Protocol')}, path={path or 'none'}, "
-        f"direct play={source.get('SupportsDirectPlay')}, "
-        f"direct stream={source.get('SupportsDirectStream')}, "
-        f"repackaged={'yes' if source.get('TranscodingUrl') else 'no'}, "
-        f"tuned={'yes' if source.get('LiveStreamId') else 'no'}"
-    )
-
-
 # Helpers ------------------------------------------------------------------------
 
-def wait_for_video(player, monitor):
-    """Wait for video to start, then make sure it's full-screen. False if it never starts."""
+def wait_for_video(player, monitor, fullscreen=True):
+    """Wait for video to start, then (unless told not to) make it full-screen.
+
+    Returns False if it never starts.
+    """
     waited = 0.0
     while not player.isPlayingVideo():
         if monitor.waitForAbort(0.25):
@@ -383,11 +132,12 @@ def wait_for_video(player, monitor):
         if waited >= START_TIMEOUT_SECONDS:
             log("Playback didn't start in time.", xbmc.LOGWARNING)
             return False
-    _go_fullscreen(monitor)
+    if fullscreen:
+        go_fullscreen(monitor)
     return True
 
 
-def _go_fullscreen(monitor, timeout_seconds=5):
+def go_fullscreen(monitor, timeout_seconds=5):
     """Switch to full-screen video, retrying while Kodi refuses (it does while a busy dialog is up)."""
     waited = 0.0
     while not xbmc.getCondVisibility("Window.IsActive(fullscreenvideo)"):
@@ -400,6 +150,16 @@ def _go_fullscreen(monitor, timeout_seconds=5):
         waited += 0.5
 
 
+def stop_and_wait(player, monitor, timeout_seconds=5):
+    """Stop playback and wait for it to finish, so the old connection closes before a new one opens."""
+    player.stop()
+    waited = 0.0
+    while player.isPlaying() and waited < timeout_seconds:
+        if monitor.waitForAbort(0.25):
+            return
+        waited += 0.25
+
+
 def _ask_start_position(data):
     """Offer to resume if there's a saved position. Returns seconds, or None if cancelled."""
     ticks = (data.get("UserData") or {}).get("PlaybackPositionTicks") or 0
@@ -410,7 +170,3 @@ def _ask_start_position(data):
     if choice < 0:
         return None
     return seconds if choice == 0 else 0
-
-
-def _notify(message):
-    xbmcgui.Dialog().notification(ADDON_NAME, message, xbmcgui.NOTIFICATION_WARNING)
