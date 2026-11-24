@@ -31,6 +31,10 @@ RECONNECT_PAUSE_SECONDS = 3
 # counts as Back = stop.
 LEFT_FULLSCREEN_SECONDS = 1
 
+# After asking Kodi to step out of full-screen into the guide, how long to wait for it
+# to actually happen before giving up on the guide.
+GUIDE_OPEN_TIMEOUT_SECONDS = 2
+
 # The background thread checks for key presses this often, and runs the once-a-second
 # checks every TICKS_PER_SECOND ticks.
 TICK_SECONDS = 0.25
@@ -132,6 +136,8 @@ class LiveSession:
             if not wait_for_video(self._thread_player, self._monitor):
                 notify("Couldn't play this channel.")
                 return
+            # Next/Previous (and Kodi's own skip keys) wrap around the channel list.
+            xbmc.executebuiltin("PlayerControl(RepeatAll)")
             self._reset_channel_state()
             tick = 0
             while not self._monitor.waitForAbort(TICK_SECONDS):
@@ -157,7 +163,7 @@ class LiveSession:
         player = self._thread_player
         if not player.isPlayingVideo():
             return self._followed_channel_change()
-        if self._playlist.getposition() != self.position:
+        if self._playlist.getposition() not in (self.position, -1):
             self._on_channel_changed()
         if self._stalled():
             return self._reconnect()
@@ -177,6 +183,9 @@ class LiveSession:
             if xbmc.getCondVisibility("Window.IsActive(fullscreenvideo)"):
                 log("Live TV: opening the guide.")
                 self.in_guide = True
+                # Kodi leaves full-screen a moment after being asked; until it has,
+                # still being full-screen doesn't mean the guide was closed.
+                self.guide_opening_ticks = 1
                 # Stepping back out of full-screen lands on the Live TV screen,
                 # which shows itself as the guide while a channel is playing.
                 xbmc.executebuiltin("Action(Back)")
@@ -194,11 +203,21 @@ class LiveSession:
 
     def _check_fullscreen(self):
         """False once the user has pressed Back out of full-screen (and not into the guide)."""
-        if xbmc.getCondVisibility("Window.IsActive(fullscreenvideo)"):
-            self.in_guide = False
+        fullscreen = xbmc.getCondVisibility("Window.IsActive(fullscreenvideo)")
+        if self.in_guide:
             self.out_of_view_ticks = 0
+            if self.guide_opening_ticks:
+                if not fullscreen:
+                    self.guide_opening_ticks = 0  # the guide is showing now
+                elif self.guide_opening_ticks * TICK_SECONDS >= GUIDE_OPEN_TIMEOUT_SECONDS:
+                    self.in_guide = False  # Kodi never left full-screen
+                    self.guide_opening_ticks = 0
+                else:
+                    self.guide_opening_ticks += 1
+            elif fullscreen:
+                self.in_guide = False  # the guide was closed
             return True
-        if self.in_guide or not self._thread_player.isPlayingVideo():
+        if fullscreen or not self._thread_player.isPlayingVideo():
             self.out_of_view_ticks = 0
             return True
         self.out_of_view_ticks += 1
@@ -222,8 +241,9 @@ class LiveSession:
                 if not self.in_guide:
                     go_fullscreen(self._monitor)
                 return True
-            # Same channel and nothing loading after a moment: the user stopped playback.
-            if waited >= 1.5 and playlist.getposition() == self.position:
+            # Same channel (or none, which is what Kodi reports once a playlist stops)
+            # and nothing loading after a moment: the user stopped playback.
+            if waited >= 1.5 and playlist.getposition() in (self.position, -1):
                 return False
             if self._monitor.waitForAbort(0.5):
                 return False
@@ -289,6 +309,7 @@ class LiveSession:
     # Helpers ------------------------------------------------------------------------
 
     def _reset_channel_state(self):
+        self.guide_opening_ticks = 0
         self.reconnects = 0
         self.last_time = None
         self.still_seconds = 0
