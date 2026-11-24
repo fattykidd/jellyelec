@@ -33,20 +33,17 @@ class LiveTvWindow(xbmcgui.WindowXML):
     client = None
 
     _loaded = False
-    _watching = False  # set while a channel plays, so we refresh once on return
     _channels = ()
     _next_programs = None  # {channel ID: Jellyfin data for its next programme}
 
     # Kodi events ------------------------------------------------------------------
 
     def onInit(self):
+        # onInit also runs whenever playback hands the screen back, including briefly
+        # during a reconnect, so only the first one loads anything.
         if not self._loaded:
             self._loaded = True
             self._load()
-        elif self._watching:
-            # Back from watching: what's on has probably moved on, so refresh it.
-            self._watching = False
-            self._load(keep_position=self.getControl(CHANNEL_LIST).getSelectedPosition())
 
     def onAction(self, action):
         if action.getId() in CLOSE_ACTIONS:
@@ -58,8 +55,9 @@ class LiveTvWindow(xbmcgui.WindowXML):
         if control_id == CHANNEL_LIST:
             position = self.getControl(CHANNEL_LIST).getSelectedPosition()
             if 0 <= position < len(self._channels):
-                self._watching = True
                 play_channel(self.client, self._channels[position], self._make_item)
+                # Finished watching: what's on has probably moved on, so refresh it.
+                self._load(keep_position=position)
 
     # Loading --------------------------------------------------------------------
 

@@ -21,9 +21,17 @@ PROGRESS_INTERVAL_SECONDS = 10
 # Live TV watchdog: a channel whose picture hasn't moved for this long is reconnected,
 # up to MAX_RECONNECTS times in a row before giving up. A minute of smooth playback
 # resets the count.
-STALL_SECONDS = 8
+STALL_SECONDS = 10
 MAX_RECONNECTS = 3
 SMOOTH_SECONDS_TO_RESET = 60
+
+# Pause between closing a stalled connection and opening a new one, so the provider
+# has counted the old one as closed (it may limit how many streams you can have open).
+RECONNECT_PAUSE_SECONDS = 3
+
+# Kodi's stream reader for live TV, as IPTV Simple can use. Used when it's installed.
+FFMPEG_DIRECT = "inputstream.ffmpegdirect"
+TS_CONTAINERS = {"ts", "mpegts", "m2ts"}
 
 # How long full-screen video may be out of view before Live TV counts it as Back = stop.
 # Long enough to ignore the moment between a channel starting and going full-screen.
@@ -141,7 +149,7 @@ def play_channel(client, channel, make_item):
     make_item(channel) builds the ListItem Kodi shows while the channel plays.
     """
     name = channel.get("Name", channel["Id"])
-    url, live_stream_id = _resolve_channel_stream(client, channel)
+    url, live_stream_id, container = _resolve_channel_stream(client, channel)
     if not url:
         log(f"Live TV: no playable stream for {name}.", xbmc.LOGWARNING)
         _notify("Couldn't play this channel.")
@@ -150,6 +158,7 @@ def play_channel(client, channel, make_item):
 
     item = make_item(channel)
     item.setPath(url)
+    _prepare_live_item(item, container)
     player = xbmc.Player()
     monitor = xbmc.Monitor()
     try:
@@ -215,6 +224,8 @@ def _watch_live(player, monitor, url, item, name):
         reconnects += 1
         log(f"Live TV: {name}: stalled for {STALL_SECONDS} seconds; reconnecting ({reconnects} of {MAX_RECONNECTS}).")
         _stop_and_wait(player, monitor)
+        if monitor.waitForAbort(RECONNECT_PAUSE_SECONDS):
+            return
         player.play(url, item)
         if not wait_for_video(player, monitor):
             _notify("Couldn't reconnect to this channel.")
@@ -222,6 +233,22 @@ def _watch_live(player, monitor, url, item, name):
         last_time = None
         still_seconds = 0
         out_of_view_seconds = 0
+
+
+def _prepare_live_item(item, container):
+    """Tell Kodi up front what the stream is, so it doesn't make an extra request to find out.
+
+    Uses inputstream.ffmpegdirect when it's installed, as IPTV Simple can.
+    """
+    item.setContentLookup(False)
+    if (container or "").lower() in TS_CONTAINERS:
+        item.setMimeType("video/mp2t")
+    if xbmc.getCondVisibility(f"System.HasAddon({FFMPEG_DIRECT})"):
+        item.setProperty("inputstream", FFMPEG_DIRECT)
+        item.setProperty(f"{FFMPEG_DIRECT}.is_realtime_stream", "true")
+        log(f"Live TV: playing with {FFMPEG_DIRECT}.")
+    else:
+        log("Live TV: playing with Kodi's built-in stream reader.")
 
 
 def _stop_and_wait(player, monitor, timeout_seconds=5):
@@ -237,8 +264,9 @@ def _stop_and_wait(player, monitor, timeout_seconds=5):
 def _resolve_channel_stream(client, channel):
     """Work out what Kodi should play for a channel.
 
-    Returns (url, live_stream_id). live_stream_id is set when Jellyfin tuned the channel
-    for us, and must be released when playback ends.
+    Returns (url, live_stream_id, container). live_stream_id is set when Jellyfin tuned
+    the channel for us, and must be released when playback ends. container is the stream
+    type Jellyfin reports, such as "ts".
     """
     name = channel.get("Name", channel["Id"])
 
@@ -253,7 +281,7 @@ def _resolve_channel_stream(client, channel):
     path = source.get("Path") or ""
     if _is_stream_url(path) and not _points_at_server(client, path):
         log(f"Live TV: {name}: playing the provider's stream directly.")
-        return _with_required_headers(path, source), None
+        return _with_required_headers(path, source), None, source.get("Container")
 
     # 2. Jellyfin tunes the channel and relays it.
     try:
@@ -261,7 +289,7 @@ def _resolve_channel_stream(client, channel):
         source = (info.get("MediaSources") or [{}])[0]
     except JellyfinError as error:
         log(f"Live TV: {name}: couldn't tune: {error}", xbmc.LOGWARNING)
-        return None, None
+        return None, None, None
     log(f"Live TV: {name}: after tuning, server offers {_describe_source(source)}.")
     live_stream_id = source.get("LiveStreamId")
 
@@ -271,17 +299,17 @@ def _resolve_channel_stream(client, channel):
         # so the provider never sees two at once, and play the URL directly.
         _release_live_stream(client, live_stream_id)
         log(f"Live TV: {name}: tuning returned the provider's stream; playing it directly.")
-        return _with_required_headers(path, source), None
+        return _with_required_headers(path, source), None, source.get("Container")
     if _is_stream_url(path):
         log(f"Live TV: {name}: playing Jellyfin's relayed stream.")
-        return _reachable_url(client, path), live_stream_id
+        return _reachable_url(client, path), live_stream_id, source.get("Container")
 
     # 3. Jellyfin's repackaged (HLS) stream, as its other clients use.
     if source.get("TranscodingUrl"):
         log(f"Live TV: {name}: playing Jellyfin's repackaged stream.")
-        return client.server_url + source["TranscodingUrl"], live_stream_id
+        return client.server_url + source["TranscodingUrl"], live_stream_id, None
 
-    return None, live_stream_id
+    return None, live_stream_id, None
 
 
 def _with_required_headers(url, source):
