@@ -233,11 +233,10 @@ class JellyfinClient:
     # Live TV ----------------------------------------------------------------
 
     def get_channels(self):
-        """Every Live TV channel, with what's on now. Path holds the channel's original stream URL."""
+        """Every Live TV channel, with what's on now."""
         query = urllib.parse.urlencode({
             "UserId": self.user_id,
             "AddCurrentProgram": "true",
-            "Fields": "Path",
             "EnableImageTypes": "Primary",
             "ImageTypeLimit": 1,
             "EnableUserData": "false",

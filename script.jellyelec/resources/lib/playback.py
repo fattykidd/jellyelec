@@ -4,6 +4,7 @@ Kodi plays the original file streamed from the server (no transcoding), so
 CoreELEC's Dolby Vision, FEL and audio passthrough handling all apply.
 """
 
+import urllib.parse
 import uuid
 
 import xbmc
@@ -119,71 +120,22 @@ class PlaybackSession:
 
 # Live TV ------------------------------------------------------------------------
 
-DIRECT_URL_SCHEMES = ("http://", "https://", "rtmp://", "rtsp://", "udp://", "rtp://")
+STREAM_SCHEMES = ("http://", "https://", "rtmp://", "rtsp://", "udp://", "rtp://")
+LOOPBACK_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
 
-def direct_stream_url(channel):
-    """The channel's original stream URL from your playlist, if Jellyfin shares it."""
-    path = channel.get("Path") or ""
-    return path if path.lower().startswith(DIRECT_URL_SCHEMES) else None
+def play_channel(client, channel, make_item):
+    """Play one Live TV channel full-screen. Returns once it stops.
 
-
-def play_channel(client, channels, index, make_item):
-    """Play one channel full-screen.
-
-    Channels with a direct stream URL are queued as a playlist so Next/Previous changes
-    channel, and Kodi plays the provider's stream itself (like IPTV Simple does).
-    Channels without one are tuned and relayed by Jellyfin instead.
     make_item(channel) builds the ListItem Kodi shows while the channel plays.
     """
-    channel = channels[index]
-    if direct_stream_url(channel):
-        _play_channels_directly(channels, channel, make_item)
-    else:
-        _play_channel_through_jellyfin(client, channel, make_item)
-
-
-def _play_channels_directly(channels, channel, make_item):
-    playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-    playlist.clear()
-    start_position = 0
-    for candidate in channels:
-        url = direct_stream_url(candidate)
-        if not url:
-            continue
-        if candidate is channel:
-            start_position = playlist.size()
-        item = make_item(candidate)
-        item.setPath(url)
-        playlist.add(url, item)
-
-    log(f"Live TV: playing {channel.get('Name')} directly from its stream URL "
-        f"({playlist.size()} channels queued for Next/Previous).")
-    player = xbmc.Player()
-    player.play(playlist, startpos=start_position)
-    if not wait_for_video(player, xbmc.Monitor()):
+    name = channel.get("Name", channel["Id"])
+    url, live_stream_id = _resolve_channel_stream(client, channel)
+    if not url:
+        log(f"Live TV: no playable stream for {name}.", xbmc.LOGWARNING)
         _notify("Couldn't play this channel.")
-
-
-def _play_channel_through_jellyfin(client, channel, make_item):
-    log(f"Live TV: {channel.get('Name')} has no direct stream URL; asking Jellyfin to tune it.")
-    try:
-        info = client.open_live_stream(channel["Id"])
-    except JellyfinError as error:
-        log(f"Couldn't tune {channel.get('Name')}: {error}", xbmc.LOGWARNING)
-        _notify("Couldn't tune this channel.")
+        _release_live_stream(client, live_stream_id)
         return
-
-    sources = info.get("MediaSources") or []
-    if not sources:
-        _notify("The server couldn't tune this channel.")
-        return
-    source = sources[0]
-    live_stream_id = source.get("LiveStreamId")
-    play_session_id = info.get("PlaySessionId") or uuid.uuid4().hex
-    url = client.stream_url(
-        channel["Id"], source["Id"], play_session_id, source.get("Container"), live_stream_id
-    )
 
     item = make_item(channel)
     item.setPath(url)
@@ -194,14 +146,104 @@ def _play_channel_through_jellyfin(client, channel, make_item):
         if not wait_for_video(player, monitor):
             _notify("Couldn't play this channel.")
             return
-        while player.isPlayingVideo() and not monitor.waitForAbort(1):
+        # Keep the tuned stream open on the server until playback stops.
+        while live_stream_id and player.isPlayingVideo() and not monitor.waitForAbort(1):
             pass
     finally:
-        if live_stream_id:
-            try:
-                client.close_live_stream(live_stream_id)
-            except JellyfinError as error:
-                log(f"Couldn't release live stream {live_stream_id}: {error}", xbmc.LOGWARNING)
+        _release_live_stream(client, live_stream_id)
+
+
+def _resolve_channel_stream(client, channel):
+    """Work out what Kodi should play for a channel.
+
+    Returns (url, live_stream_id). live_stream_id is set when Jellyfin tuned the channel
+    for us, and must be released when playback ends.
+    """
+    name = channel.get("Name", channel["Id"])
+
+    # 1. The provider's own stream URL, played directly the way IPTV Simple does.
+    try:
+        info = client.get_playback_info(channel["Id"])
+        source = (info.get("MediaSources") or [{}])[0]
+    except JellyfinError as error:
+        log(f"Live TV: {name}: couldn't get playback details: {error}", xbmc.LOGWARNING)
+        source = {}
+    log(f"Live TV: {name}: before tuning, server offers {_describe_source(source)}.")
+    path = source.get("Path") or ""
+    if _is_stream_url(path) and not _points_at_server(client, path):
+        log(f"Live TV: {name}: playing the provider's stream directly.")
+        return path, None
+
+    # 2. Jellyfin tunes the channel and relays it.
+    try:
+        info = client.open_live_stream(channel["Id"])
+        source = (info.get("MediaSources") or [{}])[0]
+    except JellyfinError as error:
+        log(f"Live TV: {name}: couldn't tune: {error}", xbmc.LOGWARNING)
+        return None, None
+    log(f"Live TV: {name}: after tuning, server offers {_describe_source(source)}.")
+    live_stream_id = source.get("LiveStreamId")
+
+    path = source.get("Path") or ""
+    if _is_stream_url(path):
+        log(f"Live TV: {name}: playing Jellyfin's relayed stream.")
+        return _reachable_url(client, path), live_stream_id
+
+    # 3. Jellyfin's repackaged (HLS) stream, as its other clients use.
+    if source.get("TranscodingUrl"):
+        log(f"Live TV: {name}: playing Jellyfin's repackaged stream.")
+        return client.server_url + source["TranscodingUrl"], live_stream_id
+
+    return None, live_stream_id
+
+
+def _release_live_stream(client, live_stream_id):
+    if not live_stream_id:
+        return
+    try:
+        client.close_live_stream(live_stream_id)
+    except JellyfinError as error:
+        log(f"Couldn't release live stream: {error}", xbmc.LOGWARNING)
+
+
+def _is_stream_url(path):
+    return path.lower().startswith(STREAM_SCHEMES)
+
+
+def _points_at_server(client, url):
+    """True for URLs on the Jellyfin server itself (including its loopback address)."""
+    host = urllib.parse.urlsplit(url).hostname or ""
+    return host in LOOPBACK_HOSTS or host == urllib.parse.urlsplit(client.server_url).hostname
+
+
+def _reachable_url(client, url):
+    """Make a server URL usable from this box: fix a loopback host and add the sign-in token."""
+    if not _points_at_server(client, url):
+        return url
+    parts = urllib.parse.urlsplit(url)
+    server = urllib.parse.urlsplit(client.server_url)
+    query = urllib.parse.parse_qs(parts.query)
+    if "api_key" not in query and "ApiKey" not in query:
+        separator = "&" if parts.query else ""
+        parts = parts._replace(query=f"{parts.query}{separator}api_key={client.token}")
+    return urllib.parse.urlunsplit(parts._replace(scheme=server.scheme, netloc=server.netloc))
+
+
+def _describe_source(source):
+    """A log-safe summary of a media source: no tokens, passwords or query strings."""
+    if not source:
+        return "nothing"
+    path = source.get("Path") or ""
+    if _is_stream_url(path):
+        parts = urllib.parse.urlsplit(path)
+        path = f"{parts.scheme}://{parts.hostname}/…"
+    return (
+        f"protocol={source.get('Protocol')}, path={path or 'none'}, "
+        f"direct play={source.get('SupportsDirectPlay')}, "
+        f"direct stream={source.get('SupportsDirectStream')}, "
+        f"repackaged={'yes' if source.get('TranscodingUrl') else 'no'}, "
+        f"tuned={'yes' if source.get('LiveStreamId') else 'no'}"
+    )
 
 
 # Helpers ------------------------------------------------------------------------

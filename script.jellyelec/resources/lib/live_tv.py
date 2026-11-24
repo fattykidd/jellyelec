@@ -8,7 +8,7 @@ import xbmcgui
 from resources.lib.api import JellyfinError
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log
 from resources.lib.listitems import channel_item
-from resources.lib.playback import direct_stream_url, play_channel
+from resources.lib.playback import play_channel
 
 # Control IDs, matching jellyelec-livetv.xml.
 CHANNEL_LIST = 700
@@ -59,7 +59,7 @@ class LiveTvWindow(xbmcgui.WindowXML):
             position = self.getControl(CHANNEL_LIST).getSelectedPosition()
             if 0 <= position < len(self._channels):
                 self._watching = True
-                play_channel(self.client, self._channels, position, self._make_item)
+                play_channel(self.client, self._channels[position], self._make_item)
 
     # Loading --------------------------------------------------------------------
 
@@ -75,8 +75,7 @@ class LiveTvWindow(xbmcgui.WindowXML):
         finally:
             xbmc.executebuiltin("Dialog.Close(busydialognocancel)")
 
-        direct = sum(1 for channel in self._channels if direct_stream_url(channel))
-        log(f"Live TV: {len(self._channels)} channels, {direct} with a direct stream URL.")
+        log(f"Live TV: {len(self._channels)} channels.")
 
         channel_list = self.getControl(CHANNEL_LIST)
         channel_list.reset()
