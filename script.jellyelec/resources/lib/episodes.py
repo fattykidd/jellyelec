@@ -74,26 +74,31 @@ class EpisodesWindow(xbmcgui.WindowXML):
 
         bar = self.getControl(SEASON_BAR)
         bar.reset()
+        start_position = 0
         for position, season in enumerate(seasons):
             entry = xbmcgui.ListItem(label=season.get("Name", ""), offscreen=True)
             entry.setProperty("id", season["Id"])
             bar.addItem(entry)
             if season["Id"] == self.season_id:
-                bar.selectItem(position)
+                start_position = position
+        if not seasons:
+            return
 
-        self._show_selected_season()
+        # Kodi applies selectItem a moment later, so don't read the selection back here:
+        # load the chosen season directly.
+        bar.selectItem(start_position)
+        self._show_season(seasons[start_position]["Id"])
         self.setFocusId(EPISODE_LIST if self.getControl(EPISODE_LIST).size() else SEASON_BAR)
 
-    def _show_selected_season(self, force=False):
-        """Load the selected season's episodes, unless they're already showing."""
+    def _show_selected_season(self):
+        """Load the season highlighted in the bar, unless it's already showing."""
         selected = self.getControl(SEASON_BAR).getSelectedItem()
-        if selected is None:
-            return
-        season_id = selected.getProperty("id")
-        if season_id == self._shown_season_id and not force:
-            return
-        self._shown_season_id = season_id
+        if selected is not None and selected.getProperty("id") != self._shown_season_id:
+            self._show_season(selected.getProperty("id"))
 
+    def _show_season(self, season_id):
+        """Load one season's episodes into the list."""
+        self._shown_season_id = season_id
         try:
             episodes = self.client.get_episodes(self.series["Id"], season_id)
         except JellyfinError as error:
@@ -105,15 +110,21 @@ class EpisodesWindow(xbmcgui.WindowXML):
         episode_list = self.getControl(EPISODE_LIST)
         episode_list.reset()
         episode_list.addItems([episode_item(self.client, episode) for episode in episodes])
-        self._update_episode_panel()
+        self._update_episode_panel(0)
 
     # Episodes ---------------------------------------------------------------------
 
-    def _update_episode_panel(self):
-        """Show the focused episode's picture and details on the right."""
-        selected = self.getControl(EPISODE_LIST).getSelectedItem()
-        data = self._episodes.get(selected.getProperty("id")) if selected else None
-        data = data or {}
+    def _update_episode_panel(self, position=None):
+        """Show an episode's picture and details on the right.
+
+        position: which episode to show. Leave it out to use the one highlighted in the list.
+        """
+        episode_list = self.getControl(EPISODE_LIST)
+        if position is None:
+            position = episode_list.getSelectedPosition()
+        selected = episode_list.getListItem(position) if 0 <= position < episode_list.size() else None
+
+        data = (self._episodes.get(selected.getProperty("id")) if selected else None) or {}
         self.setProperty("episode_title", selected.getLabel() if selected else "")
         self.setProperty("episode_meta", meta_line(data))
         self.setProperty("episode_plot", data.get("Overview", ""))
@@ -129,11 +140,12 @@ class EpisodesWindow(xbmcgui.WindowXML):
         show_details(self.client, selected.getProperty("id"))
 
         # Reload so watched marks are current, then return to the same episode.
-        self._show_selected_season(force=True)
+        self._show_season(self._shown_season_id)
         if episode_list.size():
-            episode_list.selectItem(min(position, episode_list.size() - 1))
+            position = min(position, episode_list.size() - 1)
+            episode_list.selectItem(position)
             self.setFocusId(EPISODE_LIST)
-            self._update_episode_panel()
+            self._update_episode_panel(position)
 
 
 def _notify(message):
