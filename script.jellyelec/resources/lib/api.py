@@ -161,16 +161,19 @@ class JellyfinClient:
         query = urllib.parse.urlencode({"UserId": self.user_id})
         return self._request("GET", f"/Items/{item_id}/PlaybackInfo?{query}")
 
-    def stream_url(self, item_id, media_source_id, play_session_id, container=None):
-        """Address of the original file, sent as-is with no transcoding."""
+    def stream_url(self, item_id, media_source_id, play_session_id, container=None, live_stream_id=None):
+        """Address of the original file (or a tuned live channel), sent as-is with no transcoding."""
         extension = f".{container.split(',')[0]}" if container else ""
-        query = urllib.parse.urlencode({
+        params = {
             "static": "true",
             "mediaSourceId": media_source_id,
             "playSessionId": play_session_id,
             "deviceId": self.device_id,
             "api_key": self.token,
-        })
+        }
+        if live_stream_id:
+            params["liveStreamId"] = live_stream_id
+        query = urllib.parse.urlencode(params)
         return f"{self.server_url}/Videos/{item_id}/stream{extension}?{query}"
 
     def report_playback_start(self, item_id, media_source_id, play_session_id, position_ticks):
@@ -226,6 +229,43 @@ class JellyfinClient:
             "CanSeek": True,
             "PlayMethod": "DirectPlay",
         }
+
+    # Live TV ----------------------------------------------------------------
+
+    def get_channels(self):
+        """Every Live TV channel, with what's on now. Path holds the channel's original stream URL."""
+        query = urllib.parse.urlencode({
+            "UserId": self.user_id,
+            "AddCurrentProgram": "true",
+            "Fields": "Path",
+            "EnableImageTypes": "Primary",
+            "ImageTypeLimit": 1,
+            "EnableUserData": "false",
+        })
+        return self._request("GET", f"/LiveTv/Channels?{query}")["Items"]
+
+    def get_upcoming_programs(self, channel_ids, start, end):
+        """Guide entries starting between start and end (ISO times), earliest first."""
+        body = {
+            "UserId": self.user_id,
+            "ChannelIds": list(channel_ids),
+            "MinStartDate": start,
+            "MaxStartDate": end,
+            "SortBy": ["StartDate"],
+            "EnableImages": False,
+            "EnableUserData": False,
+        }
+        return self._request("POST", "/LiveTv/Programs", body=body)["Items"]
+
+    def open_live_stream(self, channel_id):
+        """Ask Jellyfin to tune a channel and relay it. Used when there's no direct stream URL."""
+        body = {"UserId": self.user_id, "AutoOpenLiveStream": True}
+        return self._request("POST", f"/Items/{channel_id}/PlaybackInfo", body=body)
+
+    def close_live_stream(self, live_stream_id):
+        """Release a channel Jellyfin tuned for us."""
+        query = urllib.parse.urlencode({"liveStreamId": live_stream_id})
+        self._request("POST", f"/LiveStreams/Close?{query}")
 
     # Internals --------------------------------------------------------------
 

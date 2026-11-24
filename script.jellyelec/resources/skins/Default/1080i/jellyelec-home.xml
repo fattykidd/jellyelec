@@ -137,7 +137,7 @@
             <width>1200</width>
             <height>40</height>
             <textcolor>FF6B7480</textcolor>
-            <label>Nothing to show in this library yet.</label>
+            <label>$INFO[Window.Property(empty_message)]</label>
             <visible>Integer.IsEqual(Container(200).NumItems,0) + Integer.IsEqual(Container(205).NumItems,0) + Integer.IsEqual(Container(210).NumItems,0) + Integer.IsEqual(Container(220).NumItems,0)</visible>
         </control>
 

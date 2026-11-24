@@ -9,6 +9,7 @@ from resources.lib.detail import show_details
 from resources.lib.formatting import episode_line, meta_line
 from resources.lib.kodi import ADDON_NAME, ADDON_VERSION, log
 from resources.lib.library import show_library
+from resources.lib.live_tv import show_live_tv
 from resources.lib.listitems import backdrop_url, library_item, media_item
 
 # Control IDs, matching jellyelec-home.xml.
@@ -21,6 +22,7 @@ ROWS = (CONTINUE_WATCHING_ROW, NEXT_UP_ROW, RECENTLY_ADDED_ROW, RANDOM_ROW)
 
 # The item type each library holds, as Jellyfin names it.
 LIBRARY_ITEM_TYPES = {"movies": "Movie", "tvshows": "Series"}
+LIVE_TV = "livetv"
 CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
 
 
@@ -76,6 +78,7 @@ class HomeWindow(xbmcgui.WindowXML):
                 library
                 for library in self.client.get_libraries()
                 if library.get("CollectionType") in LIBRARY_ITEM_TYPES
+                or library.get("CollectionType") == LIVE_TV
             ]
         except JellyfinError as error:
             log(f"Couldn't load libraries: {error}", xbmc.LOGWARNING)
@@ -102,6 +105,16 @@ class HomeWindow(xbmcgui.WindowXML):
         if library_id == self._library_id:
             return
         self._library_id = library_id
+
+        if selected.getProperty("collection_type") == LIVE_TV:
+            # Live TV has its own screen; its home page just says how to open it.
+            for row in ROWS:
+                self._fill_row(row, lambda: [])
+            self.setProperty("empty_message", "Press OK to open Live TV.")
+            self._update_spotlight()
+            return
+
+        self.setProperty("empty_message", "Nothing to show in this library yet.")
         item_type = LIBRARY_ITEM_TYPES[selected.getProperty("collection_type")]
         is_tv = item_type == "Series"
 
@@ -126,6 +139,9 @@ class HomeWindow(xbmcgui.WindowXML):
     def _open_selected_library(self):
         selected = self._selected_library()
         if selected is None:
+            return
+        if selected.getProperty("collection_type") == LIVE_TV:
+            show_live_tv(self.client)
             return
         item_type = LIBRARY_ITEM_TYPES[selected.getProperty("collection_type")]
         show_library(self.client, selected.getProperty("id"), selected.getLabel(), item_type)

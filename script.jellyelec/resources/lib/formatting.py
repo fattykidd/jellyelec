@@ -3,7 +3,13 @@
 This module has no Kodi imports, so it can be tested on a PC.
 """
 
+import re
+from datetime import datetime
+
 from resources.lib.api import TICKS_PER_SECOND
+
+# Jellyfin dates look like 2026-11-23T18:00:00.0000000Z (seven decimal places, UTC).
+_JELLYFIN_DATE = re.compile(r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.\d+)?(Z|[+-]\d{2}:\d{2})?$")
 
 EXTRA_TYPE_NAMES = {
     "BehindTheScenes": "Behind the scenes",
@@ -115,6 +121,42 @@ def unwatched_text(item):
 
 def extra_type_name(extra_type):
     return EXTRA_TYPE_NAMES.get(extra_type or "", "Extra")
+
+
+# Live TV times ----------------------------------------------------------------------
+
+def parse_date(text):
+    """A Jellyfin date as a timezone-aware datetime, or None if it can't be read."""
+    match = _JELLYFIN_DATE.match(text or "")
+    if not match:
+        return None
+    base, offset = match.groups()
+    if not offset or offset == "Z":
+        offset = "+00:00"
+    return datetime.fromisoformat(base + offset)
+
+
+def clock_text(moment):
+    """6:05 PM, in the box's local time."""
+    local = moment.astimezone()
+    hour = local.hour % 12 or 12
+    return f"{hour}:{local.minute:02d} {'AM' if local.hour < 12 else 'PM'}"
+
+
+def time_range_text(start, end):
+    """6:00 PM – 7:00 PM."""
+    if not start or not end:
+        return ""
+    return f"{clock_text(start)} – {clock_text(end)}"
+
+
+def elapsed_and_length(start, end, now):
+    """Seconds into a programme, and its length in seconds. (0, 0) if the times are missing."""
+    if not start or not end or end <= start:
+        return 0, 0
+    length = (end - start).total_seconds()
+    elapsed = min(max((now - start).total_seconds(), 0), length)
+    return elapsed, length
 
 
 # Helpers --------------------------------------------------------------------------

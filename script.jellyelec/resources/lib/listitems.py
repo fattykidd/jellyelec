@@ -3,12 +3,22 @@
 import xbmcgui
 
 from resources.lib.api import TICKS_PER_SECOND
-from resources.lib.formatting import extra_type_name, runtime_text, unwatched_text, watch_status
+from resources.lib.formatting import (
+    clock_text,
+    elapsed_and_length,
+    extra_type_name,
+    parse_date,
+    runtime_text,
+    time_range_text,
+    unwatched_text,
+    watch_status,
+)
 
 POSTER_HEIGHT = 450
 BACKDROP_WIDTH = 1280
 EXTRA_THUMB_WIDTH = 480
 EPISODE_THUMB_WIDTH = 480
+CHANNEL_LOGO_WIDTH = 300
 
 
 def library_item(library):
@@ -87,6 +97,35 @@ def episode_item(client, data):
     thumb = episode_thumb_url(client, data)
     if thumb:
         item.setArt({"thumb": thumb})
+    return item
+
+
+def channel_item(client, channel, next_program, now):
+    """A Live TV channel: logo, number, name, what's on now (with progress) and what's next."""
+    item = xbmcgui.ListItem(label=channel.get("Name", ""), offscreen=True)
+    item.setProperty("id", channel["Id"])
+    item.setProperty("number", channel.get("Number") or channel.get("ChannelNumber") or "")
+
+    logo_tag = channel.get("ImageTags", {}).get("Primary")
+    if logo_tag:
+        item.setArt({"thumb": client.image_url(channel["Id"], "Primary", logo_tag, max_width=CHANNEL_LOGO_WIDTH)})
+
+    current = channel.get("CurrentProgram") or {}
+    start, end = parse_date(current.get("StartDate")), parse_date(current.get("EndDate"))
+    item.setProperty("now_title", current.get("Name", ""))
+    item.setProperty("now_time", time_range_text(start, end))
+
+    # The progress bar reads the resume point, as Kodi does for partly watched videos.
+    elapsed, length = elapsed_and_length(start, end, now)
+    tag = item.getVideoInfoTag()
+    tag.setTitle(current.get("Name") or channel.get("Name", ""))
+    if length:
+        tag.setResumePoint(elapsed, length)
+
+    if next_program:
+        item.setProperty("next_title", next_program.get("Name", ""))
+        next_start = parse_date(next_program.get("StartDate"))
+        item.setProperty("next_time", clock_text(next_start) if next_start else "")
     return item
 
 
