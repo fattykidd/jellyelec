@@ -7,6 +7,7 @@ changing channel only ever has one stream open at a time.
 """
 
 import threading
+import traceback
 import urllib.parse
 
 import xbmc
@@ -125,6 +126,7 @@ class LiveSession:
     def _run(self):
         # Kodi objects used on this thread are created on it.
         self._thread_player = xbmc.Player()
+        self._playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
         self._monitor = xbmc.Monitor()
         try:
             if not wait_for_video(self._thread_player, self._monitor):
@@ -139,6 +141,11 @@ class LiveSession:
                     break
                 if not self._check_fullscreen():
                     break
+        except Exception:
+            # An error here would otherwise end the thread silently, leaving the keys,
+            # the watchdog and Back = stop all quietly doing nothing.
+            log(f"Live TV: the session stopped on an unexpected error:\n{traceback.format_exc()}", xbmc.LOGERROR)
+            notify("Live TV hit an error. Details are in the log.")
         finally:
             _release_tuned_stream(self.client)
             _home().clearProperty(REQUEST_PROPERTY)
@@ -150,7 +157,7 @@ class LiveSession:
         player = self._thread_player
         if not player.isPlayingVideo():
             return self._followed_channel_change()
-        if player.getPlayList(xbmc.PLAYLIST_VIDEO).getposition() != self.position:
+        if self._playlist.getposition() != self.position:
             self._on_channel_changed()
         if self._stalled():
             return self._reconnect()
@@ -206,7 +213,7 @@ class LiveSession:
     def _followed_channel_change(self):
         """Playback isn't running. True if that's another channel starting."""
         player = self._thread_player
-        playlist = player.getPlayList(xbmc.PLAYLIST_VIDEO)
+        playlist = self._playlist
         waited = 0.0
         while waited < CHANNEL_CHANGE_TIMEOUT_SECONDS:
             if player.isPlayingVideo():
@@ -225,7 +232,7 @@ class LiveSession:
         return False
 
     def _on_channel_changed(self):
-        self.position = self._thread_player.getPlayList(xbmc.PLAYLIST_VIDEO).getposition()
+        self.position = self._playlist.getposition()
         _release_tuned_stream(self.client)
         self._reset_channel_state()
         log(f"Live TV: changed channel to {self._name()}.")
