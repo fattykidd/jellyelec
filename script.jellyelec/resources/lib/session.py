@@ -13,6 +13,7 @@ from resources.lib.api import (
 )
 from resources.lib.discovery import discover_servers
 from resources.lib.kodi import ADDON_NAME, ADDON_VERSION, device_name, log
+from resources.lib.quick_connect import USE_PASSWORD, sign_in_with_quick_connect
 
 
 def start_session(connection):
@@ -71,7 +72,7 @@ def _restore_session(connection):
 # Sign-in ------------------------------------------------------------------------
 
 def _sign_in(connection):
-    """Choose a server, then sign in. Returns a client, or None if the user cancels."""
+    """Choose a server, then sign in (Quick Connect, or a password). Returns a client, or None if cancelled."""
     dialog = xbmcgui.Dialog()
     while True:
         server_url = _choose_server(dialog, connection.server_url)
@@ -87,7 +88,9 @@ def _sign_in(connection):
             dialog.ok(ADDON_NAME, f"Couldn't connect to {server_url}.[CR]Check the address and try again.")
             continue
 
-        user = _ask_credentials(dialog, client, connection.user_name)
+        user = sign_in_with_quick_connect(client, info.get("ServerName", ""))
+        if user == USE_PASSWORD:
+            user = _ask_credentials(dialog, client, connection.user_name)
         if user is None:
             continue
 

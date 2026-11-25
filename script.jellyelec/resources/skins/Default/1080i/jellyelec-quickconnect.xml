@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    JellyELEC Quick Connect sign-in: a big code to approve from the Jellyfin app or web page.
+    Control IDs here must match the constants in resources/lib/quick_connect.py:
+      900  "Use username and password instead" button
+    The code, status and countdown lines are filled by quick_connect.py through window properties.
+-->
+<window>
+    <defaultcontrol always="true">900</defaultcontrol>
+    <controls>
+
+        <!-- Full-screen backing -->
+        <control type="image">
+            <left>0</left>
+            <top>0</top>
+            <width>1920</width>
+            <height>1080</height>
+            <texture>jellyelec-white.png</texture>
+            <colordiffuse>FF101418</colordiffuse>
+        </control>
+
+        <control type="group">
+            <left>360</left>
+            <top>180</top>
+
+            <control type="label">
+                <left>0</left>
+                <top>0</top>
+                <width>1200</width>
+                <height>60</height>
+                <align>center</align>
+                <textcolor>FFFFFFFF</textcolor>
+                <label>Sign in with Quick Connect</label>
+            </control>
+            <control type="label">
+                <left>0</left>
+                <top>60</top>
+                <width>1200</width>
+                <height>40</height>
+                <align>center</align>
+                <textcolor>FF8A93A0</textcolor>
+                <label>$INFO[Window.Property(server_name)]</label>
+            </control>
+
+            <!-- The code, on a panel -->
+            <control type="image">
+                <left>300</left>
+                <top>150</top>
+                <width>600</width>
+                <height>220</height>
+                <texture>jellyelec-white.png</texture>
+                <colordiffuse>1AFFFFFF</colordiffuse>
+            </control>
+            <control type="image">
+                <left>300</left>
+                <top>366</top>
+                <width>600</width>
+                <height>4</height>
+                <texture>jellyelec-white.png</texture>
+                <colordiffuse>FFAA5CC3</colordiffuse>
+            </control>
+            <control type="label">
+                <left>300</left>
+                <top>150</top>
+                <width>600</width>
+                <height>220</height>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>font_clock</font>
+                <textcolor>FFFFFFFF</textcolor>
+                <label>$INFO[Window.Property(code)]</label>
+            </control>
+
+            <control type="textbox">
+                <left>150</left>
+                <top>420</top>
+                <width>900</width>
+                <height>130</height>
+                <align>center</align>
+                <textcolor>FFCFD6DE</textcolor>
+                <label>On your phone or computer, open Jellyfin, go to your profile, choose Quick Connect, and enter this code.</label>
+            </control>
+            <control type="label">
+                <left>0</left>
+                <top>560</top>
+                <width>1200</width>
+                <height>40</height>
+                <align>center</align>
+                <textcolor>FFAA5CC3</textcolor>
+                <label>$INFO[Window.Property(status)]</label>
+            </control>
+            <control type="label">
+                <left>0</left>
+                <top>605</top>
+                <width>1200</width>
+                <height>40</height>
+                <align>center</align>
+                <textcolor>FF6B7480</textcolor>
+                <label>$INFO[Window.Property(expires)]</label>
+            </control>
+
+            <!-- Fallback to a password -->
+            <control type="button" id="900">
+                <left>350</left>
+                <top>680</top>
+                <width>500</width>
+                <height>64</height>
+                <align>center</align>
+                <aligny>center</aligny>
+                <label>Use username and password instead</label>
+                <textcolor>FFCFD6DE</textcolor>
+                <focusedcolor>FFFFFFFF</focusedcolor>
+                <texturenofocus colordiffuse="33FFFFFF">jellyelec-white.png</texturenofocus>
+                <texturefocus colordiffuse="FFAA5CC3">jellyelec-white.png</texturefocus>
+            </control>
+        </control>
+
+    </controls>
+</window>

@@ -68,6 +68,31 @@ class JellyfinClient:
         self.user_id = result["User"]["Id"]
         return result["User"]
 
+    def quick_connect_enabled(self):
+        """Whether the server allows signing in with a Quick Connect code."""
+        try:
+            return bool(self._request("GET", "/QuickConnect/Enabled"))
+        except JellyfinError:
+            return False
+
+    def initiate_quick_connect(self):
+        """Start a Quick Connect sign-in. Returns the code to show and the secret to check with."""
+        return self._request("POST", "/QuickConnect/Initiate")
+
+    def quick_connect_approved(self, secret):
+        """True once someone has approved this Quick Connect code."""
+        query = urllib.parse.urlencode({"secret": secret})
+        return bool(self._request("GET", f"/QuickConnect/Connect?{query}").get("Authenticated"))
+
+    def authenticate_with_quick_connect(self, secret):
+        """Finish an approved Quick Connect sign-in and keep the access token."""
+        result = self._request(
+            "POST", "/Users/AuthenticateWithQuickConnect", body={"Secret": secret}
+        )
+        self.token = result["AccessToken"]
+        self.user_id = result["User"]["Id"]
+        return result["User"]
+
     def get_current_user(self):
         """The signed-in user. Fails with AuthenticationFailed if the token is no longer valid."""
         return self._request("GET", "/Users/Me")
