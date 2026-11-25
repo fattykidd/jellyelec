@@ -45,7 +45,12 @@ class LibraryWindow(xbmcgui.WindowXML):
 
     def onAction(self, action):
         if action.getId() in CLOSE_ACTIONS:
-            self.close()
+            # Back goes to the top of the grid first, then out.
+            grid = self.getControl(POSTER_GRID)
+            if grid.getSelectedPosition() > 0:
+                grid.selectItem(0)
+            else:
+                self.close()
 
     def onClick(self, control_id):
         if control_id == POSTER_GRID:

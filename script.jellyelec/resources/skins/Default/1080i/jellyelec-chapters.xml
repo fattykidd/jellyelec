@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    JellyELEC chapter list, shown over the playing video when Back is pressed.
+    Control IDs here must match the constants in resources/lib/chapters.py:
+      1100  chapter list (picture, name and start time)
+      1110  Stop button
+    The title is filled by chapters.py through a window property.
+-->
+<window>
+    <defaultcontrol always="true">1100</defaultcontrol>
+    <controls>
+
+        <!-- Darken the picture so the list stands out -->
+        <control type="image">
+            <left>0</left>
+            <top>0</top>
+            <width>1920</width>
+            <height>1080</height>
+            <texture>jellyelec-white.png</texture>
+            <colordiffuse>B3000000</colordiffuse>
+        </control>
+
+        <control type="label">
+            <left>100</left>
+            <top>520</top>
+            <width>1200</width>
+            <height>40</height>
+            <textcolor>FFAA5CC3</textcolor>
+            <label>Chapters</label>
+        </control>
+        <control type="label">
+            <left>100</left>
+            <top>560</top>
+            <width>1300</width>
+            <height>70</height>
+            <font>font45</font>
+            <textcolor>FFFFFFFF</textcolor>
+            <label>$INFO[Window.Property(title)]</label>
+        </control>
+
+        <control type="button" id="1110">
+            <left>1520</left>
+            <top>560</top>
+            <width>300</width>
+            <height>64</height>
+            <align>center</align>
+            <aligny>center</aligny>
+            <label>Stop</label>
+            <textcolor>FFCFD6DE</textcolor>
+            <focusedcolor>FFFFFFFF</focusedcolor>
+            <texturenofocus colordiffuse="33FFFFFF">jellyelec-white.png</texturenofocus>
+            <texturefocus colordiffuse="FFAA5CC3">jellyelec-white.png</texturefocus>
+            <ondown>1100</ondown>
+        </control>
+
+        <control type="label">
+            <left>100</left>
+            <top>760</top>
+            <width>1720</width>
+            <height>40</height>
+            <textcolor>FF8A93A0</textcolor>
+            <label>This title has no chapters.</label>
+            <visible>!String.IsEmpty(Window.Property(no_chapters))</visible>
+        </control>
+
+        <!-- The chapters, left to right -->
+        <control type="list" id="1100">
+            <left>100</left>
+            <top>660</top>
+            <width>1820</width>
+            <height>340</height>
+            <orientation>horizontal</orientation>
+            <scrolltime>200</scrolltime>
+            <onup>1110</onup>
+            <itemlayout width="420" height="340">
+                <control type="image">
+                    <left>0</left>
+                    <top>10</top>
+                    <width>396</width>
+                    <height>223</height>
+                    <texture>jellyelec-white.png</texture>
+                    <colordiffuse>1AFFFFFF</colordiffuse>
+                </control>
+                <control type="image">
+                    <left>0</left>
+                    <top>10</top>
+                    <width>396</width>
+                    <height>223</height>
+                    <aspectratio>scale</aspectratio>
+                    <texture background="true">$INFO[ListItem.Art(thumb)]</texture>
+                </control>
+                <control type="label">
+                    <left>0</left>
+                    <top>245</top>
+                    <width>396</width>
+                    <height>36</height>
+                    <textcolor>FFCFD6DE</textcolor>
+                    <label>$INFO[ListItem.Label]</label>
+                </control>
+                <control type="label">
+                    <left>0</left>
+                    <top>281</top>
+                    <width>396</width>
+                    <height>32</height>
+                    <textcolor>FF6B7480</textcolor>
+                    <label>$INFO[ListItem.Label2]</label>
+                </control>
+            </itemlayout>
+            <focusedlayout width="420" height="340">
+                <control type="image">
+                    <left>-6</left>
+                    <top>4</top>
+                    <width>408</width>
+                    <height>235</height>
+                    <texture>jellyelec-white.png</texture>
+                    <colordiffuse>FFAA5CC3</colordiffuse>
+                    <visible>Control.HasFocus(1100)</visible>
+                </control>
+                <control type="image">
+                    <left>0</left>
+                    <top>10</top>
+                    <width>396</width>
+                    <height>223</height>
+                    <texture>jellyelec-white.png</texture>
+                    <colordiffuse>FF1A2027</colordiffuse>
+                </control>
+                <control type="image">
+                    <left>0</left>
+                    <top>10</top>
+                    <width>396</width>
+                    <height>223</height>
+                    <aspectratio>scale</aspectratio>
+                    <texture background="true">$INFO[ListItem.Art(thumb)]</texture>
+                </control>
+                <control type="label">
+                    <left>0</left>
+                    <top>245</top>
+                    <width>396</width>
+                    <height>36</height>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <label>$INFO[ListItem.Label]</label>
+                </control>
+                <control type="label">
+                    <left>0</left>
+                    <top>281</top>
+                    <width>396</width>
+                    <height>32</height>
+                    <textcolor>FFAA5CC3</textcolor>
+                    <label>$INFO[ListItem.Label2]</label>
+                </control>
+            </focusedlayout>
+        </control>
+
+    </controls>
+</window>

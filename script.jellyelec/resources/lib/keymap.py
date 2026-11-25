@@ -2,7 +2,7 @@
 
 While video is full-screen, Kodi handles every key press itself and add-ons never see
 them. This key map makes the Live TV keys set a property on Kodi's Home window instead,
-which the Live TV session watches for (see live_playback.py). It applies to keyboards,
+which the Live TV session watches for (see key_requests.py). It applies to keyboards,
 IR and CEC remotes, and to remotes that send keyboard keys over Kodi's network control
 (such as the Unfolded Circle Kodi integration's "key" command).
 
@@ -15,7 +15,7 @@ import xbmc
 import xbmcvfs
 
 from resources.lib.kodi import log
-from resources.lib.live_playback import (
+from resources.lib.key_requests import (
     CHANNEL_DOWN_REQUEST,
     CHANNEL_UP_REQUEST,
     GUIDE_REQUEST,

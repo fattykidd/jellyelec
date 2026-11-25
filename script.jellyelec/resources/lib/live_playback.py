@@ -15,6 +15,13 @@ import xbmc
 import xbmcgui
 
 from resources.lib.api import JellyfinError
+from resources.lib.key_requests import (
+    CHANNEL_DOWN_REQUEST,
+    CHANNEL_UP_REQUEST,
+    GUIDE_REQUEST,
+    clear_requests,
+    take_request,
+)
 from resources.lib.kodi import ADDON_ID, log, notify
 from resources.lib.playback import go_fullscreen, stop_and_wait, wait_for_video
 
@@ -40,13 +47,6 @@ GUIDE_OPEN_TIMEOUT_SECONDS = 2
 # checks every TICKS_PER_SECOND ticks.
 TICK_SECONDS = 0.25
 TICKS_PER_SECOND = 4
-
-# Key presses arrive as a property on Kodi's Home window, set by JellyELEC's key map
-# (see keymap.py). These are its possible values.
-REQUEST_PROPERTY = f"{ADDON_ID}.request"
-GUIDE_REQUEST = "guide"
-CHANNEL_UP_REQUEST = "channelup"
-CHANNEL_DOWN_REQUEST = "channeldown"
 
 # How long to wait for the next channel to start after Next/Previous.
 CHANNEL_CHANGE_TIMEOUT_SECONDS = 20
@@ -112,7 +112,7 @@ class LiveSession:
 
         self.position = index
         self.in_guide = False
-        _home().clearProperty(REQUEST_PROPERTY)
+        clear_requests()
         self._player.play(playlist, startpos=index)
         self._thread = threading.Thread(target=self._run, name="JellyELEC Live TV", daemon=True)
         self._thread.start()
@@ -158,7 +158,7 @@ class LiveSession:
             notify("Live TV hit an error. Details are in the log.")
         finally:
             _release_tuned_stream(self.client)
-            _home().clearProperty(REQUEST_PROPERTY)
+            clear_requests()
             if self.on_finished:
                 self.on_finished(self.position)
 
@@ -176,12 +176,8 @@ class LiveSession:
     # Key presses from the key map -----------------------------------------------------
 
     def _handle_key_request(self):
-        home = _home()
-        request = home.getProperty(REQUEST_PROPERTY)
-        if not request:
-            return
-        home.clearProperty(REQUEST_PROPERTY)
-        if not self._thread_player.isPlayingVideo():
+        request = take_request()
+        if not request or not self._thread_player.isPlayingVideo():
             return
         if request == GUIDE_REQUEST:
             if xbmc.getCondVisibility("Window.IsActive(fullscreenvideo)"):

@@ -65,10 +65,7 @@ class HomeWindow(xbmcgui.WindowXML):
     def onAction(self, action):
         action_id = action.getId()
         if action_id in CLOSE_ACTIONS:
-            # In appliance mode there's nothing behind JellyELEC to go back to;
-            # Settings has Exit to Kodi for that.
-            if not appliance.is_enabled():
-                self.close()
+            self._go_back()
             return
         if action_id == xbmcgui.ACTION_CONTEXT_MENU:
             self._confirm_sign_out()
@@ -112,22 +109,26 @@ class HomeWindow(xbmcgui.WindowXML):
         return self.getControl(LIBRARY_BAR).getSelectedItem()
 
     def _show_selected_library(self):
-        """Reload the rows when the selected library changes."""
-        selected = self._selected_library()
-        if selected is None:
-            return
-        library_id = selected.getProperty("id")
-        if library_id == self._library_id:
-            return
-        self._library_id = library_id
+        """Load the rows when the selected library changes."""
+        self._show_library(self._selected_library())
 
-        collection_type = selected.getProperty("collection_type")
+    def _show_library(self, library):
+        """Load the rows for a library tile, unless they're already showing."""
+        if library is None or library.getProperty("id") == self._library_id:
+            return
+        self._library_id = library.getProperty("id")
+        self._load_rows(library)
+        self._update_spotlight()
+
+    def _load_rows(self, library, keep_random=False):
+        """Fill the rows for a library. keep_random leaves the Random row as it is."""
+        library_id = library.getProperty("id")
+        collection_type = library.getProperty("collection_type")
         if collection_type in TILE_MESSAGES:
             # Live TV and Settings have their own screens; their home page says how to open them.
             for row in ROWS:
                 self._fill_row(row, lambda: [])
             self.setProperty("empty_message", TILE_MESSAGES[collection_type])
-            self._update_spotlight()
             return
 
         self.setProperty("empty_message", "Nothing to show in this library yet.")
@@ -137,8 +138,8 @@ class HomeWindow(xbmcgui.WindowXML):
         self._fill_row(CONTINUE_WATCHING_ROW, lambda: self.client.get_resume_items(library_id))
         self._fill_row(NEXT_UP_ROW, lambda: self.client.get_next_up_items(library_id) if is_tv else [])
         self._fill_row(RECENTLY_ADDED_ROW, lambda: self.client.get_latest_items(library_id))
-        self._fill_row(RANDOM_ROW, lambda: self.client.get_random_items(library_id, item_type))
-        self._update_spotlight()
+        if not keep_random:
+            self._fill_row(RANDOM_ROW, lambda: self.client.get_random_items(library_id, item_type))
 
     def _fill_row(self, row_id, fetch):
         try:
@@ -163,18 +164,23 @@ class HomeWindow(xbmcgui.WindowXML):
         if collection_type == SETTINGS:
             self._open_settings()
             return
-        item_type = LIBRARY_ITEM_TYPES[selected.getProperty("collection_type")]
+        item_type = LIBRARY_ITEM_TYPES[collection_type]
         show_library(self.client, selected.getProperty("id"), selected.getLabel(), item_type)
         self._refresh_rows()
 
     # Spotlight --------------------------------------------------------------------
 
-    def _update_spotlight(self, row_id=None):
-        """Show the focused poster's details. With no row given, use the first row with items."""
+    def _update_spotlight(self, row_id=None, position=None):
+        """Show the focused poster's details. With no row given, use the first row with items.
+
+        position names the poster outright, for just after selectItem(), which Kodi applies
+        a moment later.
+        """
         rows = (row_id,) if row_id else ROWS
         data = None
         for row in rows:
-            selected = self.getControl(row).getSelectedItem()
+            control = self.getControl(row)
+            selected = control.getListItem(position) if position is not None else control.getSelectedItem()
             if selected is not None:
                 data = self._row_data[row].get(selected.getProperty("id"))
                 break
@@ -194,18 +200,60 @@ class HomeWindow(xbmcgui.WindowXML):
         selected = self.getControl(row_id).getSelectedItem()
         if selected is None:
             return
-        show_details(self.client, selected.getProperty("id"))
-        self._refresh_rows(focus_row=row_id)
+        item_id = selected.getProperty("id")
+        position = self.getControl(row_id).getSelectedPosition()
+        show_details(self.client, item_id)
+        self._refresh_rows(focus_row=row_id, item_id=item_id, position=position)
 
-    def _refresh_rows(self, focus_row=None):
-        """Reload the rows so positions and watched items are up to date."""
-        self._library_id = None
-        self._show_selected_library()
-        if focus_row and self.getControl(focus_row).size():
-            self.setFocusId(focus_row)
-            self._update_spotlight(focus_row)
-        else:
+    def _refresh_rows(self, focus_row=None, item_id=None, position=0):
+        """Reload the rows so progress and watched items are up to date, keeping the place.
+
+        With focus_row, focus returns to item_id in that row; if it has gone from the row
+        (finished, so no longer in Continue Watching), to the poster now in its old position.
+        The Random row isn't reshuffled, so what was just opened is still there.
+        """
+        library = self._selected_library()
+        if library is not None:
+            self._load_rows(library, keep_random=True)
+
+        row = self.getControl(focus_row) if focus_row else None
+        if row is None or not row.size():
             self.setFocusId(LIBRARY_BAR)
+            self._update_spotlight()
+            return
+
+        ids = [row.getListItem(index).getProperty("id") for index in range(row.size())]
+        index = ids.index(item_id) if item_id in ids else min(position, row.size() - 1)
+        row.selectItem(index)
+        self.setFocusId(focus_row)
+        self._update_spotlight(focus_row, index)
+
+    # Back --------------------------------------------------------------------------
+
+    def _go_back(self):
+        """Step back one stage: to the start of a row, up to the library bar, then to the first library.
+
+        Only after that does Back leave JellyELEC, and never in appliance mode, where there's
+        nothing behind it (Settings has Exit to Kodi for that).
+        """
+        focus = self.getFocusId()
+        if focus in ROWS:
+            row = self.getControl(focus)
+            if row.getSelectedPosition() > 0:
+                row.selectItem(0)
+                self._update_spotlight(focus, 0)
+            else:
+                self.setFocusId(LIBRARY_BAR)
+            return
+
+        bar = self.getControl(LIBRARY_BAR)
+        if focus == LIBRARY_BAR and bar.getSelectedPosition() > 0:
+            bar.selectItem(0)
+            self._show_library(bar.getListItem(0))
+            return
+
+        if not appliance.is_enabled():
+            self.close()
 
     # Settings and signing out ----------------------------------------------------
 
