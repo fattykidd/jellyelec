@@ -25,6 +25,11 @@ GUIDE_LOOKAHEAD = timedelta(hours=6)
 VIDEO_CORNER_SETTING = "guide_video_corner"
 TOP_LEFT = "Top left"
 
+# The setting for what OK on another channel does in the guide: watch it full-screen
+# (the default), or preview it in the corner with a second OK for full-screen.
+GUIDE_OK_SETTING = "guide_ok_action"
+PREVIEW_IN_CORNER = "Preview in the corner"
+
 CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
 
 
@@ -77,6 +82,7 @@ class LiveTvWindow(xbmcgui.WindowXML):
     _channels = ()
     _next_programs = None  # {channel ID: Jellyfin data for its next programme}
     _session = None  # the LiveSession while a channel is playing
+    _closing = False  # set when Back in the guide leaves Live TV
 
     # Kodi events ------------------------------------------------------------------
 
@@ -91,10 +97,12 @@ class LiveTvWindow(xbmcgui.WindowXML):
 
     def onAction(self, action):
         if action.getId() in CLOSE_ACTIONS:
+            # From the guide, Back stops the channel and leaves Live TV in one go.
+            # (OK on the playing channel is how to go back to full-screen.)
+            self._closing = True
             if self._watching():
-                self._session.show_fullscreen()  # Back closes the guide
-            else:
-                self.close()
+                self._session.stop()
+            self.close()
         elif self.getFocusId() == CHANNEL_LIST:
             self._update_panel()
 
@@ -106,12 +114,13 @@ class LiveTvWindow(xbmcgui.WindowXML):
             return
 
         if self._watching():
-            # In the guide: OK on the playing channel returns to full-screen,
-            # OK on another channel switches the picture to it.
+            # In the guide: OK on the playing channel returns to full-screen; OK on another
+            # channel switches to it, full-screen or in the corner as the setting says.
             if position == self._session.position:
                 self._session.show_fullscreen()
             else:
-                self._session.switch_to(position)
+                watch_fullscreen = setting(GUIDE_OK_SETTING) != PREVIEW_IN_CORNER
+                self._session.switch_to(position, fullscreen=watch_fullscreen)
             return
 
         session = LiveSession(self.client, self._channels, self._make_item)
@@ -128,13 +137,15 @@ class LiveTvWindow(xbmcgui.WindowXML):
 
     def _mark_playing(self, position):
         """Highlight the channel that's playing (None for none). Called from the session's thread."""
+        if self._closing:
+            return
         channel_list = self.getControl(CHANNEL_LIST)
         for index in range(channel_list.size()):
             channel_list.getListItem(index).setProperty("playing", "true" if index == position else "")
 
     def _on_session_finished(self, session, last_position):
         """Playback stopped. Called from the session's thread."""
-        if session is not self._session:
+        if session is not self._session or self._closing:
             return
         self._session = None
         self._mark_playing(None)

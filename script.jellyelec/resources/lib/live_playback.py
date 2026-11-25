@@ -37,7 +37,7 @@ SMOOTH_SECONDS_TO_RESET = 60
 RECONNECT_PAUSE_SECONDS = 3
 
 # How long full-screen video may be out of view (with the guide closed) before it
-# counts as Back = stop.
+# counts as Back, which opens the guide.
 LEFT_FULLSCREEN_SECONDS = 1
 
 # After asking Kodi to step out of full-screen into the guide, how long to wait for it
@@ -75,8 +75,8 @@ class LiveSession:
 
     start() queues every channel as a playlist and plays one. A background thread then
     stays with playback until it stops: it follows channel changes, reconnects a channel
-    whose picture stops moving, answers Guide and Channel Up/Down key presses, and stops
-    playback when the user presses Back out of full-screen. Running in the background
+    whose picture stops moving, answers Guide and Channel Up/Down key presses, and notices
+    when Back opens the guide. Running in the background
     keeps the Live TV screen responsive, so it can work as the guide over the live picture.
 
     on_channel_changed(position) and on_finished(position) are called from the
@@ -91,6 +91,8 @@ class LiveSession:
         self.on_finished = on_finished
         self.position = 0
         self.in_guide = False
+        # A channel picked in the guide that should go full-screen once it's playing.
+        self.fullscreen_target = None
         self._player = xbmc.Player()
         self._thread = None
 
@@ -118,10 +120,12 @@ class LiveSession:
         self._thread = threading.Thread(target=self._run, name="JellyELEC Live TV", daemon=True)
         self._thread.start()
 
-    def switch_to(self, index):
-        """Change channel without leaving the guide."""
-        if index != self.position:
-            play_playlist_position(index)
+    def switch_to(self, index, fullscreen=False):
+        """Change channel from the guide: full-screen once it plays, or kept in the corner."""
+        if index == self.position:
+            return
+        self.fullscreen_target = index if fullscreen else None
+        play_playlist_position(index)
 
     def show_fullscreen(self):
         """Close the guide and return to full-screen video."""
@@ -148,14 +152,14 @@ class LiveSession:
             tick = 0
             while not self._monitor.waitForAbort(TICK_SECONDS):
                 self._handle_key_request()
+                self._go_fullscreen_if_due()
                 tick += 1
                 if tick % TICKS_PER_SECOND == 0 and not self._check_once_a_second():
                     break
-                if not self._check_fullscreen():
-                    break
+                self._follow_guide()
         except Exception:
             # An error here would otherwise end the thread silently, leaving the keys,
-            # the watchdog and Back = stop all quietly doing nothing.
+            # the watchdog and the guide all quietly doing nothing.
             log(f"Live TV: the session stopped on an unexpected error:\n{traceback.format_exc()}", xbmc.LOGERROR)
             notify("Live TV hit an error. Details are in the log.")
         finally:
@@ -202,10 +206,14 @@ class LiveSession:
         if self.channels:
             play_playlist_position((self.position + step) % len(self.channels))
 
-    # Back = stop, unless the guide is open --------------------------------------------
+    # Back opens the guide ---------------------------------------------------------------
 
-    def _check_fullscreen(self):
-        """False once the user has pressed Back out of full-screen (and not into the guide)."""
+    def _follow_guide(self):
+        """Keep track of whether the guide is open, however it was opened or closed.
+
+        Back out of full-screen opens the guide too: Kodi steps back to the Live TV screen,
+        which shows itself as the guide while a channel plays. Stopping is done from there.
+        """
         fullscreen = xbmc.getCondVisibility("Window.IsActive(fullscreenvideo)")
         if self.in_guide:
             self.out_of_view_ticks = 0
@@ -219,18 +227,26 @@ class LiveSession:
                     self.guide_opening_ticks += 1
             elif fullscreen:
                 self.in_guide = False  # the guide was closed
-            return True
+            return
         if fullscreen or not self._thread_player.isPlayingVideo():
             self.out_of_view_ticks = 0
-            return True
+            return
+        # Out of full-screen for a moment can just be a channel starting; for longer, it's Back.
         self.out_of_view_ticks += 1
-        if self.out_of_view_ticks * TICK_SECONDS < LEFT_FULLSCREEN_SECONDS:
-            return True
-        log(f"Live TV: {self._name()}: left full-screen; stopping.")
-        self._thread_player.stop()
-        return False
+        if self.out_of_view_ticks * TICK_SECONDS >= LEFT_FULLSCREEN_SECONDS:
+            log("Live TV: Back pressed; showing the guide.")
+            self.in_guide = True
 
     # Channel changes --------------------------------------------------------------
+
+    def _go_fullscreen_if_due(self):
+        """Go full-screen once a channel picked from the guide is playing (see switch_to)."""
+        target = self.fullscreen_target
+        if target is None or not self._thread_player.isPlayingVideo():
+            return
+        if self._playlist.getposition() == target:
+            self.fullscreen_target = None
+            go_fullscreen(self._monitor)
 
     def _followed_channel_change(self):
         """Playback isn't running. True if that's another channel starting."""

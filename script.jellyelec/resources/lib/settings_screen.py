@@ -23,9 +23,11 @@ EXIT_TO_KODI = "exit_to_kodi"
 # The power menu's choices, and the Kodi commands that carry them out.
 POWER_CHOICES = (("Restart", "Reboot"), ("Power off", "Powerdown"))
 
-# Add-on setting for the guide's live picture, shared with live_tv.py.
+# Add-on settings for the Live TV guide, shared with live_tv.py.
 GUIDE_CORNER_SETTING = "guide_video_corner"
 GUIDE_CORNERS = ("Top right", "Top left")
+GUIDE_OK_SETTING = "guide_ok_action"
+GUIDE_OK_ACTIONS = ("Watch full-screen", "Preview in the corner")
 
 CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
 
@@ -33,6 +35,7 @@ CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
 CONNECTION = "connection"
 DOLBY_VISION = "dolby_vision"
 GUIDE_CORNER = "guide_corner"
+GUIDE_OK = "guide_ok"
 REMOTE_CONTROL = "remote_control"
 APPLIANCE_MODE = "appliance_mode"
 RUN_SETUP_ROW = "run_setup"
@@ -79,6 +82,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             CONNECTION: self._change_connection,
             DOLBY_VISION: self._check_dolby_vision,
             GUIDE_CORNER: self._change_guide_corner,
+            GUIDE_OK: self._change_guide_ok,
             REMOTE_CONTROL: self._toggle_remote_control,
             APPLIANCE_MODE: self._toggle_appliance_mode,
             RUN_SETUP_ROW: self._run_setup,
@@ -105,6 +109,9 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                  "Whether the Dolby Vision module (dovi.ko) is installed. Press OK for details."),
             _row(GUIDE_CORNER, "Live TV guide: live picture", xbmcaddon.Addon().getSetting(GUIDE_CORNER_SETTING),
                  "Which top corner the live picture sits in while the guide is open."),
+            _row(GUIDE_OK, "Live TV guide: OK on another channel", xbmcaddon.Addon().getSetting(GUIDE_OK_SETTING),
+                 "Watch it full-screen straight away, or preview it in the corner first (press OK "
+                 "again for full-screen)."),
             _row(REMOTE_CONTROL, "Remote control from other devices",
                  "On" if remote_control.is_enabled() else "Off",
                  "Needed by the Unfolded Circle Kodi integration. Lets devices on your home network "
@@ -160,9 +167,11 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         self._fill_list()
 
     def _change_guide_corner(self):
-        current = xbmcaddon.Addon().getSetting(GUIDE_CORNER_SETTING)
-        new_corner = GUIDE_CORNERS[1] if current == GUIDE_CORNERS[0] else GUIDE_CORNERS[0]
-        xbmcaddon.Addon().setSetting(GUIDE_CORNER_SETTING, new_corner)
+        _toggle_setting(GUIDE_CORNER_SETTING, GUIDE_CORNERS)
+        self._fill_list()
+
+    def _change_guide_ok(self):
+        _toggle_setting(GUIDE_OK_SETTING, GUIDE_OK_ACTIONS)
         self._fill_list()
 
     def _toggle_remote_control(self):
@@ -204,6 +213,12 @@ def _row(key, label, value, description):
     item.setProperty("key", key)
     item.setProperty("description", description)
     return item
+
+
+def _toggle_setting(setting_id, values):
+    """Switch a two-choice add-on setting to its other value."""
+    current = xbmcaddon.Addon().getSetting(setting_id)
+    xbmcaddon.Addon().setSetting(setting_id, values[1] if current == values[0] else values[0])
 
 
 def _dolby_vision_status():

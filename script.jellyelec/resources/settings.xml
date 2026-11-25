@@ -3,6 +3,8 @@
     <category label="Live TV">
         <setting id="guide_video_corner" type="select" values="Top right|Top left" default="Top right"
                  label="Guide: corner for the live picture"/>
+        <setting id="guide_ok_action" type="select" values="Watch full-screen|Preview in the corner"
+                 default="Watch full-screen" label="Guide: OK on another channel"/>
     </category>
     <category label="Setup">
         <setting id="appliance_mode" type="bool" default="true"
