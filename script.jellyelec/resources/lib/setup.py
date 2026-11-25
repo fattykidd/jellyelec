@@ -42,6 +42,13 @@ def run_before_sign_in():
     return _run_steps([_welcome_step, _dolby_vision_step, _connection_step])
 
 
+def reset():
+    """Make setup run again the next time JellyELEC starts (from the add-on settings)."""
+    xbmcaddon.Addon().setSettingBool(SETUP_COMPLETE_SETTING, False)
+    xbmcgui.Dialog().notification(ADDON_NAME, "Setup will run the next time JellyELEC starts.")
+    log("Setup reset; it will run on the next start.")
+
+
 def run_after_sign_in():
     """The remote control tip and the closing screen, then setup is marked as done."""
     _run_steps([_remote_control_step, _finished_step])

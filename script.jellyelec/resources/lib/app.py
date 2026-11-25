@@ -1,6 +1,6 @@
 """Application startup: install the key map, run first-run setup if needed, sign in, then show home."""
 
-from resources.lib import setup, storage
+from resources.lib import output_setup, setup, storage
 from resources.lib.home import HomeWindow
 from resources.lib.keymap import install_keymap
 from resources.lib.kodi import ADDON_PATH
@@ -12,6 +12,9 @@ def run():
     first_run = not setup.is_complete()
     if first_run and not setup.run_before_sign_in():
         return
+    if not first_run:
+        # Finishes video processor mode once dovi.ko has been added after setup.
+        output_setup.apply_pending_dolby_vision()
 
     connection = storage.load()
     while True:
