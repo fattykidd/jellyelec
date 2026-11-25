@@ -3,5 +3,8 @@
     <category label="Live TV">
         <setting id="guide_video_corner" type="select" values="Top right|Top left" default="Top right"
                  label="Guide: corner for the live picture"/>
+        <!-- Kept by first-run setup; not shown on screen. -->
+        <setting id="setup_complete" type="bool" default="false" visible="false"/>
+        <setting id="box_connection" type="text" default="" visible="false"/>
     </category>
 </settings>
