@@ -2,7 +2,7 @@
 
 from resources.lib import appliance, output_setup, setup, storage
 from resources.lib.home import HomeWindow
-from resources.lib.keymap import install_keymap
+from resources.lib.keymap import install_keymap, remove_live_tv_keymap
 from resources.lib.kodi import ADDON_PATH
 from resources.lib.session import start_session
 from resources.lib.settings_screen import EXIT_TO_KODI, RUN_SETUP, SIGN_OUT
@@ -11,6 +11,7 @@ from resources.lib.settings_screen import EXIT_TO_KODI, RUN_SETUP, SIGN_OUT
 def run(splash):
     """Run JellyELEC until it's left. splash is the backdrop default.py has already put up."""
     install_keymap()
+    remove_live_tv_keymap()
     if setup.is_complete():
         # Finishes video processor mode once dovi.ko has been added after setup.
         output_setup.apply_pending_dolby_vision()

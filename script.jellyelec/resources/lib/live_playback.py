@@ -22,6 +22,7 @@ from resources.lib.key_requests import (
     clear_requests,
     take_request,
 )
+from resources.lib.keymap import install_live_tv_keymap, remove_live_tv_keymap
 from resources.lib.kodi import ADDON_ID, log, notify
 from resources.lib.playback import go_fullscreen, stop_and_wait, wait_for_video
 
@@ -142,6 +143,7 @@ class LiveSession:
                 return
             # Next/Previous (and Kodi's own skip keys) wrap around the channel list.
             xbmc.executebuiltin("PlayerControl(RepeatAll)")
+            install_live_tv_keymap()
             self._reset_channel_state()
             tick = 0
             while not self._monitor.waitForAbort(TICK_SECONDS):
@@ -157,6 +159,7 @@ class LiveSession:
             log(f"Live TV: the session stopped on an unexpected error:\n{traceback.format_exc()}", xbmc.LOGERROR)
             notify("Live TV hit an error. Details are in the log.")
         finally:
+            remove_live_tv_keymap()
             _release_tuned_stream(self.client)
             clear_requests()
             if self.on_finished:
@@ -403,12 +406,12 @@ def resolve_channel_stream(client, channel):
 def prepare_live_item(item, container):
     """Tell Kodi up front what the stream is, so it doesn't make an extra request to find out.
 
-    Uses inputstream.ffmpegdirect when it's installed, as IPTV Simple can.
+    Uses inputstream.ffmpegdirect when it's installed and turned on, as IPTV Simple can.
     """
     item.setContentLookup(False)
     if (container or "").lower() in TS_CONTAINERS:
         item.setMimeType("video/mp2t")
-    if xbmc.getCondVisibility(f"System.HasAddon({FFMPEG_DIRECT})"):
+    if xbmc.getCondVisibility(f"System.AddonIsEnabled({FFMPEG_DIRECT})"):
         item.setProperty("inputstream", FFMPEG_DIRECT)
         item.setProperty(f"{FFMPEG_DIRECT}.is_realtime_stream", "true")
         log(f"Live TV: playing with {FFMPEG_DIRECT}.")

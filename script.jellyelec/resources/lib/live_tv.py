@@ -13,7 +13,7 @@ import xbmcgui
 from resources.lib.api import JellyfinError
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log, setting
 from resources.lib.listitems import channel_item
-from resources.lib.live_playback import LiveSession
+from resources.lib.live_playback import FFMPEG_DIRECT, LiveSession
 
 # Control IDs, matching jellyelec-livetv.xml.
 CHANNEL_LIST = 700
@@ -30,10 +30,42 @@ CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
 
 def show_live_tv(client):
     """Open the Live TV screen. Returns when the user goes back."""
+    _check_ffmpeg_direct()
     window = LiveTvWindow("jellyelec-livetv.xml", ADDON_PATH, "Default", "1080i")
     window.client = client
     window.doModal()
     del window
+
+
+# Only offered once each time JellyELEC runs, so saying "Not now" isn't met with the same
+# question every time Live TV opens.
+_ffmpeg_direct_offered = False
+
+
+def _check_ffmpeg_direct():
+    """Offer to install or turn on FFmpeg Direct, which keeps live streams from stalling."""
+    global _ffmpeg_direct_offered
+    if _ffmpeg_direct_offered or xbmc.getCondVisibility(f"System.AddonIsEnabled({FFMPEG_DIRECT})"):
+        return
+    _ffmpeg_direct_offered = True
+
+    installed = xbmc.getCondVisibility(f"System.HasAddon({FFMPEG_DIRECT})")
+    problem = "is turned off" if installed else "isn't installed"
+    log(f"Live TV: {FFMPEG_DIRECT} {problem}.", xbmc.LOGWARNING)
+    fix = xbmcgui.Dialog().yesno(
+        ADDON_NAME,
+        f"Live TV uses Kodi's FFmpeg Direct add-on to keep channels playing smoothly, and it {problem}.[CR]"
+        "Without it, channels may stall.",
+        nolabel="Not now",
+        yeslabel="Turn it on" if installed else "Install it",
+    )
+    if not fix:
+        return
+    if installed:
+        xbmc.executebuiltin(f"EnableAddon({FFMPEG_DIRECT})", True)
+    else:
+        # Kodi asks to confirm, then installs it from the CoreELEC add-on repository.
+        xbmc.executebuiltin(f"InstallAddon({FFMPEG_DIRECT})", True)
 
 
 class LiveTvWindow(xbmcgui.WindowXML):
