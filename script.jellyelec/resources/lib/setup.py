@@ -8,24 +8,15 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-from resources.lib import kodi_settings, output_setup
+from resources.lib import output_setup, remote_control
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log
 
 # Control IDs, matching jellyelec-setup.xml.
 FIRST_OPTION_BUTTON = 901
 MAX_OPTIONS = 3
 
-# Add-on settings that remember the answers.
+# Add-on setting that records setup has been finished.
 SETUP_COMPLETE_SETTING = "setup_complete"
-CONNECTION_SETTING = "box_connection"
-
-# Kodi settings the Unfolded Circle Kodi integration needs: the web server, and control
-# from other devices on the network.
-REMOTE_CONTROL_SETTINGS = (
-    ("services.webserver", True),
-    ("services.webserverauthentication", False),
-    ("services.esallinterfaces", True),
-)
 
 CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
 
@@ -56,6 +47,15 @@ def run_after_sign_in():
     log("First-run setup complete.")
 
 
+def show_settings_warning():
+    """Shown when Kodi refuses some of the sound and picture changes."""
+    xbmcgui.Dialog().ok(
+        ADDON_NAME,
+        "Some settings couldn't be changed automatically on this version of CoreELEC.[CR]"
+        "Everything else is set up, and the details are in the log.",
+    )
+
+
 # The steps ----------------------------------------------------------------------------
 
 def _welcome_step():
@@ -83,11 +83,7 @@ def _dolby_vision_step():
     choice = _show_step(
         heading="Setup · Dolby Vision",
         title="Dolby Vision isn't set up yet",
-        body="JellyELEC can't include the Dolby Vision module (dovi.ko), so it's added by hand:[CR][CR]"
-             "1.  Shut down this box and put its card or USB stick in a computer.[CR]"
-             "2.  Copy dovi.ko onto the drive named COREELEC (into the top folder, not a subfolder).[CR]"
-             "3.  Put the card back and turn the box on. Setup picks up where it left off.[CR][CR]"
-             "Without it, Dolby Vision titles play in HDR10 instead.",
+        body=output_setup.DOVI_INSTRUCTIONS + "[CR]Setup picks up where it left off when the box starts again.",
         options=["Shut down so I can add it", "Skip for now"],
     )
     if choice == 0:
@@ -102,23 +98,14 @@ def _connection_step():
         heading="Setup · Sound and picture",
         title="How is this box connected?",
         body="This sets up the sound and picture to suit your equipment. You can change it later in Settings.",
-        options=[
-            "Straight to the TV",
-            "Through an AV receiver",
-            "Through an AV receiver and a video processor",
-        ],
+        options=[name for _connection_type, name in output_setup.CONNECTIONS],
     )
     if choice is None:
         return BACK
 
-    connection_type = (output_setup.TV, output_setup.RECEIVER, output_setup.VIDEO_PROCESSOR)[choice]
+    connection_type = output_setup.CONNECTIONS[choice][0]
     if not output_setup.apply_connection(connection_type):
-        xbmcgui.Dialog().ok(
-            ADDON_NAME,
-            "Some settings couldn't be changed automatically on this version of CoreELEC.[CR]"
-            "Everything else is set up, and the details are in the log.",
-        )
-    xbmcaddon.Addon().setSetting(CONNECTION_SETTING, connection_type)
+        show_settings_warning()
     return NEXT
 
 
@@ -133,7 +120,7 @@ def _remote_control_step():
         options=["Turn on remote control", "Not now"],
     )
     if choice == 0:
-        _enable_network_control()
+        remote_control.set_enabled(True)
     return NEXT if choice is not None else BACK
 
 
@@ -161,14 +148,6 @@ def _run_steps(steps):
         else:
             index += 1
     return True
-
-
-def _enable_network_control():
-    for setting_id, value in REMOTE_CONTROL_SETTINGS:
-        try:
-            kodi_settings.set_value(setting_id, value)
-        except kodi_settings.KodiSettingError as error:
-            log(f"Couldn't turn on remote control: {error}", xbmc.LOGWARNING)
 
 
 def _show_step(heading, title, body, options):

@@ -11,6 +11,7 @@ from resources.lib.kodi import ADDON_NAME, ADDON_VERSION, log
 from resources.lib.library import show_library
 from resources.lib.live_tv import show_live_tv
 from resources.lib.listitems import backdrop_url, library_item, media_item
+from resources.lib.settings_screen import SIGN_OUT, show_settings
 
 # Control IDs, matching jellyelec-home.xml.
 LIBRARY_BAR = 100
@@ -23,15 +24,27 @@ ROWS = (CONTINUE_WATCHING_ROW, NEXT_UP_ROW, RECENTLY_ADDED_ROW, RANDOM_ROW)
 # The item type each library holds, as Jellyfin names it.
 LIBRARY_ITEM_TYPES = {"movies": "Movie", "tvshows": "Series"}
 LIVE_TV = "livetv"
+
+# The Settings tile at the end of the library bar. Not a Jellyfin library, so it gets a
+# collection type of its own.
+SETTINGS = "jellyelec_settings"
+SETTINGS_TILE = {"Id": SETTINGS, "Name": "Settings", "CollectionType": SETTINGS}
+
+# Messages shown in place of the rows for tiles that open their own screen.
+TILE_MESSAGES = {LIVE_TV: "Press OK to open Live TV.", SETTINGS: "Press OK to open Settings."}
 CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
 
 
 class HomeWindow(xbmcgui.WindowXML):
-    """Set client and connection before calling doModal()."""
+    """Set client and connection before calling doModal().
+
+    When it closes, next_step says what app.py should do: settings_screen.SIGN_OUT or
+    RUN_SETUP, or None to leave JellyELEC.
+    """
 
     client = None
     connection = None
-    signed_out = False
+    next_step = None
 
     _loaded = False
     _library_id = None
@@ -83,15 +96,14 @@ class HomeWindow(xbmcgui.WindowXML):
         except JellyfinError as error:
             log(f"Couldn't load libraries: {error}", xbmc.LOGWARNING)
             self._notify("Couldn't load your libraries.")
-            return
+            libraries = []
 
+        # Settings is always there, so the box can be sorted out even if the server isn't.
         bar = self.getControl(LIBRARY_BAR)
         bar.reset()
-        bar.addItems([library_item(library) for library in libraries])
-
-        if libraries:
-            self._show_selected_library()
-            self.setFocusId(LIBRARY_BAR)
+        bar.addItems([library_item(library) for library in libraries + [SETTINGS_TILE]])
+        self._show_selected_library()
+        self.setFocusId(LIBRARY_BAR)
 
     def _selected_library(self):
         return self.getControl(LIBRARY_BAR).getSelectedItem()
@@ -106,16 +118,17 @@ class HomeWindow(xbmcgui.WindowXML):
             return
         self._library_id = library_id
 
-        if selected.getProperty("collection_type") == LIVE_TV:
-            # Live TV has its own screen; its home page just says how to open it.
+        collection_type = selected.getProperty("collection_type")
+        if collection_type in TILE_MESSAGES:
+            # Live TV and Settings have their own screens; their home page says how to open them.
             for row in ROWS:
                 self._fill_row(row, lambda: [])
-            self.setProperty("empty_message", "Press OK to open Live TV.")
+            self.setProperty("empty_message", TILE_MESSAGES[collection_type])
             self._update_spotlight()
             return
 
         self.setProperty("empty_message", "Nothing to show in this library yet.")
-        item_type = LIBRARY_ITEM_TYPES[selected.getProperty("collection_type")]
+        item_type = LIBRARY_ITEM_TYPES[collection_type]
         is_tv = item_type == "Series"
 
         self._fill_row(CONTINUE_WATCHING_ROW, lambda: self.client.get_resume_items(library_id))
@@ -140,8 +153,12 @@ class HomeWindow(xbmcgui.WindowXML):
         selected = self._selected_library()
         if selected is None:
             return
-        if selected.getProperty("collection_type") == LIVE_TV:
+        collection_type = selected.getProperty("collection_type")
+        if collection_type == LIVE_TV:
             show_live_tv(self.client)
+            return
+        if collection_type == SETTINGS:
+            self._open_settings()
             return
         item_type = LIBRARY_ITEM_TYPES[selected.getProperty("collection_type")]
         show_library(self.client, selected.getProperty("id"), selected.getLabel(), item_type)
@@ -187,14 +204,27 @@ class HomeWindow(xbmcgui.WindowXML):
         else:
             self.setFocusId(LIBRARY_BAR)
 
-    # Helpers --------------------------------------------------------------------
+    # Settings and signing out ----------------------------------------------------
+
+    def _open_settings(self):
+        next_step = show_settings(self.connection)
+        if next_step == SIGN_OUT:
+            self._sign_out()
+        elif next_step:
+            self.next_step = next_step
+            self.close()
 
     def _confirm_sign_out(self):
         if xbmcgui.Dialog().yesno(ADDON_NAME, f"Sign out of {self.connection.server_name}?"):
-            self.connection.sign_out()
-            storage.save(self.connection)
-            self.signed_out = True
-            self.close()
+            self._sign_out()
+
+    def _sign_out(self):
+        self.connection.sign_out()
+        storage.save(self.connection)
+        self.next_step = SIGN_OUT
+        self.close()
+
+    # Helpers --------------------------------------------------------------------
 
     @staticmethod
     def _notify(message):

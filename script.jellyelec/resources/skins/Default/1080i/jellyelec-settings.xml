@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    JellyELEC Settings: a list of settings with their current values.
+    Control IDs here must match the constants in resources/lib/settings_screen.py:
+      1000  the settings list
+    Each row's description and the version line are filled by settings_screen.py.
+-->
+<window>
+    <defaultcontrol always="true">1000</defaultcontrol>
+    <controls>
+
+        <!-- Full-screen backing -->
+        <control type="image">
+            <left>0</left>
+            <top>0</top>
+            <width>1920</width>
+            <height>1080</height>
+            <texture>jellyelec-white.png</texture>
+            <colordiffuse>FF101418</colordiffuse>
+        </control>
+
+        <control type="group">
+            <left>260</left>
+            <top>120</top>
+
+            <control type="label">
+                <left>0</left>
+                <top>0</top>
+                <width>1400</width>
+                <height>70</height>
+                <font>font45</font>
+                <textcolor>FFFFFFFF</textcolor>
+                <label>Settings</label>
+            </control>
+            <control type="image">
+                <left>0</left>
+                <top>85</top>
+                <width>120</width>
+                <height>4</height>
+                <texture>jellyelec-white.png</texture>
+                <colordiffuse>FFAA5CC3</colordiffuse>
+            </control>
+
+            <!-- One row per setting: name on the left, current value on the right -->
+            <control type="list" id="1000">
+                <left>0</left>
+                <top>130</top>
+                <width>1400</width>
+                <height>540</height>
+                <orientation>vertical</orientation>
+                <scrolltime>200</scrolltime>
+                <itemlayout width="1400" height="90">
+                    <control type="image">
+                        <left>0</left>
+                        <top>0</top>
+                        <width>1400</width>
+                        <height>78</height>
+                        <texture>jellyelec-white.png</texture>
+                        <colordiffuse>14FFFFFF</colordiffuse>
+                    </control>
+                    <control type="label">
+                        <left>30</left>
+                        <top>0</top>
+                        <width>800</width>
+                        <height>78</height>
+                        <aligny>center</aligny>
+                        <textcolor>FFCFD6DE</textcolor>
+                        <label>$INFO[ListItem.Label]</label>
+                    </control>
+                    <control type="label">
+                        <left>570</left>
+                        <top>0</top>
+                        <width>800</width>
+                        <height>78</height>
+                        <align>right</align>
+                        <aligny>center</aligny>
+                        <textcolor>FF8A93A0</textcolor>
+                        <label>$INFO[ListItem.Label2]</label>
+                    </control>
+                </itemlayout>
+                <focusedlayout width="1400" height="90">
+                    <control type="image">
+                        <left>0</left>
+                        <top>0</top>
+                        <width>1400</width>
+                        <height>78</height>
+                        <texture>jellyelec-white.png</texture>
+                        <colordiffuse>FFAA5CC3</colordiffuse>
+                    </control>
+                    <control type="label">
+                        <left>30</left>
+                        <top>0</top>
+                        <width>800</width>
+                        <height>78</height>
+                        <aligny>center</aligny>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <label>$INFO[ListItem.Label]</label>
+                    </control>
+                    <control type="label">
+                        <left>570</left>
+                        <top>0</top>
+                        <width>800</width>
+                        <height>78</height>
+                        <align>right</align>
+                        <aligny>center</aligny>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <label>$INFO[ListItem.Label2]</label>
+                    </control>
+                </focusedlayout>
+            </control>
+
+            <!-- What the focused setting does -->
+            <control type="textbox">
+                <left>0</left>
+                <top>690</top>
+                <width>1400</width>
+                <height>90</height>
+                <textcolor>FF8A93A0</textcolor>
+                <label>$INFO[Container(1000).ListItem.Property(description)]</label>
+            </control>
+            <control type="label">
+                <left>0</left>
+                <top>800</top>
+                <width>1400</width>
+                <height>40</height>
+                <textcolor>FF6B7480</textcolor>
+                <label>$INFO[Window.Property(about)]</label>
+            </control>
+        </control>
+
+    </controls>
+</window>

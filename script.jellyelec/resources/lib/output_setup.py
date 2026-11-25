@@ -8,13 +8,30 @@ import xbmcaddon
 from resources.lib import kodi_settings
 from resources.lib.kodi import log
 
-# The three answers to "How is this box connected?"
+# The three answers to "How is this box connected?", in the order they're offered.
 TV = "tv"
 RECEIVER = "receiver"
 VIDEO_PROCESSOR = "video_processor"
+CONNECTIONS = (
+    (TV, "Straight to the TV"),
+    (RECEIVER, "Through an AV receiver"),
+    (VIDEO_PROCESSOR, "Through an AV receiver and a video processor"),
+)
+
+# Add-on setting that remembers the answer.
+CONNECTION_SETTING = "box_connection"
 
 # CoreELEC loads the Dolby Vision module from the boot partition at startup.
 DOVI_MODULE_PATH = "/flash/dovi.ko"
+
+# How to add dovi.ko, shown during setup and in Settings.
+DOVI_INSTRUCTIONS = (
+    "JellyELEC can't include the Dolby Vision module (dovi.ko), so it's added by hand:[CR][CR]"
+    "1.  Shut down this box and put its card or USB stick in a computer.[CR]"
+    "2.  Copy dovi.ko onto the drive named COREELEC (into the top folder, not a subfolder).[CR]"
+    "3.  Put the card back and turn the box on.[CR][CR]"
+    "Without it, Dolby Vision titles play in HDR10 instead."
+)
 
 # Add-on setting: video processor mode was chosen, but its Dolby Vision settings are still to
 # be made. CoreELEC hides those settings until dovi.ko is installed, so they can wait.
@@ -52,9 +69,24 @@ def dolby_vision_ready():
     return os.path.isfile(DOVI_MODULE_PATH)
 
 
+def dolby_vision_pending():
+    """True if video processor mode's Dolby Vision settings are still to be made."""
+    return xbmcaddon.Addon().getSettingBool(DOLBY_VISION_PENDING_SETTING)
+
+
+def current_connection():
+    """The saved answer (TV, RECEIVER or VIDEO_PROCESSOR), or "" if setup hasn't asked yet."""
+    return xbmcaddon.Addon().getSetting(CONNECTION_SETTING)
+
+
+def connection_name(connection_type):
+    return dict(CONNECTIONS).get(connection_type, "Not set")
+
+
 def apply_connection(connection_type):
-    """Change Kodi's settings to suit the connection. Returns True if every change worked."""
+    """Change Kodi's settings to suit the connection, and remember it. Returns True if every change worked."""
     log(f"Setting up output for: {connection_type}")
+    xbmcaddon.Addon().setSetting(CONNECTION_SETTING, connection_type)
     worked = _set_passthrough(connection_type != TV)
 
     _set_dolby_vision_pending(connection_type == VIDEO_PROCESSOR)
@@ -69,7 +101,7 @@ def apply_pending_dolby_vision():
     Called during setup and at every start, so the settings are made on the first start after
     dovi.ko is added. Returns False only if Kodi refused a change.
     """
-    if not xbmcaddon.Addon().getSettingBool(DOLBY_VISION_PENDING_SETTING):
+    if not dolby_vision_pending():
         return True
     if not dolby_vision_ready():
         log("Video processor mode: Dolby Vision settings will be made once dovi.ko is installed.")

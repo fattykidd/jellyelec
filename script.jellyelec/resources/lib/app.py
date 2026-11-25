@@ -5,32 +5,44 @@ from resources.lib.home import HomeWindow
 from resources.lib.keymap import install_keymap
 from resources.lib.kodi import ADDON_PATH
 from resources.lib.session import start_session
+from resources.lib.settings_screen import RUN_SETUP, SIGN_OUT
 
 
 def run():
     install_keymap()
-    first_run = not setup.is_complete()
-    if first_run and not setup.run_before_sign_in():
-        return
-    if not first_run:
+    if setup.is_complete():
         # Finishes video processor mode once dovi.ko has been added after setup.
         output_setup.apply_pending_dolby_vision()
+        closing_steps_due = False
+    elif setup.run_before_sign_in():
+        closing_steps_due = True
+    else:
+        return
 
     connection = storage.load()
     while True:
         client = start_session(connection)
         if client is None:
             return
-        if first_run:
+        if closing_steps_due:
             setup.run_after_sign_in()
-            first_run = False
+            closing_steps_due = False
 
-        window = HomeWindow("jellyelec-home.xml", ADDON_PATH, "Default", "1080i")
-        window.client = client
-        window.connection = connection
-        window.doModal()
-        signed_out = window.signed_out
-        del window
-
-        if not signed_out:
+        next_step = _show_home(client, connection)
+        if next_step == RUN_SETUP:
+            if not setup.run_before_sign_in():
+                return
+            closing_steps_due = True
+        elif next_step != SIGN_OUT:
             return
+
+
+def _show_home(client, connection):
+    """Show the home screen until it closes. Returns its next_step."""
+    window = HomeWindow("jellyelec-home.xml", ADDON_PATH, "Default", "1080i")
+    window.client = client
+    window.connection = connection
+    window.doModal()
+    next_step = window.next_step
+    del window
+    return next_step
