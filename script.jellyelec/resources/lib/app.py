@@ -6,20 +6,10 @@ from resources.lib.keymap import install_keymap
 from resources.lib.kodi import ADDON_PATH
 from resources.lib.session import start_session
 from resources.lib.settings_screen import EXIT_TO_KODI, RUN_SETUP, SIGN_OUT
-from resources.lib.splash import open_splash
 
 
-def run():
-    # The backdrop goes up first, so Kodi's home screen isn't seen while JellyELEC starts.
-    splash = open_splash()
-    try:
-        _run(splash)
-    finally:
-        splash.close()
-        del splash
-
-
-def _run(splash):
+def run(splash):
+    """Run JellyELEC until it's left. splash is the backdrop default.py has already put up."""
     install_keymap()
     if setup.is_complete():
         # Finishes video processor mode once dovi.ko has been added after setup.
