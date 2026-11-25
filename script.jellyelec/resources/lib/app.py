@@ -1,11 +1,11 @@
 """Application startup: install the key map, run first-run setup if needed, sign in, then show home."""
 
-from resources.lib import output_setup, setup, storage
+from resources.lib import appliance, output_setup, setup, storage
 from resources.lib.home import HomeWindow
 from resources.lib.keymap import install_keymap
 from resources.lib.kodi import ADDON_PATH
 from resources.lib.session import start_session
-from resources.lib.settings_screen import RUN_SETUP, SIGN_OUT
+from resources.lib.settings_screen import EXIT_TO_KODI, RUN_SETUP, SIGN_OUT
 
 
 def run():
@@ -33,6 +33,9 @@ def run():
             if not setup.run_before_sign_in():
                 return
             closing_steps_due = True
+        elif next_step == EXIT_TO_KODI:
+            appliance.leave_for_maintenance()
+            return
         elif next_step != SIGN_OUT:
             return
 

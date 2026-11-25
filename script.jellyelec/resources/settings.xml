@@ -5,6 +5,8 @@
                  label="Guide: corner for the live picture"/>
     </category>
     <category label="Setup">
+        <setting id="appliance_mode" type="bool" default="true"
+                 label="Open JellyELEC when the box starts, and reopen it if it closes"/>
         <setting type="action" label="Run setup again next time JellyELEC starts"
                  action="RunScript(script.jellyelec,reset_setup)"/>
         <!-- Kept by first-run setup; not shown on screen. -->

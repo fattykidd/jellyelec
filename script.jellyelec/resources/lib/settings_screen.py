@@ -4,10 +4,11 @@ Each row shows a setting and its current value; OK changes it. Rows that need th
 screen to do something (sign out, run setup) close Settings and report it in next_step.
 """
 
+import xbmc
 import xbmcaddon
 import xbmcgui
 
-from resources.lib import output_setup, remote_control
+from resources.lib import appliance, output_setup, remote_control
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, ADDON_VERSION, log
 from resources.lib.setup import show_settings_warning
 
@@ -17,6 +18,10 @@ SETTINGS_LIST = 1000
 # What Settings can ask the home screen to do once it closes.
 SIGN_OUT = "sign_out"
 RUN_SETUP = "run_setup"
+EXIT_TO_KODI = "exit_to_kodi"
+
+# The power menu's choices, and the Kodi commands that carry them out.
+POWER_CHOICES = (("Restart", "Reboot"), ("Power off", "Powerdown"))
 
 # Add-on setting for the guide's live picture, shared with live_tv.py.
 GUIDE_CORNER_SETTING = "guide_video_corner"
@@ -29,12 +34,15 @@ CONNECTION = "connection"
 DOLBY_VISION = "dolby_vision"
 GUIDE_CORNER = "guide_corner"
 REMOTE_CONTROL = "remote_control"
+APPLIANCE_MODE = "appliance_mode"
 RUN_SETUP_ROW = "run_setup"
 SIGN_OUT_ROW = "sign_out"
+POWER = "power"
+EXIT_TO_KODI_ROW = "exit_to_kodi"
 
 
 def show_settings(connection):
-    """Open Settings. Returns SIGN_OUT, RUN_SETUP, or None when the user just goes back."""
+    """Open Settings. Returns SIGN_OUT, RUN_SETUP, EXIT_TO_KODI, or None when the user just goes back."""
     window = SettingsWindow("jellyelec-settings.xml", ADDON_PATH, "Default", "1080i")
     window.connection = connection
     window.doModal()
@@ -72,8 +80,11 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             DOLBY_VISION: self._check_dolby_vision,
             GUIDE_CORNER: self._change_guide_corner,
             REMOTE_CONTROL: self._toggle_remote_control,
+            APPLIANCE_MODE: self._toggle_appliance_mode,
             RUN_SETUP_ROW: self._run_setup,
             SIGN_OUT_ROW: self._sign_out,
+            POWER: self._show_power_menu,
+            EXIT_TO_KODI_ROW: self._exit_to_kodi,
         }
         key = self.getControl(SETTINGS_LIST).getSelectedItem().getProperty("key")
         handlers[key]()
@@ -98,11 +109,20 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                  "On" if remote_control.is_enabled() else "Off",
                  "Needed by the Unfolded Circle Kodi integration. Lets devices on your home network "
                  "control this box."),
+            _row(APPLIANCE_MODE, "Open JellyELEC when the box starts",
+                 "On" if appliance.is_enabled() else "Off",
+                 "Starts JellyELEC with the box and reopens it if it ever closes, so the box always "
+                 "shows JellyELEC."),
             _row(RUN_SETUP_ROW, "Run setup again", "",
                  "Go through the first-run screens again: Dolby Vision, connection and remote control."),
             _row(SIGN_OUT_ROW, "Sign out",
                  f"{self.connection.user_name} on {self.connection.server_name}",
                  "Sign out of this server, to sign in as someone else or choose another server."),
+            _row(POWER, "Power", "",
+                 "Restart or power off the box."),
+            _row(EXIT_TO_KODI_ROW, "Exit to Kodi", "",
+                 "Leave JellyELEC for Kodi's own menus, for maintenance. JellyELEC opens again at the "
+                 "next restart."),
         ])
         settings_list.selectItem(max(position, 0))
 
@@ -150,6 +170,10 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             _notify("Couldn't change remote control. Details are in the log.")
         self._fill_list()
 
+    def _toggle_appliance_mode(self):
+        appliance.set_enabled(not appliance.is_enabled())
+        self._fill_list()
+
     def _run_setup(self):
         if xbmcgui.Dialog().yesno(ADDON_NAME, "Run setup again now?"):
             log("Running setup again from Settings.")
@@ -159,6 +183,17 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
     def _sign_out(self):
         if xbmcgui.Dialog().yesno(ADDON_NAME, f"Sign out of {self.connection.server_name}?"):
             self.next_step = SIGN_OUT
+            self.close()
+
+    def _show_power_menu(self):
+        choice = xbmcgui.Dialog().select("Power", [label for label, _command in POWER_CHOICES])
+        if choice >= 0:
+            log(f"Power menu: {POWER_CHOICES[choice][0]}.")
+            xbmc.executebuiltin(POWER_CHOICES[choice][1])
+
+    def _exit_to_kodi(self):
+        if xbmcgui.Dialog().yesno(ADDON_NAME, "Exit to Kodi? JellyELEC opens again at the next restart."):
+            self.next_step = EXIT_TO_KODI
             self.close()
 
 

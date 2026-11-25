@@ -46,7 +46,7 @@
                 <left>0</left>
                 <top>130</top>
                 <width>1400</width>
-                <height>540</height>
+                <height>630</height>
                 <orientation>vertical</orientation>
                 <scrolltime>200</scrolltime>
                 <itemlayout width="1400" height="90">
@@ -112,7 +112,7 @@
             <!-- What the focused setting does -->
             <control type="textbox">
                 <left>0</left>
-                <top>690</top>
+                <top>780</top>
                 <width>1400</width>
                 <height>90</height>
                 <textcolor>FF8A93A0</textcolor>
@@ -120,7 +120,7 @@
             </control>
             <control type="label">
                 <left>0</left>
-                <top>800</top>
+                <top>880</top>
                 <width>1400</width>
                 <height>40</height>
                 <textcolor>FF6B7480</textcolor>

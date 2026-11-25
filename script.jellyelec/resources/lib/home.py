@@ -3,7 +3,7 @@
 import xbmc
 import xbmcgui
 
-from resources.lib import storage
+from resources.lib import appliance, storage
 from resources.lib.api import JellyfinError
 from resources.lib.detail import show_details
 from resources.lib.formatting import episode_line, meta_line
@@ -38,8 +38,8 @@ CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
 class HomeWindow(xbmcgui.WindowXML):
     """Set client and connection before calling doModal().
 
-    When it closes, next_step says what app.py should do: settings_screen.SIGN_OUT or
-    RUN_SETUP, or None to leave JellyELEC.
+    When it closes, next_step says what app.py should do: settings_screen.SIGN_OUT,
+    RUN_SETUP or EXIT_TO_KODI, or None to leave JellyELEC.
     """
 
     client = None
@@ -65,7 +65,10 @@ class HomeWindow(xbmcgui.WindowXML):
     def onAction(self, action):
         action_id = action.getId()
         if action_id in CLOSE_ACTIONS:
-            self.close()
+            # In appliance mode there's nothing behind JellyELEC to go back to;
+            # Settings has Exit to Kodi for that.
+            if not appliance.is_enabled():
+                self.close()
             return
         if action_id == xbmcgui.ACTION_CONTEXT_MENU:
             self._confirm_sign_out()
