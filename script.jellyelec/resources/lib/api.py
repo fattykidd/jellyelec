@@ -131,9 +131,19 @@ class JellyfinClient:
         """A random selection of movies or shows from one library."""
         return self._get_items(library_id, item_type, sort_by="Random", limit=limit)
 
-    def get_library_items(self, library_id, item_type):
-        """Every movie or show in one library, A to Z."""
-        return self._get_items(library_id, item_type, sort_by="SortName")
+    def get_library_items(self, library_id, item_type, group_collections=False):
+        """Every movie or show in one library, A to Z.
+
+        group_collections: show each collection once in place of the movies in it.
+        """
+        extra = {"CollapseBoxSetItems": "true" if group_collections else "false"}
+        return self._get_items(library_id, item_type, sort_by="SortName", extra=extra)
+
+    def get_collection_items(self, collection_id):
+        """The movies (or shows) in a collection, in release order."""
+        return self._get_items(
+            collection_id, item_type=None, sort_by="PremiereDate,SortName", recursive=False
+        )
 
     def get_next_up(self, series_id):
         """The next episode to watch in a show, or None if there isn't one."""
@@ -216,17 +226,19 @@ class JellyfinClient:
         body = self._playback_report(item_id, media_source_id, play_session_id, position_ticks)
         self._request("POST", "/Sessions/Playing/Stopped", body=body)
 
-    def _get_items(self, library_id, item_type, sort_by, limit=None):
+    def _get_items(self, parent_id, item_type, sort_by, limit=None, recursive=True, extra=None):
         params = {
-            "ParentId": library_id,
-            "IncludeItemTypes": item_type,
-            "Recursive": "true",
+            "ParentId": parent_id,
+            "Recursive": "true" if recursive else "false",
             "SortBy": sort_by,
             "SortOrder": "Ascending",
             "Fields": "Overview",
             "ImageTypeLimit": 1,
             "EnableImageTypes": "Primary,Backdrop",
+            **(extra or {}),
         }
+        if item_type:
+            params["IncludeItemTypes"] = item_type
         if limit:
             params["Limit"] = limit
         query = urllib.parse.urlencode(params)

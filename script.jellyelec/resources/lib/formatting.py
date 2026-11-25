@@ -82,10 +82,15 @@ def episode_line(item):
     return "  ·  ".join(parts)
 
 
-def media_summary(item):
-    """Resolution, HDR format and main audio track, like "4K · Dolby Vision · Dolby TrueHD Atmos 7.1"."""
-    sources = item.get("MediaSources") or []
-    streams = (sources[0].get("MediaStreams") if sources else None) or item.get("MediaStreams") or []
+def media_summary(item, source=None):
+    """Resolution, HDR format and main audio track, like "4K · Dolby Vision · Dolby TrueHD Atmos 7.1".
+
+    source: which version to describe. Leave it out for the first.
+    """
+    if source is None:
+        sources = item.get("MediaSources") or []
+        source = sources[0] if sources else None
+    streams = (source.get("MediaStreams") if source else None) or item.get("MediaStreams") or []
 
     video = next((stream for stream in streams if stream.get("Type") == "Video"), None)
     audio_streams = [stream for stream in streams if stream.get("Type") == "Audio"]

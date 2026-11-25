@@ -3,6 +3,7 @@
 import xbmc
 import xbmcgui
 
+from resources.lib import versions
 from resources.lib.api import TICKS_PER_SECOND, JellyfinError
 from resources.lib.formatting import episode_line, format_time, media_summary, meta_line
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log
@@ -20,6 +21,7 @@ CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
 RESUME = "resume"
 PLAY = "play"
 NEXT_EPISODE = "next_episode"
+VERSION = "version"
 TRAILER = "trailer"
 
 
@@ -103,7 +105,7 @@ class DetailWindow(xbmcgui.WindowXML):
         self.setProperty("episode", episode_line(item))
         self.setProperty("meta", meta_line(item))
         self.setProperty("genres", ", ".join((item.get("Genres") or [])[:3]))
-        self.setProperty("media", media_summary(item))
+        self.setProperty("media", media_summary(item, versions.chosen_source(item)))
         self.setProperty("plot", item.get("Overview", ""))
         self.setProperty("poster", poster_url(self.client, item) or "")
         self.setProperty("backdrop", backdrop_url(self.client, item) or "")
@@ -151,6 +153,11 @@ class DetailWindow(xbmcgui.WindowXML):
             actions.append((PLAY, "Play from beginning"))
         else:
             actions.append((PLAY, "Play"))
+
+        # Several versions (4K and 1080p, theatrical and extended): a button to pick one.
+        if len(versions.sources(self._item)) > 1:
+            source = versions.chosen_source(self._item)
+            actions.append((VERSION, f"Version: {versions.short_label(self._item, source)}"))
         return actions
 
     def _show_seasons(self):
@@ -191,6 +198,9 @@ class DetailWindow(xbmcgui.WindowXML):
         if action == TRAILER:
             play(self.client, self._trailers[0], start_seconds=0)
             return
+        if action == VERSION:
+            self._choose_version()
+            return
 
         if action == NEXT_EPISODE:
             play(self.client, self._next_episode)
@@ -226,6 +236,21 @@ class DetailWindow(xbmcgui.WindowXML):
         data = self._extras.get(selected.getProperty("id"))
         if data is not None:
             play(self.client, data, start_seconds=0)
+
+    def _choose_version(self):
+        """Pick which version plays, from now on, for this item."""
+        item_sources = versions.sources(self._item)
+        current = versions.chosen_source(self._item)
+        labels = [versions.version_label(self._item, source) for source in item_sources]
+        choice = xbmcgui.Dialog().select("Version", labels, preselect=item_sources.index(current))
+        if choice < 0:
+            return
+        versions.remember(self.item_id, item_sources[choice]["Id"])
+        log(f"Version for {self.item_id}: {labels[choice]}")
+        self._show_item()
+        position = self.getControl(ACTION_BUTTONS).getSelectedPosition()
+        self._show_actions()
+        self.getControl(ACTION_BUTTONS).selectItem(position)
 
     def _refresh_after_playback(self):
         """Update the resume button with the new position."""

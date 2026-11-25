@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <settings>
+    <category label="Libraries">
+        <setting id="group_collections" type="bool" default="true"
+                 label="Show movie collections once, in place of their movies"/>
+    </category>
     <category label="Live TV">
         <setting id="guide_video_corner" type="select" values="Top right|Top left" default="Top right"
                  label="Guide: corner for the live picture"/>

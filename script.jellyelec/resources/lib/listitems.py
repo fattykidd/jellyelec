@@ -30,9 +30,10 @@ def library_item(library):
 
 
 def media_item(client, data):
-    """A movie, show or episode, with artwork and basic details."""
+    """A movie, show, episode or collection, with artwork and basic details."""
     item = xbmcgui.ListItem(label=data.get("Name", ""), offscreen=True)
     item.setProperty("id", data["Id"])
+    item.setProperty("type", data.get("Type", ""))
 
     art = {"poster": poster_url(client, data), "fanart": backdrop_url(client, data)}
     item.setArt({kind: url for kind, url in art.items() if url})
@@ -47,6 +48,8 @@ def media_item(client, data):
 
     if data.get("Type") == "Series":
         tag.setMediaType("tvshow")
+    elif data.get("Type") == "BoxSet":
+        tag.setMediaType("set")
     elif data.get("Type") == "Episode":
         tag.setMediaType("episode")
         tag.setTvShowTitle(data.get("SeriesName", ""))

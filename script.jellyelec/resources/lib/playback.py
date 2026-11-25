@@ -9,6 +9,7 @@ import uuid
 import xbmc
 import xbmcgui
 
+from resources.lib import versions
 from resources.lib.api import TICKS_PER_SECOND, JellyfinError
 from resources.lib.chapters import STOP, choose_chapter
 from resources.lib.formatting import format_time
@@ -44,7 +45,7 @@ def play(client, data, start_seconds=None):
     if not sources:
         notify("The server has no playable file for this item.")
         return
-    source = sources[0]
+    source = _pick_source(sources, data["Id"])
 
     session = PlaybackSession(
         client,
@@ -62,6 +63,15 @@ def play(client, data, start_seconds=None):
 
     log(f"Playing {data.get('Name')} ({data['Id']}) from {format_time(start_seconds)}.")
     session.run(item, url, start_seconds)
+
+
+def _pick_source(sources, item_id):
+    """The version picked on the details screen, or else the server's first."""
+    remembered = versions.remembered_source_id(item_id)
+    source = next((source for source in sources if source.get("Id") == remembered), sources[0])
+    if len(sources) > 1:
+        log(f"Playing version {source.get('Name') or source.get('Id')} of {len(sources)}.")
+    return source
 
 
 class PlaybackSession:
