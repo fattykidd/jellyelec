@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    JellyELEC backdrop, open behind every other JellyELEC screen (see resources/lib/splash.py).
+    The status line is filled by splash.py through the "status" window property.
+-->
+<window>
+    <backgroundcolor>0xFF101418</backgroundcolor>
+    <controls>
+
+        <control type="image">
+            <left>0</left>
+            <top>0</top>
+            <width>1920</width>
+            <height>1080</height>
+            <texture>jellyelec-white.png</texture>
+            <colordiffuse>FF101418</colordiffuse>
+        </control>
+
+        <control type="label">
+            <left>0</left>
+            <top>440</top>
+            <width>1920</width>
+            <height>120</height>
+            <align>center</align>
+            <aligny>center</aligny>
+            <font>font_clock</font>
+            <textcolor>FFFFFFFF</textcolor>
+            <label>Jelly[COLOR FFAA5CC3]ELEC[/COLOR]</label>
+        </control>
+        <control type="image">
+            <left>900</left>
+            <top>575</top>
+            <width>120</width>
+            <height>4</height>
+            <texture>jellyelec-white.png</texture>
+            <colordiffuse>FFAA5CC3</colordiffuse>
+        </control>
+        <control type="label">
+            <left>0</left>
+            <top>600</top>
+            <width>1920</width>
+            <height>40</height>
+            <align>center</align>
+            <textcolor>FF6B7480</textcolor>
+            <label>$INFO[Window.Property(status)]</label>
+        </control>
+
+    </controls>
+</window>

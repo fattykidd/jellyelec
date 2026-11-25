@@ -22,6 +22,7 @@ HOME_WINDOW_ID = 10000
 RUNNING_PROPERTY = "script.jellyelec.running"
 MAINTENANCE_PROPERTY = "script.jellyelec.maintenance"
 
+STARTUP_CHECK_SECONDS = 0.25
 CHECK_SECONDS = 2
 # How long JellyELEC must have been closed before it's opened again.
 REOPEN_AFTER_SECONDS = 4
@@ -58,8 +59,9 @@ def run_service():
     monitor = xbmc.Monitor()
 
     # Wait for Kodi's own home screen, so JellyELEC doesn't open over the startup splash.
+    # Checked often, so JellyELEC covers the home screen as soon as it appears.
     while not xbmc.getCondVisibility("Window.IsActive(home)"):
-        if monitor.waitForAbort(1):
+        if monitor.waitForAbort(STARTUP_CHECK_SECONDS):
             return
 
     open_at = time.monotonic()  # straight away at startup
