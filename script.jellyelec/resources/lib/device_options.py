@@ -11,7 +11,7 @@ import time
 import xbmc
 import xbmcgui
 
-from resources.lib import box_name, kodi_settings, system_services
+from resources.lib import box_name, kodi_addons, kodi_settings, system_services
 from resources.lib.kodi import ADDON_NAME, log
 
 # Wi-Fi and Bluetooth pairing are done in CoreELEC's own settings screens.
@@ -161,11 +161,12 @@ def weather_summary():
 
 def set_up_weather():
     """Install the weather add-on if needed, choose a location in its settings, then use it."""
-    if not xbmc.getCondVisibility(f"System.HasAddon({WEATHER_ADDON})"):
-        # Kodi asks to confirm, then installs it from Kodi's add-on repository.
-        xbmc.executebuiltin(f"InstallAddon({WEATHER_ADDON})", True)
-        if not _wait_for(lambda: xbmc.getCondVisibility(f"System.HasAddon({WEATHER_ADDON})"), 60):
-            xbmcgui.Dialog().ok("Weather", "The weather add-on couldn't be installed. Try again later.")
+    if not kodi_addons.is_installed(WEATHER_ADDON):
+        xbmcgui.Dialog().notification("Weather", "Finding the weather add-on…")
+        if not kodi_addons.install(WEATHER_ADDON):
+            xbmcgui.Dialog().ok(
+                "Weather", "The weather add-on couldn't be installed. Check the network and try again."
+            )
             return False
     xbmcgui.Dialog().ok("Weather", "Next, choose your location in the weather add-on's settings, then go back.")
     xbmc.executebuiltin(f"Addon.OpenSettings({WEATHER_ADDON})", True)

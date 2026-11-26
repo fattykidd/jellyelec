@@ -5,10 +5,9 @@ build and 5 on another. So instead of hard-coding numbers, JellyELEC asks the ru
 build for a setting's choices and picks one by its label, the words shown on screen.
 """
 
-import json
-
 import xbmc
 
+from resources.lib import jsonrpc
 from resources.lib.kodi import log
 
 
@@ -76,8 +75,7 @@ def _all_settings():
 
 
 def _call(method, **params):
-    request = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
-    response = json.loads(xbmc.executeJSONRPC(json.dumps(request)))
-    if "error" in response:
-        raise KodiSettingError(f"{method} {params.get('setting', '')}: {response['error'].get('message')}")
-    return response.get("result", {})
+    try:
+        return jsonrpc.call(method, **params)
+    except jsonrpc.JsonRpcError as error:
+        raise KodiSettingError(f"{error} {params.get('setting', '')}".strip()) from error

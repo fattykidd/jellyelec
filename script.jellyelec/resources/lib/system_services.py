@@ -10,11 +10,18 @@ Samba and Bluetooth are on in a new box, SSH is off.
 """
 
 import os
+import shutil
 import subprocess
+import threading
 
 from resources.lib.kodi import log
 
 SERVICES_DIR = "/storage/.cache/services"
+
+# Where the root password is kept, and the image's original copy of that file.
+SHADOW_FILE = "/storage/.cache/shadow"
+DEFAULT_SHADOW_FILE = "/usr/cache/shadow"
+PASSWD_TIMEOUT_SECONDS = 10
 
 SSH = "sshd"
 SAMBA = "samba"
@@ -73,14 +80,38 @@ def set_enabled(service, enabled):
 def set_root_password(password):
     """Set the root password, used to sign in over SSH. Returns True if it was accepted.
 
-    Like CoreELEC's settings add-on, this gives the new password to passwd, which keeps it
-    in /storage/.cache/shadow so it survives updates.
+    Done the same way as CoreELEC's settings add-on (do_sshpasswd): passwd is run and each
+    of its prompts answered in turn. The password is kept in /storage/.cache/shadow, so it
+    survives updates; if that file doesn't exist yet, it starts from the image's copy.
     """
-    result = subprocess.run(
-        ["passwd"], input=f"{password}\n{password}\n", capture_output=True, text=True, check=False
+    if not os.path.exists(SHADOW_FILE):
+        shutil.copy2(DEFAULT_SHADOW_FILE, SHADOW_FILE)
+
+    process = subprocess.Popen(
+        ["passwd"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=0,
     )
-    accepted = result.returncode == 0 and "Bad password" not in result.stdout + result.stderr
-    log("Root password changed." if accepted else "The root password wasn't accepted.")
+    # Never wait on passwd forever, whatever it does.
+    watchdog = threading.Timer(PASSWD_TIMEOUT_SECONDS, process.kill)
+    watchdog.start()
+    try:
+        output = [process.stdout.readline()]
+        for _ in range(2):  # the new password, then the same again to confirm
+            process.stdin.write(f"{password}\n")
+            output.append(process.stdout.readline())
+        process.stdin.close()
+        output.append(process.stdout.read())
+        process.wait()
+    finally:
+        watchdog.cancel()
+
+    said = " | ".join(line.strip() for line in output if line.strip())
+    accepted = process.returncode == 0
+    log(f"Root password {'changed' if accepted else 'not changed'}. passwd said: {said}")
     return accepted
 
 

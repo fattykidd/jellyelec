@@ -10,6 +10,7 @@ from datetime import datetime, timedelta, timezone
 import xbmc
 import xbmcgui
 
+from resources.lib import kodi_addons
 from resources.lib.api import JellyfinError
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log, setting
 from resources.lib.listitems import channel_item
@@ -50,11 +51,11 @@ _ffmpeg_direct_offered = False
 def _check_ffmpeg_direct():
     """Offer to install or turn on FFmpeg Direct, which keeps live streams from stalling."""
     global _ffmpeg_direct_offered
-    if _ffmpeg_direct_offered or xbmc.getCondVisibility(f"System.AddonIsEnabled({FFMPEG_DIRECT})"):
+    if _ffmpeg_direct_offered or kodi_addons.is_enabled(FFMPEG_DIRECT):
         return
     _ffmpeg_direct_offered = True
 
-    installed = xbmc.getCondVisibility(f"System.HasAddon({FFMPEG_DIRECT})")
+    installed = kodi_addons.is_installed(FFMPEG_DIRECT)
     problem = "is turned off" if installed else "isn't installed"
     log(f"Live TV: {FFMPEG_DIRECT} {problem}.", xbmc.LOGWARNING)
     fix = xbmcgui.Dialog().yesno(
@@ -67,10 +68,9 @@ def _check_ffmpeg_direct():
     if not fix:
         return
     if installed:
-        xbmc.executebuiltin(f"EnableAddon({FFMPEG_DIRECT})", True)
-    else:
-        # Kodi asks to confirm, then installs it from the CoreELEC add-on repository.
-        xbmc.executebuiltin(f"InstallAddon({FFMPEG_DIRECT})", True)
+        kodi_addons.enable(FFMPEG_DIRECT)
+    elif not kodi_addons.install(FFMPEG_DIRECT):
+        xbmcgui.Dialog().notification(ADDON_NAME, "FFmpeg Direct couldn't be installed.")
 
 
 class LiveTvWindow(xbmcgui.WindowXML):
