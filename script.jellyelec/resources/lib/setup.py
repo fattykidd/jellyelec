@@ -8,7 +8,7 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-from resources.lib import output_setup, remote_control
+from resources.lib import box_name, output_setup, remote_control
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log
 
 # Control IDs, matching jellyelec-setup.xml.
@@ -43,6 +43,8 @@ def reset():
 def run_after_sign_in():
     """The remote control tip and the closing screen, then setup is marked as done."""
     _run_steps([_remote_control_step, _finished_step])
+    # Done last: renaming restarts the network for a moment.
+    box_name.name_new_box()
     xbmcaddon.Addon().setSettingBool(SETUP_COMPLETE_SETTING, True)
     log("First-run setup complete.")
 

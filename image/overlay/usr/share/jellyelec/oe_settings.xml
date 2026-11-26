@@ -1,13 +1,12 @@
 <?xml version="1.0" ?>
 <!-- Starting settings for CoreELEC's settings add-on in JellyELEC images: its first-run
-     wizard is marked done, the box is named JellyELEC (the add-on sets the network name
-     from here at every boot), and p3i's automatic updates are off. -->
+     wizard is marked done, and p3i's automatic updates are off. (The box's network name
+     is set by JellyELEC's setup: see box_name.py in the add-on.) -->
 <coreelec>
 	<addon_config/>
 	<settings>
 		<system>
 			<wizard_completed>True</wizard_completed>
-			<hostname>JellyELEC</hostname>
 		</system>
 		<connman>
 			<wizard_completed>True</wizard_completed>

@@ -30,8 +30,8 @@ In the system (read-only) part:
   - `usr/lib/tmpfiles.d/jellyelec.conf`: first-boot setup. It skips CoreELEC's first-run
     wizard (JellyELEC's setup replaces it) and turns off p3i's built-in updater, which would
     otherwise replace JellyELEC with stock p3i.
-  - `usr/share/jellyelec/oe_settings.xml`: CoreELEC's settings for a new box: the wizard
-    marked done, and the network name JellyELEC.
+  - `usr/share/jellyelec/oe_settings.xml`: CoreELEC's settings for a new box, with the
+    wizard marked done. (JellyELEC's setup names the box JellyELEC on the network.)
 - `skin/Startup.xml` replaces the skins' startup screen, so the boot goes from the splash
   straight into JellyELEC without showing Kodi's home screen.
 - JellyELEC's splash (from the add-on, `resources/skins/Default/media/jellyelec-splash.png`)
