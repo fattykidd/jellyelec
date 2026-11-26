@@ -36,8 +36,8 @@ In the system (read-only) part:
   straight into JellyELEC without showing Kodi's home screen.
 - JellyELEC's still splash (from the add-on, `resources/skins/Default/media/jellyelec-splash.png`)
   becomes Kodi's splash screen, which is turned on. Once Kodi is up, the startup screen and
-  JellyELEC's backdrop take over from it with the jellyfish animated. The artwork is drawn
-  by `tools/make_splash.py`.
+  JellyELEC's backdrop take over from it, animated. The pictures are built by
+  `tools/make_splash.py` from the artwork in `artwork/`.
 - New installs name Kodi JellyELEC and don't update add-ons automatically: a skin update
   from p3i's add-on repository would undo the startup screen. They also allow installing
   add-ons from zip files ("unknown sources"), for JellyELEC test builds.
@@ -73,4 +73,5 @@ is worth re-running on each new p3i release to check nothing has moved.
 
 JellyELEC images are p3i by pannal and the p3i contributors, based on U3k by Jamal and the
 CoreELEC, LibreELEC and Kodi projects. Their code is GPLv2 and owned by its authors.
-`boot/remote.conf` is the standard key map for the Ugoos UR-01 remote.
+`boot/remote.conf` is the standard key map for the Ugoos UR-01 remote. The splash artwork was
+created by fattykidd with Google Gemini and upscaled with Upscayl (see `artwork/README.md`).

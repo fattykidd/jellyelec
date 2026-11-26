@@ -1,132 +1,91 @@
-"""Draw JellyELEC's splash artwork: a jellyfish, the wordmark, and the still splash.
+"""Build JellyELEC's splash pictures from the artwork in artwork/.
 
     python3 tools/make_splash.py
 
-Writes into the add-on's skin media folder:
-  jellyelec-jellyfish.png  one jellyfish, drawn large; the screens show it at several sizes
-  jellyelec-wordmark.png   "JellyELEC" and its accent bar on a transparent background
-  jellyelec-splash.png     the still splash: background, jellyfish where the animation
-                           starts, then the wordmark (used for the boot and Kodi splashes)
+Writes these 1920×1080 pictures into the add-on's skin media folder:
+  jellyelec-ocean.png      the background
+  jellyelec-rays.png       extra light rays, faded in and out over the ocean's own
+  jellyelec-triangle.png   the circuit triangle, see-through, toned down so the jellyfish leads
+  jellyelec-jellyfish.png  the jellyfish, see-through
+  jellyelec-wordmark.png   "JellyELEC" and its accent bar, below the triangle
+  jellyelec-splash.png     all of the above in one still picture: the boot and Kodi splash
 
-The jellyfish positions below must match the animated screens (jellyelec-splash.xml in the
-add-on and image/skin/Startup.xml), so the still splash hands over to them seamlessly.
+Every layer is full screen and lined up, so the animated screens (jellyelec-splash.xml in the
+add-on, image/skin/Startup.xml) just stack them. The still splash is the animation's first
+frame, so it hands over to them without a jump.
 
 Needs Pillow, NumPy and the Inter font (Inter-Bold.otf, SIL Open Font License).
 """
 
-import math
 import os
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-MEDIA_DIR = os.path.join(os.path.dirname(__file__), "..", "script.jellyelec", "resources", "skins", "Default", "media")
+REPO_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+ARTWORK_DIR = os.path.join(REPO_DIR, "artwork")
+MEDIA_DIR = os.path.join(REPO_DIR, "script.jellyelec", "resources", "skins", "Default", "media")
 FONT_PATHS = ("/usr/share/fonts/opentype/inter/Inter-Bold.otf", "/usr/share/fonts/inter/Inter-Bold.otf")
 
 SCREEN = (1920, 1080)
-BACKGROUND = (0x10, 0x14, 0x18)
 WHITE = (255, 255, 255)
 ACCENT = (0xAA, 0x5C, 0xC3)
 
-# The jellyfish as drawn, and where each one sits on the screen: left, top, width, height.
-JELLYFISH_SIZE = (300, 480)
-JELLYFISH_PLACES = (
-    (250, 330, 225, 360),   # left
-    (1430, 130, 270, 432),  # right, the largest
-    (1110, 640, 150, 240),  # small, lower right
-)
+# How bright the triangle is, so the jellyfish stands in front of it.
+TRIANGLE_STRENGTH = 0.68
+# How bright the extra light rays are at their brightest.
+RAYS_STRENGTH = 0.22
+# Picture brightness below this counts as black (upscaling leaves faint speckles there).
+BLACK_LEVEL = 0.03
 
-SUPERSAMPLE = 3  # drawn larger, then scaled down, for smooth edges
+WORDMARK_FONT_SIZE = 84
+WORDMARK_CENTRE_Y = 905
 
 
-def draw_jellyfish():
-    """One translucent jellyfish, after a moon jelly.
+def load_artwork(name):
+    """An artwork picture, scaled to the screen."""
+    return Image.open(os.path.join(ARTWORK_DIR, name)).convert("RGB").resize(SCREEN, Image.LANCZOS)
 
-    A wide bell that's clear in the middle and bright at the edges, with faint channels
-    running to the rim and four glowing rings inside; a fringe of short tentacles round
-    the rim and a skirt of long, fine ones trailing below; and a soft glow over it all.
+
+def glow_layer(picture, strength=1.0):
+    """Turn glowing art on black into a see-through layer.
+
+    Each pixel's brightness becomes how solid it is, and its colour is brightened to make up
+    for that, so laid over the ocean it glows the same as it did on black.
     """
-    width, height = (size * SUPERSAMPLE for size in JELLYFISH_SIZE)
-    scale = SUPERSAMPLE
-    random = np.random.default_rng(7)  # fixed, so the drawing is the same every time
+    rgb = np.asarray(picture).astype(np.float32) / 255
+    alpha = rgb.max(axis=2, keepdims=True)
+    colour = np.where(alpha > 0.01, rgb / np.maximum(alpha, 1e-3), 0)
+    alpha = np.clip((alpha - BLACK_LEVEL) / (1 - BLACK_LEVEL), 0, 1) * strength
+    layer = np.concatenate([colour, alpha], axis=2)
+    return Image.fromarray((layer * 255).astype(np.uint8), "RGBA")
 
-    centre_x = width / 2
-    half_width = 138 * scale
-    bell_top, rim_y = 60 * scale, 165 * scale
-    bell_height = rim_y - bell_top
 
-    # The bell, worked out pixel by pixel. r is 0 at the top-centre and 1 at the edge.
-    ys, xs = np.mgrid[0:height, 0:width].astype(np.float32)
-    dx = (xs - centre_x) / half_width
-    dy = (ys - rim_y) / bell_height
-    r = np.sqrt(dx ** 2 + dy ** 2)
-    angle = np.arctan2(dy, dx)  # -pi at the left of the rim, -pi/2 at the top, 0 at the right
-    # The rim isn't a clean line: it's gently scalloped, but only near the bottom edge;
-    # the top of the bell stays smooth.
-    near_rim = np.cos(angle) ** 6
-    edge = 1 + 0.03 * np.cos(angle * 16) * near_rim
-    inside = (r <= edge) & (ys <= rim_y + 6 * scale)
-    closeness = np.clip(r / edge, 0, 1)  # 0 at the top, 1 at the edge
+def draw_rays():
+    """Soft beams of light fanning down from the top centre, to shimmer over the ocean."""
+    width, height = SCREEN
+    layer = Image.new("RGBA", SCREEN, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    source_x = width / 2
+    for offset, spread, brightness in ((-330, 70, 0.8), (-140, 55, 1.0), (60, 80, 0.9), (260, 60, 0.7)):
+        top = (source_x + offset * 0.25, -40)
+        bottom_left = (source_x + offset - spread, height * 0.8)
+        bottom_right = (source_x + offset + spread, height * 0.8)
+        alpha = int(255 * RAYS_STRENGTH * brightness)
+        draw.polygon([top, bottom_right, bottom_left], fill=(150, 200, 230, alpha))
+    layer = layer.filter(ImageFilter.GaussianBlur(45))
 
-    alpha = 40 + 175 * closeness ** 3
-    # Faint channels running from the top to the rim.
-    alpha += 25 * (np.cos(angle * 24) > 0.92) * closeness
-    deep, pale = np.array([105, 55, 150]), np.array([228, 190, 248])
-    colour = deep + (pale - deep) * (closeness[..., None] ** 2)
-    bell = np.zeros((height, width, 4), np.float32)
-    bell[..., :3] = colour
-    bell[..., 3] = np.where(inside, alpha, 0)
-
-    # Four rings inside the bell, in a clover, glowing pink.
-    ring_y = bell_top + bell_height * 0.62
-    for ring_x, ring_dy in ((-42, 0), (42, 0), (-14, -12), (14, -12)):
-        rx = (xs - (centre_x + ring_x * scale)) / (17 * scale)
-        ry = (ys - (ring_y + ring_dy * scale)) / (11 * scale)
-        band = np.exp(-((np.sqrt(rx ** 2 + ry ** 2) - 1) ** 2) / 0.04)
-        ring_alpha = band * 115 * inside
-        mix = ring_alpha / 255
-        bell[..., :3] = bell[..., :3] * (1 - mix[..., None]) + np.array([250, 175, 225]) * mix[..., None]
-        bell[..., 3] = np.maximum(bell[..., 3], ring_alpha)
-
-    bell_image = Image.fromarray(np.clip(bell, 0, 255).astype(np.uint8), "RGBA")
-    bell_image = bell_image.filter(ImageFilter.GaussianBlur(0.8 * scale))
-
-    # Tentacles: a fringe of short ones round the rim, and long, fine ones trailing below.
-    tentacles = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-    for count, shortest, longest, base_alpha in ((70, 0.06, 0.16, 120), (22, 0.45, 1.0, 150)):
-        for _ in range(count):
-            across = random.uniform(-0.97, 0.97)
-            start_x = centre_x + across * half_width
-            start_y = rim_y - (1 - (1 - across ** 2) ** 0.5) * bell_height * 0.15
-            length = random.uniform(shortest, longest) * (height - rim_y)
-            phase, sway = random.uniform(0, 6.3), random.uniform(4, 10) * scale
-            strand = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-            strand_draw = ImageDraw.Draw(strand)
-            previous = (start_x, start_y)
-            for step in range(1, 50):
-                t = step / 49
-                point = (
-                    start_x + across * 30 * scale * t ** 1.4 + math.sin(t * 5 + phase) * sway * t,
-                    start_y + t * length,
-                )
-                fade = int(base_alpha * (1 - t) ** 1.3)
-                strand_draw.line([previous, point], fill=(222, 185, 245, fade), width=max(1, int(1.2 * scale)))
-                previous = point
-            tentacles = Image.alpha_composite(tentacles, strand)
-
-    jellyfish = Image.alpha_composite(tentacles, bell_image)
-
-    # A soft bioluminescent glow over the whole animal.
-    glow = jellyfish.filter(ImageFilter.GaussianBlur(14 * scale))
-    glow.putalpha(glow.getchannel("A").point(lambda a: int(a * 0.7)))
-    jellyfish = Image.alpha_composite(glow, jellyfish)
-    return jellyfish.resize(JELLYFISH_SIZE, Image.LANCZOS)
+    # Fade the beams out towards the bottom, as light does in deep water.
+    fade = np.linspace(1.0, 0.0, height) ** 1.6
+    pixels = np.asarray(layer).astype(np.float32)
+    pixels[..., 3] *= fade[:, None]
+    return Image.fromarray(pixels.astype(np.uint8), "RGBA")
 
 
 def draw_wordmark():
     """'Jelly' in white and 'ELEC' in the accent colour, with the accent bar beneath."""
     font_path = next(path for path in FONT_PATHS if os.path.exists(path))
-    font = ImageFont.truetype(font_path, 150)
+    font = ImageFont.truetype(font_path, WORDMARK_FONT_SIZE)
     layer = Image.new("RGBA", SCREEN, (0, 0, 0, 0))
     draw = ImageDraw.Draw(layer)
     left_text, right_text = "Jelly", "ELEC"
@@ -134,30 +93,28 @@ def draw_wordmark():
     right_width = draw.textlength(right_text, font=font)
     ascent, descent = font.getmetrics()
     x = (SCREEN[0] - (left_width + right_width)) / 2
-    y = (SCREEN[1] - (ascent + descent)) / 2 - 30
+    y = WORDMARK_CENTRE_Y - (ascent + descent) / 2
     draw.text((x, y), left_text, font=font, fill=WHITE)
     draw.text((x + left_width, y), right_text, font=font, fill=ACCENT)
-    bar_top = y + ascent + descent + 36
-    draw.rectangle([(SCREEN[0] - 160) / 2, bar_top, (SCREEN[0] + 160) / 2, bar_top + 6], fill=ACCENT)
+    bar_top = y + ascent + descent + 18
+    draw.rectangle([(SCREEN[0] - 90) / 2, bar_top, (SCREEN[0] + 90) / 2, bar_top + 4], fill=ACCENT)
     return layer
 
 
-def draw_still_splash(jellyfish, wordmark):
-    """The splash as the animation's first frame: background, jellyfish, then the wordmark."""
-    splash = Image.new("RGBA", SCREEN, (*BACKGROUND, 255))
-    for left, top, width, height in JELLYFISH_PLACES:
-        splash.alpha_composite(jellyfish.resize((width, height), Image.LANCZOS), (left, top))
-    splash.alpha_composite(wordmark)
-    return splash.convert("RGB")
-
-
 def main():
-    jellyfish = draw_jellyfish()
-    wordmark = draw_wordmark()
-    jellyfish.save(os.path.join(MEDIA_DIR, "jellyelec-jellyfish.png"), optimize=True)
-    wordmark.save(os.path.join(MEDIA_DIR, "jellyelec-wordmark.png"), optimize=True)
-    draw_still_splash(jellyfish, wordmark).save(os.path.join(MEDIA_DIR, "jellyelec-splash.png"), optimize=True)
-    print(f"Wrote the splash artwork to {os.path.normpath(MEDIA_DIR)}")
+    layers = {
+        "jellyelec-ocean.png": load_artwork("ocean.png").convert("RGBA"),
+        "jellyelec-rays.png": draw_rays(),
+        "jellyelec-triangle.png": glow_layer(load_artwork("triangle.png"), TRIANGLE_STRENGTH),
+        "jellyelec-jellyfish.png": glow_layer(load_artwork("jellyfish.png")),
+        "jellyelec-wordmark.png": draw_wordmark(),
+    }
+    still = Image.new("RGBA", SCREEN)
+    for name, layer in layers.items():
+        layer.save(os.path.join(MEDIA_DIR, name), optimize=True)
+        still.alpha_composite(layer)
+    still.convert("RGB").save(os.path.join(MEDIA_DIR, "jellyelec-splash.png"), optimize=True)
+    print(f"Wrote the splash pictures to {os.path.normpath(MEDIA_DIR)}")
 
 
 if __name__ == "__main__":
