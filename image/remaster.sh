@@ -11,7 +11,8 @@
 #     - adds the files in image/overlay/: first-boot settings and the update block
 #     - replaces the skins' startup screen with image/skin/Startup.xml (no Kodi home screen at boot)
 #     - uses JellyELEC's splash for Kodi's splash screen, and turns that screen on
-#     - for new installs: names the box JellyELEC and turns off automatic add-on updates
+#     - for new installs: names Kodi JellyELEC, turns off automatic add-on updates, and
+#       allows installing add-ons from zip files
 #   COREELEC (the boot partition)
 #     - dtb.img for the Ugoos AM6B+, the Ugoos remote's remote.conf, and the HDMI-CEC name
 #     - oemsplash.png: JellyELEC's splash in place of p3i's during the early boot
@@ -128,6 +129,8 @@ add_kodi_setting services.devicename "$BOX_NAME"
 # JellyELEC startup screen, and an appliance shouldn't change itself mid-use.
 # (0 = install automatically, 1 = notify only, 2 = never check)
 add_kodi_setting general.addonupdates 2
+# Allow installing add-ons from zip files, such as a new JellyELEC test build.
+add_kodi_setting addons.unknownsources true
 
 step "Packing SYSTEM"
 rm -f "$work/SYSTEM"

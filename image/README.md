@@ -37,7 +37,8 @@ In the system (read-only) part:
 - JellyELEC's splash (from the add-on, `resources/skins/Default/media/jellyelec-splash.png`)
   becomes Kodi's splash screen, which is turned on.
 - New installs name Kodi JellyELEC and don't update add-ons automatically: a skin update
-  from p3i's add-on repository would undo the startup screen.
+  from p3i's add-on repository would undo the startup screen. They also allow installing
+  add-ons from zip files ("unknown sources"), for JellyELEC test builds.
 
 On the COREELEC (boot) partition:
 
