@@ -6,7 +6,7 @@ The add-on settings' "Run setup again" button runs it with the argument reset_se
 import sys
 
 from resources.lib import appliance
-from resources.lib.splash import hand_over_to_new_version, open_splash
+from resources.lib.splash import open_splash, start_new_version
 
 if "reset_setup" in sys.argv[1:]:
     from resources.lib.setup import reset
@@ -24,10 +24,10 @@ else:
 
         updated = run(splash)
     finally:
-        # After an update, the new version takes over the running flag and puts up its own
-        # backdrop before this one closes, so nothing else shows in between. If it doesn't
-        # start, the flag is cleared so appliance mode opens JellyELEC again.
-        if not (updated and hand_over_to_new_version(splash)):
-            appliance.mark_running(False)
         splash.close()
         del splash
+        # After an update, the new version starts straight away and takes over the running
+        # flag. Otherwise, or if it doesn't start, the flag is cleared, and appliance mode
+        # opens JellyELEC again.
+        if not (updated and start_new_version()):
+            appliance.mark_running(False)
