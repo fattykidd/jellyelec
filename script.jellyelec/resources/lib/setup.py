@@ -144,6 +144,8 @@ def _connection_step():
     connection_type = output_setup.CONNECTIONS[choice][0]
     if not output_setup.apply_connection(connection_type):
         show_settings_warning()
+    elif connection_type == output_setup.VIDEO_PROCESSOR and output_setup.waiting_for_lldv():
+        xbmcgui.Dialog().ok("Dolby Vision", output_setup.LLDV_WAITING_MESSAGE)
     return NEXT
 
 

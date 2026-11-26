@@ -38,6 +38,11 @@ def choices(setting_id):
     return []
 
 
+def has_choice(setting_id, wanted_label):
+    """True if one of the setting's choices has wanted_label in its label (ignoring case)."""
+    return any(_label_matches(label, wanted_label, False) for _value, label in choices(setting_id))
+
+
 def set_by_label(setting_id, *wanted_labels, exact=False):
     """Pick the first choice whose label contains one of wanted_labels (ignoring case).
 

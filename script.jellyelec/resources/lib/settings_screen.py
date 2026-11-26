@@ -190,24 +190,24 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         choice = xbmcgui.Dialog().select("How is this box connected?", names, preselect=preselect)
         if choice < 0:
             return
-        if output_setup.apply_connection(output_setup.CONNECTIONS[choice][0]):
-            _notify("Sound and picture settings updated.")
-        else:
+        connection_type = output_setup.CONNECTIONS[choice][0]
+        if not output_setup.apply_connection(connection_type):
             show_settings_warning()
+        elif connection_type == output_setup.VIDEO_PROCESSOR and output_setup.waiting_for_lldv():
+            xbmcgui.Dialog().ok("Dolby Vision", output_setup.LLDV_WAITING_MESSAGE)
+        else:
+            _notify("Sound and picture settings updated.")
 
     def _check_dolby_vision(self):
         if not output_setup.dolby_vision_ready():
             xbmcgui.Dialog().textviewer("Dolby Vision", output_setup.DOVI_INSTRUCTIONS)
         elif output_setup.dolby_vision_pending():
-            if output_setup.apply_pending_dolby_vision():
-                _notify("Dolby Vision settings finished.")
+            if not output_setup.apply_pending_dolby_vision():
+                show_settings_warning()
+            elif output_setup.waiting_for_lldv():
+                xbmcgui.Dialog().ok("Dolby Vision", output_setup.LLDV_WAITING_MESSAGE)
             else:
-                xbmcgui.Dialog().ok(
-                    "Dolby Vision",
-                    "CoreELEC isn't offering its Dolby Vision settings yet. That usually means the "
-                    "display chain doesn't support Dolby Vision.[CR]"
-                    "They'll be finished automatically once it does.",
-                )
+                _notify("Dolby Vision settings finished.")
         else:
             xbmcgui.Dialog().ok("Dolby Vision", "The Dolby Vision module is installed and set up.")
 
@@ -333,7 +333,7 @@ def _dolby_vision_status():
     if not output_setup.dolby_vision_ready():
         return "Not installed"
     if output_setup.dolby_vision_pending():
-        return "Installed · settings waiting"
+        return "Installed · waiting for LLDV"
     return "Installed"
 
 

@@ -21,6 +21,12 @@ WIRED_CARRIER_FILE = "/sys/class/net/eth0/carrier"
 
 # The weather add-on offered in setup: no account or API key needed.
 WEATHER_ADDON = "weather.gismeteo"
+# Kodi's dialogs that the weather add-on can open while it's being set up: its settings, and
+# the location search it may run the first time it's used.
+WEATHER_DIALOGS = (
+    "addonsettings", "virtualkeyboard", "selectdialog", "yesnodialog", "okdialog",
+    "progressdialog", "busydialog", "busydialognocancel",
+)
 
 MIN_PASSWORD_LENGTH = 6
 # A network name: letters, numbers and hyphens, not starting or ending with a hyphen.
@@ -176,11 +182,15 @@ def set_up_weather():
             return False
     xbmcgui.Dialog().ok("Weather", "Next, choose your location in the weather add-on's settings, then go back.")
     xbmc.executebuiltin(f"Addon.OpenSettings({WEATHER_ADDON})", True)
+    _wait_for_weather_dialogs(appear_seconds=2)
     try:
         kodi_settings.set_value("weather.addon", WEATHER_ADDON)
     except kodi_settings.KodiSettingError as error:
         log(f"Couldn't turn on the weather: {error}")
         return False
+    # Kodi runs the add-on straight away, and it may ask for a location the first time.
+    # Setup waits for that, so it doesn't pop up after setup has moved on.
+    _wait_for_weather_dialogs(appear_seconds=5)
     return True
 
 
@@ -192,6 +202,20 @@ def turn_off_weather():
 
 
 # Helpers ----------------------------------------------------------------------------
+
+def _wait_for_weather_dialogs(appear_seconds):
+    """Wait up to appear_seconds for one of the weather add-on's dialogs to open, then until
+    they've all closed. A short pause after each close catches one dialog leading to another,
+    such as a location search followed by a list of matching places."""
+    monitor = xbmc.Monitor()
+    deadline = time.monotonic() + appear_seconds
+    while not monitor.abortRequested():
+        if any(xbmc.getCondVisibility(f"Window.IsVisible({name})") for name in WEATHER_DIALOGS):
+            deadline = time.monotonic() + 1.5
+        elif time.monotonic() >= deadline:
+            return
+        monitor.waitForAbort(0.25)
+
 
 def _pick(setting_id, heading):
     """Choose a Kodi setting's value from its list. Returns True if one was chosen."""

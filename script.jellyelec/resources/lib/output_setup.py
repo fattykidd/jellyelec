@@ -24,6 +24,14 @@ CONNECTION_SETTING = "box_connection"
 # CoreELEC loads the Dolby Vision module from the boot partition at startup.
 DOVI_MODULE_PATH = "/flash/dovi.ko"
 
+# Shown when video processor mode is chosen but the display chain isn't offering LLDV.
+LLDV_WAITING_MESSAGE = (
+    "Your display chain isn't offering LLDV right now, so the Dolby Vision type was left as "
+    "it is. Everything else is set up.[CR][CR]"
+    "JellyELEC will switch to LLDV by itself the first time it starts with the video "
+    "processor connected and offering LLDV."
+)
+
 # How to add dovi.ko, shown during setup and in Settings.
 DOVI_INSTRUCTIONS = (
     "JellyELEC can't include the Dolby Vision module (dovi.ko), so it's added by hand:[CR][CR]"
@@ -98,8 +106,9 @@ def apply_connection(connection_type):
 def apply_pending_dolby_vision():
     """Make video processor mode's Dolby Vision settings, if they're waiting and dovi.ko is in.
 
-    Called during setup and at every start, so the settings are made on the first start after
-    dovi.ko is added. Returns False only if Kodi refused a change.
+    Called during setup and at every start. CoreELEC only offers LLDV when the display chain
+    says it accepts it, so the settings stay waiting until a start where LLDV is offered.
+    Returns False only if Kodi refused a change.
     """
     if not dolby_vision_pending():
         return True
@@ -108,13 +117,31 @@ def apply_pending_dolby_vision():
         return True
 
     _log_dolby_vision_choices()
-    worked = _try(kodi_settings.set_by_label, DOLBY_VISION_TYPE, "LLDV", "Player Led")
+    # The type goes first: it decides which VS10 settings CoreELEC shows.
+    lldv_offered = kodi_settings.has_choice(DOLBY_VISION_TYPE, "LLDV")
+    if lldv_offered:
+        worked = _try(kodi_settings.set_by_label, DOLBY_VISION_TYPE, "LLDV")
+    else:
+        log("Video processor mode: LLDV isn't offered by this display chain yet, so the "
+            "Dolby Vision type is left as it is until a start where it is.")
+        worked = True
+
     for setting_id in VS10_SETTINGS:
+        # CoreELEC hides a format's VS10 setting when it doesn't apply.
+        if not kodi_settings.choices(setting_id):
+            log(f"{setting_id} isn't offered here, so it's skipped.")
+            continue
         worked = _try(kodi_settings.set_by_label, setting_id, "Off", exact=True) and worked
-    if worked:
+
+    if lldv_offered and worked:
         _set_dolby_vision_pending(False)
         log("Video processor mode: Dolby Vision set to LLDV with VS10 off.")
     return worked
+
+
+def waiting_for_lldv():
+    """True if dovi.ko is in but video processor mode's LLDV setting is still to be made."""
+    return dolby_vision_ready() and dolby_vision_pending()
 
 
 # Sound ------------------------------------------------------------------------------------
