@@ -296,11 +296,9 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             return
         progress.close()
 
-        if appliance.is_enabled():
-            message = "JellyELEC will now restart into the new version."
-        else:
-            message = "Open JellyELEC again to use the new version."
-        xbmcgui.Dialog().ok("Updating JellyELEC", f"Version {release.version} is installed. {message}")
+        xbmcgui.Dialog().ok(
+            "Updating JellyELEC", f"Version {release.version} is installed. JellyELEC will now restart into it."
+        )
         self.next_step = RESTART
         self.close()
 

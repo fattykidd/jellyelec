@@ -14,7 +14,10 @@ from resources.lib.settings_screen import EXIT_TO_KODI, RESTART, RUN_SETUP, SIGN
 
 
 def run(splash):
-    """Run JellyELEC until it's left. splash is the backdrop default.py has already put up."""
+    """Run JellyELEC until it's left. splash is the backdrop default.py has already put up.
+
+    Returns True if it was left to switch to a newly installed version.
+    """
     install_keymap()
     remove_live_tv_keymap()
     if setup.is_complete():
@@ -47,7 +50,7 @@ def run(splash):
             appliance.leave_for_maintenance()
             return
         elif next_step == RESTART:
-            return  # after an update: appliance mode reopens JellyELEC, now the new version
+            return True
         elif next_step != SIGN_OUT:
             return
 
