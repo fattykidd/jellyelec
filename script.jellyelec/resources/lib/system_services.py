@@ -78,7 +78,10 @@ def set_enabled(service, enabled):
 
 
 def set_root_password(password):
-    """Set the root password, used to sign in over SSH. Returns True if it was accepted.
+    """Set the root password, used to sign in over SSH.
+
+    Returns None if it was accepted, or else the reason it wasn't. passwd refuses weak
+    passwords, such as ones too short, too simple or too like the box's name, and says why.
 
     Done the same way as CoreELEC's settings add-on (do_sshpasswd): passwd is run and each
     of its prompts answered in turn. The password is kept in /storage/.cache/shadow, so it
@@ -101,18 +104,28 @@ def set_root_password(password):
     try:
         output = [process.stdout.readline()]
         for _ in range(2):  # the new password, then the same again to confirm
-            process.stdin.write(f"{password}\n")
+            try:
+                process.stdin.write(f"{password}\n")
+            except BrokenPipeError:
+                break  # passwd refused the first one and has already finished
             output.append(process.stdout.readline())
-        process.stdin.close()
+        try:
+            process.stdin.close()
+        except BrokenPipeError:
+            pass
         output.append(process.stdout.read())
         process.wait()
     finally:
         watchdog.cancel()
 
-    said = " | ".join(line.strip() for line in output if line.strip())
-    accepted = process.returncode == 0
-    log(f"Root password {'changed' if accepted else 'not changed'}. passwd said: {said}")
-    return accepted
+    lines = [line.strip() for line in "".join(output).splitlines() if line.strip()]
+    changed = process.returncode == 0
+    log(f"Root password {'changed' if changed else 'not changed'}. passwd said: {' | '.join(lines)}")
+    if changed:
+        return None
+    # passwd's reason, as in "Bad password: similar to hostname".
+    reason = next((line.split(":", 1)[1].strip() for line in lines if line.startswith("Bad password:")), "")
+    return reason or "passwd didn't accept it"
 
 
 # Helpers ----------------------------------------------------------------------------

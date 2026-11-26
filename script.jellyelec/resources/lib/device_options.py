@@ -108,12 +108,18 @@ def change_ssh():
 
 
 def turn_on_ssh():
-    password = _ask_new_password()
-    if password is None:
-        return False
-    if not system_services.set_root_password(password):
-        xbmcgui.Dialog().ok("SSH", "That password wasn't accepted. SSH is still off.")
-        return False
+    while True:
+        password = _ask_new_password()
+        if password is None:
+            return False
+        refused_because = system_services.set_root_password(password)
+        if refused_because is None:
+            break
+        xbmcgui.Dialog().ok(
+            "SSH",
+            f"That password was refused: {refused_because}.[CR]"
+            "Choose a different one, unlike the box's name and not too simple.",
+        )
     system_services.set_enabled(system_services.SSH, True)
     xbmcgui.Dialog().ok(
         "SSH", f"SSH is on. Sign in as root, with the password you just set, at {_box_address()}."
