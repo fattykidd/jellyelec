@@ -11,13 +11,14 @@ Writes into the add-on's skin media folder:
 The jellyfish positions below must match the animated screens (jellyelec-splash.xml in the
 add-on and image/skin/Startup.xml), so the still splash hands over to them seamlessly.
 
-Needs Pillow and the Inter font (Inter-Bold.otf, SIL Open Font License).
+Needs Pillow, NumPy and the Inter font (Inter-Bold.otf, SIL Open Font License).
 """
 
 import math
 import os
 
-from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
+import numpy as np
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 MEDIA_DIR = os.path.join(os.path.dirname(__file__), "..", "script.jellyelec", "resources", "skins", "Default", "media")
 FONT_PATHS = ("/usr/share/fonts/opentype/inter/Inter-Bold.otf", "/usr/share/fonts/inter/Inter-Bold.otf")
@@ -39,79 +40,87 @@ SUPERSAMPLE = 3  # drawn larger, then scaled down, for smooth edges
 
 
 def draw_jellyfish():
-    """One translucent jellyfish: a glowing bell, frilled arms and trailing tentacles."""
+    """One translucent jellyfish, after a moon jelly.
+
+    A wide bell that's clear in the middle and bright at the edges, with faint channels
+    running to the rim and four glowing rings inside; a fringe of short tentacles round
+    the rim and a skirt of long, fine ones trailing below; and a soft glow over it all.
+    """
     width, height = (size * SUPERSAMPLE for size in JELLYFISH_SIZE)
     scale = SUPERSAMPLE
-    layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(layer)
+    random = np.random.default_rng(7)  # fixed, so the drawing is the same every time
 
-    bell_left, bell_right = 22 * scale, 278 * scale
-    bell_top, bell_bottom = 40 * scale, 190 * scale
-    centre_x = (bell_left + bell_right) / 2
+    centre_x = width / 2
+    half_width = 138 * scale
+    bell_top, rim_y = 60 * scale, 165 * scale
+    bell_height = rim_y - bell_top
 
-    # Tentacles: thin wavy lines from the bell's rim, fading out as they trail.
-    for index in range(9):
-        start_x = bell_left + (bell_right - bell_left) * (index + 0.5) / 9
-        phase = index * 0.9
-        points = []
-        for step in range(60):
-            t = step / 59
-            y = bell_bottom - 6 * scale + t * (height - bell_bottom - 10 * scale)
-            x = start_x + math.sin(t * 5 + phase) * 10 * scale * t + (start_x - centre_x) * 0.25 * t
-            points.append((x, y))
-        for step in range(len(points) - 1):
-            alpha = int(150 * (1 - step / len(points)) ** 1.4)
-            draw.line([points[step], points[step + 1]], fill=(*ACCENT, alpha), width=2 * scale)
+    # The bell, worked out pixel by pixel. r is 0 at the top-centre and 1 at the edge.
+    ys, xs = np.mgrid[0:height, 0:width].astype(np.float32)
+    dx = (xs - centre_x) / half_width
+    dy = (ys - rim_y) / bell_height
+    r = np.sqrt(dx ** 2 + dy ** 2)
+    angle = np.arctan2(dy, dx)  # -pi at the left of the rim, -pi/2 at the top, 0 at the right
+    # The rim isn't a clean line: it's gently scalloped, but only near the bottom edge;
+    # the top of the bell stays smooth.
+    near_rim = np.cos(angle) ** 6
+    edge = 1 + 0.03 * np.cos(angle * 16) * near_rim
+    inside = (r <= edge) & (ys <= rim_y + 6 * scale)
+    closeness = np.clip(r / edge, 0, 1)  # 0 at the top, 1 at the edge
 
-    # Oral arms: a few wider, frilled ribbons under the middle of the bell.
-    for offset, phase in ((-28, 0.0), (0, 1.7), (28, 3.1)):
-        for step in range(45):
-            t = step / 44
-            y = bell_bottom - 10 * scale + t * 230 * scale
-            x = centre_x + offset * scale + math.sin(t * 7 + phase) * 14 * scale * (0.3 + t)
-            radius = (11 - 7 * t) * scale
-            alpha = int(120 * (1 - t) ** 1.2)
-            draw.ellipse([x - radius, y - radius, x + radius, y + radius], fill=(200, 150, 220, alpha))
+    alpha = 40 + 175 * closeness ** 3
+    # Faint channels running from the top to the rim.
+    alpha += 25 * (np.cos(angle * 24) > 0.92) * closeness
+    deep, pale = np.array([105, 55, 150]), np.array([228, 190, 248])
+    colour = deep + (pale - deep) * (closeness[..., None] ** 2)
+    bell = np.zeros((height, width, 4), np.float32)
+    bell[..., :3] = colour
+    bell[..., 3] = np.where(inside, alpha, 0)
 
-    # The bell: a see-through dome with a scalloped rim. Its edge is brighter than its
-    # middle, as light catches the rim of a real jellyfish.
-    dome_box = [bell_left, bell_top, bell_right, bell_bottom * 2 - bell_top]
-    middle_y = (bell_top + bell_bottom * 2 - bell_top) / 2
-    scallops = 8
-    scallop_width = (bell_right - bell_left) / scallops
+    # Four rings inside the bell, in a clover, glowing pink.
+    ring_y = bell_top + bell_height * 0.62
+    for ring_x, ring_dy in ((-42, 0), (42, 0), (-14, -12), (14, -12)):
+        rx = (xs - (centre_x + ring_x * scale)) / (17 * scale)
+        ry = (ys - (ring_y + ring_dy * scale)) / (11 * scale)
+        band = np.exp(-((np.sqrt(rx ** 2 + ry ** 2) - 1) ** 2) / 0.04)
+        ring_alpha = band * 115 * inside
+        mix = ring_alpha / 255
+        bell[..., :3] = bell[..., :3] * (1 - mix[..., None]) + np.array([250, 175, 225]) * mix[..., None]
+        bell[..., 3] = np.maximum(bell[..., 3], ring_alpha)
 
-    def bell_shape(fill):
-        shape = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-        shape_draw = ImageDraw.Draw(shape)
-        shape_draw.pieslice(dome_box, 180, 360, fill=fill)
-        for index in range(scallops):
-            left = bell_left + index * scallop_width
-            shape_draw.ellipse([left, middle_y - 12 * scale, left + scallop_width, middle_y + 12 * scale], fill=fill)
-        return shape
+    bell_image = Image.fromarray(np.clip(bell, 0, 255).astype(np.uint8), "RGBA")
+    bell_image = bell_image.filter(ImageFilter.GaussianBlur(0.8 * scale))
 
-    bell = bell_shape((*ACCENT, 105))
-    # The rim: the shape's outline, found by taking away a shrunken copy of the shape.
-    outline = bell_shape((*ACCENT, 255)).getchannel("A")
-    interior = outline.filter(ImageFilter.GaussianBlur(10 * scale)).point(lambda a: 255 if a > 200 else 0)
-    rim_alpha = ImageChops.subtract(outline, interior).filter(ImageFilter.GaussianBlur(2 * scale))
-    rim = Image.new("RGBA", (width, height), (215, 160, 235, 0))
-    rim.putalpha(rim_alpha.point(lambda a: int(a * 0.85)))
-    bell = Image.alpha_composite(bell, rim)
+    # Tentacles: a fringe of short ones round the rim, and long, fine ones trailing below.
+    tentacles = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    for count, shortest, longest, base_alpha in ((70, 0.06, 0.16, 120), (22, 0.45, 1.0, 150)):
+        for _ in range(count):
+            across = random.uniform(-0.97, 0.97)
+            start_x = centre_x + across * half_width
+            start_y = rim_y - (1 - (1 - across ** 2) ** 0.5) * bell_height * 0.15
+            length = random.uniform(shortest, longest) * (height - rim_y)
+            phase, sway = random.uniform(0, 6.3), random.uniform(4, 10) * scale
+            strand = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+            strand_draw = ImageDraw.Draw(strand)
+            previous = (start_x, start_y)
+            for step in range(1, 50):
+                t = step / 49
+                point = (
+                    start_x + across * 30 * scale * t ** 1.4 + math.sin(t * 5 + phase) * sway * t,
+                    start_y + t * length,
+                )
+                fade = int(base_alpha * (1 - t) ** 1.3)
+                strand_draw.line([previous, point], fill=(222, 185, 245, fade), width=max(1, int(1.2 * scale)))
+                previous = point
+            tentacles = Image.alpha_composite(tentacles, strand)
 
-    # A soft highlight near the top, so the bell looks rounded and lit from above.
-    highlight = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-    ImageDraw.Draw(highlight).ellipse(
-        [centre_x - 70 * scale, bell_top + 25 * scale, centre_x + 30 * scale, bell_top + 95 * scale],
-        fill=(255, 255, 255, 110),
-    )
-    highlight = highlight.filter(ImageFilter.GaussianBlur(14 * scale))
-    bell = Image.alpha_composite(bell, Image.composite(highlight, Image.new("RGBA", bell.size), bell))
+    jellyfish = Image.alpha_composite(tentacles, bell_image)
 
-    # A glow around the whole bell.
-    glow = bell.filter(ImageFilter.GaussianBlur(18 * scale))
-    layer = Image.alpha_composite(layer, glow)
-    layer = Image.alpha_composite(layer, bell)
-    return layer.resize(JELLYFISH_SIZE, Image.LANCZOS)
+    # A soft bioluminescent glow over the whole animal.
+    glow = jellyfish.filter(ImageFilter.GaussianBlur(14 * scale))
+    glow.putalpha(glow.getchannel("A").point(lambda a: int(a * 0.7)))
+    jellyfish = Image.alpha_composite(glow, jellyfish)
+    return jellyfish.resize(JELLYFISH_SIZE, Image.LANCZOS)
 
 
 def draw_wordmark():
