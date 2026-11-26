@@ -1,11 +1,16 @@
 """Application startup: install the key map, run first-run setup if needed, sign in, then show home."""
 
-from resources.lib import appliance, output_setup, setup, storage
+import threading
+
+import xbmc
+import xbmcgui
+
+from resources.lib import appliance, output_setup, setup, storage, updater
 from resources.lib.home import HomeWindow
 from resources.lib.keymap import install_keymap, remove_live_tv_keymap
-from resources.lib.kodi import ADDON_PATH
+from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log
 from resources.lib.session import start_session
-from resources.lib.settings_screen import EXIT_TO_KODI, RUN_SETUP, SIGN_OUT
+from resources.lib.settings_screen import EXIT_TO_KODI, RESTART, RUN_SETUP, SIGN_OUT
 
 
 def run(splash):
@@ -31,6 +36,7 @@ def run(splash):
         if closing_steps_due:
             setup.run_after_sign_in()
             closing_steps_due = False
+        _check_for_updates_in_background()
 
         next_step = _show_home(client, connection)
         if next_step == RUN_SETUP:
@@ -40,8 +46,29 @@ def run(splash):
         elif next_step == EXIT_TO_KODI:
             appliance.leave_for_maintenance()
             return
+        elif next_step == RESTART:
+            return  # after an update: appliance mode reopens JellyELEC, now the new version
         elif next_step != SIGN_OUT:
             return
+
+
+def _check_for_updates_in_background():
+    """Once a day, look for a new version without holding anything up, and mention it if found."""
+    if not updater.check_is_due():
+        return
+
+    def check():
+        try:
+            release = updater.available_update()
+        except updater.UpdateError as error:
+            log(f"Background update check failed: {error}", xbmc.LOGWARNING)
+            return
+        if release:
+            xbmcgui.Dialog().notification(
+                ADDON_NAME, f"Version {release.version} is available: Settings, Check for updates.", time=10000
+            )
+
+    threading.Thread(target=check, name="JellyELEC update check", daemon=True).start()
 
 
 def _show_home(client, connection):

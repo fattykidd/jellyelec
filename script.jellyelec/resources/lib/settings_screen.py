@@ -8,7 +8,7 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-from resources.lib import appliance, box_name, device_options, output_setup, remote_control
+from resources.lib import appliance, box_name, device_options, output_setup, remote_control, updater
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, ADDON_VERSION, log
 from resources.lib.setup import show_settings_warning
 
@@ -19,6 +19,7 @@ SETTINGS_LIST = 1000
 SIGN_OUT = "sign_out"
 RUN_SETUP = "run_setup"
 EXIT_TO_KODI = "exit_to_kodi"
+RESTART = "restart"  # after an update, so the new version runs
 
 # The power menu's choices, and the Kodi commands that carry them out.
 POWER_CHOICES = (("Restart", "Reboot"), ("Power off", "Powerdown"))
@@ -53,10 +54,11 @@ RUN_SETUP_ROW = "run_setup"
 SIGN_OUT_ROW = "sign_out"
 POWER = "power"
 EXIT_TO_KODI_ROW = "exit_to_kodi"
+UPDATES = "updates"
 
 
 def show_settings(connection):
-    """Open Settings. Returns SIGN_OUT, RUN_SETUP, EXIT_TO_KODI, or None when the user just goes back."""
+    """Open Settings. Returns SIGN_OUT, RUN_SETUP, EXIT_TO_KODI, RESTART, or None for just going back."""
     window = SettingsWindow("jellyelec-settings.xml", ADDON_PATH, "Default", "1080i")
     window.connection = connection
     window.doModal()
@@ -108,6 +110,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             SIGN_OUT_ROW: self._sign_out,
             POWER: self._show_power_menu,
             EXIT_TO_KODI_ROW: self._exit_to_kodi,
+            UPDATES: self._check_for_updates,
         }
         key = self.getControl(SETTINGS_LIST).getSelectedItem().getProperty("key")
         handlers[key]()
@@ -166,6 +169,9 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             _row(SIGN_OUT_ROW, "Sign out",
                  f"{self.connection.user_name} on {self.connection.server_name}",
                  "Sign out of this server, to sign in as someone else or choose another server."),
+            _row(UPDATES, "Check for updates", f"Version {ADDON_VERSION}",
+                 "Look for a newer version of JellyELEC on GitHub, and install it. JellyELEC also "
+                 "checks once a day by itself."),
             _row(POWER, "Power", "",
                  "Restart or power off the box."),
             _row(EXIT_TO_KODI_ROW, "Exit to Kodi", "",
@@ -251,6 +257,52 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         if xbmcgui.Dialog().yesno(ADDON_NAME, f"Sign out of {self.connection.server_name}?"):
             self.next_step = SIGN_OUT
             self.close()
+
+    def _check_for_updates(self):
+        progress = xbmcgui.DialogProgress()
+        progress.create("Check for updates", "Looking for a newer version…")
+        try:
+            release = updater.available_update()
+        except updater.UpdateError as error:
+            progress.close()
+            log(f"Update check failed: {error}", xbmc.LOGWARNING)
+            xbmcgui.Dialog().ok(
+                "Check for updates", "Couldn't check for updates. Check the network and try again."
+            )
+            return
+        progress.close()
+
+        if release is None:
+            xbmcgui.Dialog().ok("Check for updates", f"JellyELEC is up to date (version {ADDON_VERSION}).")
+            return
+        if not xbmcgui.Dialog().yesno(
+            "Check for updates",
+            f"JellyELEC {release.version} is available (this is {ADDON_VERSION}).[CR]Install it now?",
+            nolabel="Not now",
+            yeslabel="Install",
+        ):
+            return
+        self._install_update(release)
+
+    def _install_update(self, release):
+        progress = xbmcgui.DialogProgress()
+        progress.create("Updating JellyELEC", f"Installing version {release.version}…")
+        try:
+            updater.install(release)
+        except updater.UpdateError as error:
+            progress.close()
+            log(str(error), xbmc.LOGWARNING)
+            xbmcgui.Dialog().ok("Updating JellyELEC", f"The update didn't install: {error}")
+            return
+        progress.close()
+
+        if appliance.is_enabled():
+            message = "JellyELEC will now restart into the new version."
+        else:
+            message = "Open JellyELEC again to use the new version."
+        xbmcgui.Dialog().ok("Updating JellyELEC", f"Version {release.version} is installed. {message}")
+        self.next_step = RESTART
+        self.close()
 
     def _show_power_menu(self):
         choice = xbmcgui.Dialog().select("Power", [label for label, _command in POWER_CHOICES])
