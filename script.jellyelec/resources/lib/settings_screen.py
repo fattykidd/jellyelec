@@ -8,7 +8,7 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-from resources.lib import appliance, output_setup, remote_control
+from resources.lib import appliance, box_name, device_options, output_setup, remote_control
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, ADDON_VERSION, log
 from resources.lib.setup import show_settings_warning
 
@@ -41,6 +41,13 @@ DOLBY_VISION = "dolby_vision"
 GUIDE_CORNER = "guide_corner"
 GUIDE_OK = "guide_ok"
 REMOTE_CONTROL = "remote_control"
+BOX_NAME = "box_name"
+TIME_ZONE = "time_zone"
+WIFI = "wifi"
+SSH = "ssh"
+FILE_SHARING = "file_sharing"
+BLUETOOTH = "bluetooth"
+WEATHER = "weather"
 APPLIANCE_MODE = "appliance_mode"
 RUN_SETUP_ROW = "run_setup"
 SIGN_OUT_ROW = "sign_out"
@@ -89,6 +96,13 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             GUIDE_CORNER: self._change_guide_corner,
             GUIDE_OK: self._change_guide_ok,
             REMOTE_CONTROL: self._toggle_remote_control,
+            BOX_NAME: device_options.change_box_name,
+            TIME_ZONE: device_options.change_time_zone,
+            WIFI: device_options.open_network_settings,
+            SSH: device_options.change_ssh,
+            FILE_SHARING: device_options.change_file_sharing,
+            BLUETOOTH: self._change_bluetooth,
+            WEATHER: self._change_weather,
             APPLIANCE_MODE: self._toggle_appliance_mode,
             RUN_SETUP_ROW: self._run_setup,
             SIGN_OUT_ROW: self._sign_out,
@@ -97,6 +111,8 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         }
         key = self.getControl(SETTINGS_LIST).getSelectedItem().getProperty("key")
         handlers[key]()
+        if not self.next_step:
+            self._fill_list()  # show any value that changed
 
     # The list ---------------------------------------------------------------------
 
@@ -125,6 +141,22 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                  "On" if remote_control.is_enabled() else "Off",
                  "Needed by the Unfolded Circle Kodi integration. Lets devices on your home network "
                  "control this box."),
+            _row(BOX_NAME, "Box name", box_name.current_name(),
+                 "What your router, file manager, Jellyfin's Devices page and other devices on your "
+                 "network call this box."),
+            _row(TIME_ZONE, "Time zone", device_options.time_zone_summary(),
+                 "Used for the clock and the Live TV guide."),
+            _row(WIFI, "Wi-Fi", "Connected by cable" if device_options.wired_connected() else "",
+                 "Join a Wi-Fi network, in CoreELEC's settings under Connections."),
+            _row(SSH, "SSH", device_options.ssh_summary(),
+                 "Sign in to the box from a computer. Turning it on asks for a new root password."),
+            _row(FILE_SHARING, "File sharing (Samba)", device_options.file_sharing_summary(),
+                 "Lets computers on your network open the box's storage, for logs, screenshots "
+                 "and settings."),
+            _row(BLUETOOTH, "Bluetooth", device_options.bluetooth_summary(),
+                 "Pair a keyboard, remote, game controller or headphones (regular sound only)."),
+            _row(WEATHER, "Weather", device_options.weather_summary(),
+                 "The weather for your location, from the Gismeteo add-on."),
             _row(APPLIANCE_MODE, "Open JellyELEC when the box starts",
                  "On" if appliance.is_enabled() else "Off",
                  "Starts JellyELEC with the box and reopens it if it ever closes, so the box always "
@@ -156,7 +188,6 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             _notify("Sound and picture settings updated.")
         else:
             show_settings_warning()
-        self._fill_list()
 
     def _check_dolby_vision(self):
         if not output_setup.dolby_vision_ready():
@@ -173,29 +204,42 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 )
         else:
             xbmcgui.Dialog().ok("Dolby Vision", "The Dolby Vision module is installed and set up.")
-        self._fill_list()
 
     def _toggle_collections(self):
         addon = xbmcaddon.Addon()
         addon.setSettingBool(GROUP_COLLECTIONS_SETTING, not addon.getSettingBool(GROUP_COLLECTIONS_SETTING))
-        self._fill_list()
 
     def _change_guide_corner(self):
         _toggle_setting(GUIDE_CORNER_SETTING, GUIDE_CORNERS)
-        self._fill_list()
 
     def _change_guide_ok(self):
         _toggle_setting(GUIDE_OK_SETTING, GUIDE_OK_ACTIONS)
-        self._fill_list()
 
     def _toggle_remote_control(self):
         if not remote_control.set_enabled(not remote_control.is_enabled()):
             _notify("Couldn't change remote control. Details are in the log.")
-        self._fill_list()
+
+    def _change_bluetooth(self):
+        enabled = device_options.bluetooth_summary() == "On"
+        toggle = "Turn Bluetooth off" if enabled else "Turn Bluetooth on"
+        choice = xbmcgui.Dialog().select("Bluetooth", ["Pair a device", toggle])
+        if choice == 0:
+            device_options.open_bluetooth_pairing()
+        elif choice == 1:
+            device_options.set_bluetooth(not enabled)
+
+    def _change_weather(self):
+        if device_options.weather_summary() != "On":
+            device_options.set_up_weather()
+            return
+        choice = xbmcgui.Dialog().select("Weather", ["Change location", "Turn the weather off"])
+        if choice == 0:
+            device_options.set_up_weather()
+        elif choice == 1:
+            device_options.turn_off_weather()
 
     def _toggle_appliance_mode(self):
         appliance.set_enabled(not appliance.is_enabled())
-        self._fill_list()
 
     def _run_setup(self):
         if xbmcgui.Dialog().yesno(ADDON_NAME, "Run setup again now?"):

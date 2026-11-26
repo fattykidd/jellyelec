@@ -48,6 +48,7 @@ On the COREELEC (boot) partition:
 - `boot/remote.conf` is added, so the Ugoos remote works straight away.
 - `oemsplash.png` (the same JellyELEC splash) replaces p3i's splash during the early boot.
 - The HDMI-CEC name (what the TV shows for this input) is set to JellyELEC.
+- Wake-on-LAN is turned on (`wol='1'` in `config.ini`, matched in CoreELEC's settings).
 
 ## Dolby Vision: adding dovi.ko
 

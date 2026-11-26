@@ -1,14 +1,18 @@
 """First-run setup: a few guided screens that get a new box ready to play.
 
-The order is: welcome, Dolby Vision, how the box is connected, then (in session.py) finding
+Quick setup: welcome, Dolby Vision, how the box is connected, then (in session.py) finding
 the server and signing in, and finally a remote control tip and "You're all set".
+
+Custom setup adds, before signing in: Wi-Fi (only without a network cable), the box's
+name, the time zone, SSH, file sharing and Bluetooth; and after signing in, the weather.
+Everything chosen can be changed later in Settings.
 """
 
 import xbmc
 import xbmcaddon
 import xbmcgui
 
-from resources.lib import box_name, output_setup, remote_control
+from resources.lib import box_name, device_options, output_setup, remote_control
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log
 
 # Control IDs, matching jellyelec-setup.xml.
@@ -28,9 +32,30 @@ def is_complete():
     return xbmcaddon.Addon().getSettingBool(SETUP_COMPLETE_SETTING)
 
 
+class _Choices:
+    """What's been chosen so far in this run of setup."""
+
+    custom = False  # Custom setup rather than Quick
+    box_name = None  # a name chosen in Custom setup, applied when setup finishes
+
+
 def run_before_sign_in():
-    """Welcome, Dolby Vision, and connection screens. Returns False if the user leaves setup."""
-    return _run_steps([_welcome_step, _dolby_vision_step, _connection_step])
+    """The screens before signing in. Returns False if the user leaves setup."""
+    _Choices.custom = False
+    _Choices.box_name = None
+    if not _run_steps([_welcome_step]):
+        return False
+    steps = [_dolby_vision_step, _connection_step]
+    if _Choices.custom:
+        steps += [
+            _network_step,
+            _box_name_step,
+            _time_zone_step,
+            _ssh_step,
+            _file_sharing_step,
+            _bluetooth_step,
+        ]
+    return _run_steps(steps)
 
 
 def reset():
@@ -41,10 +66,16 @@ def reset():
 
 
 def run_after_sign_in():
-    """The remote control tip and the closing screen, then setup is marked as done."""
-    _run_steps([_remote_control_step, _finished_step])
+    """The screens after signing in, then setup is marked as done."""
+    steps = [_remote_control_step]
+    if _Choices.custom:
+        steps.append(_weather_step)
+    _run_steps(steps + [_finished_step])
     # Done last: renaming restarts the network for a moment.
-    box_name.name_new_box()
+    if _Choices.box_name:
+        device_options.apply_box_name(_Choices.box_name)
+    else:
+        box_name.name_new_box()
     xbmcaddon.Addon().setSettingBool(SETUP_COMPLETE_SETTING, True)
     log("First-run setup complete.")
 
@@ -64,11 +95,16 @@ def _welcome_step():
     choice = _show_step(
         heading="Setup",
         title="Welcome to JellyELEC",
-        body="Let's get this box ready. It only takes a minute: Dolby Vision, sound, "
-             "and then your Jellyfin server.",
-        options=["Get started"],
+        body="Let's get this box ready. Quick setup takes a minute: Dolby Vision, sound, and "
+             "then your Jellyfin server.[CR][CR]"
+             "Custom setup also covers Wi-Fi, the box's name, time zone, SSH, file sharing, "
+             "Bluetooth and the weather.",
+        options=["Quick setup", "Custom setup"],
     )
-    return NEXT if choice == 0 else QUIT
+    if choice is None:
+        return QUIT
+    _Choices.custom = choice == 1
+    return NEXT
 
 
 def _dolby_vision_step():
@@ -109,6 +145,120 @@ def _connection_step():
     if not output_setup.apply_connection(connection_type):
         show_settings_warning()
     return NEXT
+
+
+def _network_step():
+    """Wi-Fi, asked only when there's no network cable plugged in."""
+    if device_options.wired_connected():
+        return NEXT
+    choice = _show_step(
+        heading="Setup · Network",
+        title="Connect to Wi-Fi",
+        body="No network cable is plugged in. A cable is best for 4K and lossless audio, but "
+             "Wi-Fi works too.[CR][CR]"
+             "Wi-Fi networks are joined in CoreELEC's settings, under Connections. Go back "
+             "when you're connected, and setup carries on.",
+        options=["Choose a Wi-Fi network", "Continue"],
+    )
+    if choice == 0:
+        device_options.open_network_settings()
+        return _network_step()
+    return NEXT if choice == 1 else BACK
+
+
+def _box_name_step():
+    saved = box_name.current_name()
+    if saved in ("", box_name.COREELEC_NAME):
+        saved = box_name.JELLYELEC_NAME
+    current = _Choices.box_name or saved
+    choice = _show_step(
+        heading="Setup · Box name",
+        title=f"This box is called {current}",
+        body="That's the name your router, file manager, Jellyfin's Devices page and other "
+             "devices on your network see.",
+        options=["Keep this name", "Change it"],
+    )
+    if choice == 1:
+        _Choices.box_name = device_options.ask_box_name(current) or _Choices.box_name
+        return _box_name_step()
+    return NEXT if choice == 0 else BACK
+
+
+def _time_zone_step():
+    choice = _show_step(
+        heading="Setup · Time zone",
+        title=f"Time zone: {device_options.time_zone_summary() or 'not set'}",
+        body="Used for the clock and the Live TV guide.",
+        options=["That's right", "Change it"],
+    )
+    if choice == 1:
+        device_options.change_time_zone()
+        return _time_zone_step()
+    return NEXT if choice == 0 else BACK
+
+
+def _ssh_step():
+    enabled = device_options.ssh_summary() == "On"
+    choice = _show_step(
+        heading="Setup · SSH",
+        title=f"SSH is {'on' if enabled else 'off'}",
+        body="SSH lets you sign in to the box from a computer, for troubleshooting or "
+             "tinkering. Most people don't need it.[CR][CR]"
+             "Turning it on asks for a new password, since CoreELEC's own is public knowledge.",
+        options=["Leave it on" if enabled else "Leave it off", "Turn it off" if enabled else "Turn it on"],
+    )
+    if choice == 1:
+        device_options.change_ssh()
+        return _ssh_step()
+    return NEXT if choice == 0 else BACK
+
+
+def _file_sharing_step():
+    enabled = device_options.file_sharing_summary() == "On"
+    choice = _show_step(
+        heading="Setup · File sharing",
+        title=f"File sharing is {'on' if enabled else 'off'}",
+        body="File sharing (Samba) lets computers on your network open the box's storage, for "
+             "copying logs, screenshots or settings. Anyone on your home network can reach it.",
+        options=["Leave it on" if enabled else "Leave it off", "Turn it off" if enabled else "Turn it on"],
+    )
+    if choice == 1:
+        device_options.change_file_sharing()
+        return _file_sharing_step()
+    return NEXT if choice == 0 else BACK
+
+
+def _bluetooth_step():
+    enabled = device_options.bluetooth_summary() == "On"
+    choice = _show_step(
+        heading="Setup · Bluetooth",
+        title=f"Bluetooth is {'on' if enabled else 'off'}",
+        body="For a Bluetooth keyboard, remote or game controller. Headphones work too, but "
+             "only with regular sound: lossless audio can't go over Bluetooth.[CR][CR]"
+             "Devices are paired in CoreELEC's settings, under Bluetooth. Go back when "
+             "you're done, and setup carries on.",
+        options=["Continue", "Pair a device", "Turn it off" if enabled else "Turn it on"],
+    )
+    if choice == 1:
+        device_options.open_bluetooth_pairing()
+        return _bluetooth_step()
+    if choice == 2:
+        device_options.set_bluetooth(not enabled)
+        return _bluetooth_step()
+    return NEXT if choice == 0 else BACK
+
+
+def _weather_step():
+    choice = _show_step(
+        heading="Setup · Weather",
+        title="Show the weather?",
+        body="JellyELEC can show the weather for your location, using the Gismeteo weather "
+             "add-on from Kodi's add-on repository. It needs no account.",
+        options=["Set up the weather", "No thanks"],
+    )
+    if choice == 0:
+        device_options.set_up_weather()
+    return NEXT if choice is not None else BACK
 
 
 def _remote_control_step():

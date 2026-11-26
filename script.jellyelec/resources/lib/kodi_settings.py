@@ -23,7 +23,11 @@ def get_value(setting_id):
 
 def set_value(setting_id, value):
     """Change a Kodi setting. Raises KodiSettingError if Kodi refuses."""
+    global _cached_settings
     _call("Settings.SetSettingValue", setting=setting_id, value=value)
+    # One setting's choices can depend on another (time zones on the country), so the
+    # list of settings is fetched again next time.
+    _cached_settings = None
     log(f"Kodi setting {setting_id} set to {value!r}.")
 
 

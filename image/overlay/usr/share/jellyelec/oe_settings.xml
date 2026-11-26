@@ -1,7 +1,8 @@
 <?xml version="1.0" ?>
 <!-- Starting settings for CoreELEC's settings add-on in JellyELEC images: its first-run
-     wizard is marked done, and p3i's automatic updates are off. (The box's network name
-     is set by JellyELEC's setup: see box_name.py in the add-on.) -->
+     wizard is marked done, Wake-on-LAN is on (matching config.ini on the boot partition),
+     and p3i's automatic updates are off. The box's network name is set by JellyELEC's
+     setup instead (box_name.py in the add-on). -->
 <coreelec>
 	<addon_config/>
 	<settings>
@@ -20,6 +21,9 @@
 		<coreelec>
 			<wizard_completed>True</wizard_completed>
 		</coreelec>
+		<hardware>
+			<wol>on</wol>
+		</hardware>
 		<updates>
 			<AutoUpdate>manual</AutoUpdate>
 		</updates>

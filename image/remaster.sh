@@ -16,6 +16,7 @@
 #   COREELEC (the boot partition)
 #     - dtb.img for the Ugoos AM6B+, the Ugoos remote's remote.conf, and the HDMI-CEC name
 #     - oemsplash.png: JellyELEC's splash in place of p3i's during the early boot
+#     - Wake-on-LAN turned on
 #   dovi.ko is NOT included: it's added by hand after flashing (see the README).
 #
 # Needs root, so the system files keep their owners when unpacked and repacked.
@@ -154,9 +155,10 @@ mcopy -o -i "$work/boot.img" "$SPLASH" ::oemsplash.png
 # The Ugoos remote's key map, so the remote in the box works straight away.
 mcopy -o -i "$work/boot.img" "$IMAGE_DIR/boot/remote.conf" ::remote.conf
 
-# The name the TV shows for this input over HDMI-CEC.
+# Boot settings: the name the TV shows for this input over HDMI-CEC, and Wake-on-LAN on,
+# so the box can be woken from standby over the network.
 mcopy -n -i "$work/boot.img" ::config.ini "$work/config.ini"
-sed -i "s|^# cec_osd_name=.*|cec_osd_name='$BOX_NAME'|" "$work/config.ini"
+sed -i -e "s|^# cec_osd_name=.*|cec_osd_name='$BOX_NAME'|" -e "s|^# wol=.*|wol='1'|" "$work/config.ini"
 mcopy -o -i "$work/boot.img" "$work/config.ini" ::config.ini
 
 dd if="$work/boot.img" of="$work/image.img" bs="$SECTOR_SIZE" seek="$boot_start" conv=notrunc status=none
