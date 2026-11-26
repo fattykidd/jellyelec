@@ -34,8 +34,10 @@ In the system (read-only) part:
     wizard marked done. (JellyELEC's setup names the box JellyELEC on the network.)
 - `skin/Startup.xml` replaces the skins' startup screen, so the boot goes from the splash
   straight into JellyELEC without showing Kodi's home screen.
-- JellyELEC's splash (from the add-on, `resources/skins/Default/media/jellyelec-splash.png`)
-  becomes Kodi's splash screen, which is turned on.
+- JellyELEC's still splash (from the add-on, `resources/skins/Default/media/jellyelec-splash.png`)
+  becomes Kodi's splash screen, which is turned on. Once Kodi is up, the startup screen and
+  JellyELEC's backdrop take over from it with the jellyfish animated. The artwork is drawn
+  by `tools/make_splash.py`.
 - New installs name Kodi JellyELEC and don't update add-ons automatically: a skin update
   from p3i's add-on repository would undo the startup screen. They also allow installing
   add-ons from zip files ("unknown sources"), for JellyELEC test builds.
