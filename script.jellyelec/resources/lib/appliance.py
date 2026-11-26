@@ -22,6 +22,11 @@ HOME_WINDOW_ID = 10000
 RUNNING_PROPERTY = "script.jellyelec.running"
 MAINTENANCE_PROPERTY = "script.jellyelec.maintenance"
 
+# Set by the startup screen in JellyELEC images (image/skin/Startup.xml). That screen shows
+# the JellyELEC splash and stays up, instead of going on to Kodi's home screen; JellyELEC
+# opens over it, and this service moves on to the home screen when Kodi's menus are wanted.
+STARTUP_SCREEN_PROPERTY = "jellyelec.startup_screen"
+
 STARTUP_CHECK_SECONDS = 0.25
 CHECK_SECONDS = 2
 # How long JellyELEC must have been closed before it's opened again.
@@ -58,15 +63,18 @@ def run_service():
     """The background service: open JellyELEC at startup, and again whenever it closes."""
     monitor = xbmc.Monitor()
 
-    # Wait for Kodi's own home screen, so JellyELEC doesn't open over the startup splash.
+    # Wait for Kodi to finish starting: its home screen, or the JellyELEC startup screen.
     # Checked often, so JellyELEC covers the home screen as soon as it appears.
-    while not xbmc.getCondVisibility("Window.IsActive(home)"):
+    while not (xbmc.getCondVisibility("Window.IsActive(home)") or _on_startup_screen()):
         if monitor.waitForAbort(STARTUP_CHECK_SECONDS):
             return
 
     open_at = time.monotonic()  # straight away at startup
     while not monitor.abortRequested():
         now = time.monotonic()
+        if not _is_running() and not _should_reopen() and _on_startup_screen():
+            # Kodi's menus are wanted (appliance mode off, or Exit to Kodi): leave the splash.
+            xbmc.executebuiltin("ReplaceWindow(home)")
         if _is_running() or not _should_reopen():
             open_at = now + REOPEN_AFTER_SECONDS
         elif now >= open_at:
@@ -75,6 +83,13 @@ def run_service():
             open_at = now + STARTUP_GRACE_SECONDS
         if monitor.waitForAbort(CHECK_SECONDS):
             return
+
+
+def _on_startup_screen():
+    """True while the JellyELEC startup screen is showing (only in JellyELEC images)."""
+    if not xbmcgui.Window(HOME_WINDOW_ID).getProperty(STARTUP_SCREEN_PROPERTY):
+        return False
+    return xbmc.getCondVisibility("Window.IsActive(startup)")
 
 
 def _is_running():

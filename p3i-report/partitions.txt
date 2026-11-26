@@ -1,0 +1,2 @@
+partition1 type=0x0c start=8192 size=1048576
+partition2 type=0x83 start=1056768 size=65536

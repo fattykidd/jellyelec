@@ -6,7 +6,7 @@
 # Result:  p3i-report.tar.gz in the current folder.
 #
 # Reads the image as plain files: nothing is mounted and root isn't needed.
-# Needs: gzip, python3, mtools, squashfs-tools.
+# Needs: gzip, python3, mtools, squashfs-tools, and debugfs (e2fsprogs, normally installed).
 #   Fedora/RHEL:   sudo dnf install mtools squashfs-tools
 #   Ubuntu/Debian: sudo apt install mtools squashfs-tools
 
@@ -20,6 +20,17 @@ SECTOR_SIZE=512
 EXTRACT_PATHS=(
     etc/os-release
     usr/config
+    usr/lib/kodi/kodi-config
+    usr/lib/kodi/kodi.sh
+    usr/lib/kodi/kodi.conf
+    usr/lib/tmpfiles.d/kodi.conf
+    usr/lib/tmpfiles.d/kodi-userdirs.conf
+    usr/lib/tmpfiles.d/provision.conf
+    usr/lib/systemd/system/kodi.service
+    usr/lib/systemd/system/kodi-autostart.service
+    usr/share/kodi/config
+    usr/share/kodi/system/addon-manifest.xml
+    usr/share/kodi/system/advancedsettings.xml
     usr/share/kodi/system/settings
     usr/share/kodi/addons/service.coreelec.settings
     usr/share/kodi/addons/skin.p3i.estuary/addon.xml
@@ -76,6 +87,19 @@ unsquashfs -l "$work/SYSTEM" | grep -E '^squashfs-root/usr/share/kodi/addons/[^/
 
 echo "Copying out the files to study..."
 unsquashfs -no-xattrs -d "$report/system" "$work/SYSTEM" "${EXTRACT_PATHS[@]}" > /dev/null 2>&1 || true
+
+echo "Listing the STORAGE partition..."
+read -r storage_start storage_size < <(
+    awk '/^partition2 / { sub("start=", "", $3); sub("size=", "", $4); print $3, $4 }' "$report/partitions.txt"
+)
+dd if="$work/image.img" of="$work/storage.img" bs="$SECTOR_SIZE" skip="$storage_start" count="$storage_size" status=none
+if command -v debugfs >/dev/null; then
+    debugfs -R "ls -l -p /" "$work/storage.img" > "$report/storage-partition.txt" 2>&1 || true
+    mkdir -p "$report/storage"
+    debugfs -R "rdump / $report/storage" "$work/storage.img" > /dev/null 2>&1 || true
+else
+    echo "debugfs not found" > "$report/storage-partition.txt"
+fi
 
 tar -czf "$REPORT_NAME.tar.gz" -C "$work" "$REPORT_NAME"
 echo "Done: $(pwd)/$REPORT_NAME.tar.gz"

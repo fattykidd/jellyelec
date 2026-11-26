@@ -7,37 +7,18 @@
     <backgroundcolor>0xFF101418</backgroundcolor>
     <controls>
 
+        <!-- The same picture as the boot and Kodi splash screens, so nothing jumps -->
         <control type="image">
             <left>0</left>
             <top>0</top>
             <width>1920</width>
             <height>1080</height>
-            <texture>jellyelec-white.png</texture>
-            <colordiffuse>FF101418</colordiffuse>
+            <texture>jellyelec-splash.png</texture>
         </control>
 
         <control type="label">
             <left>0</left>
-            <top>440</top>
-            <width>1920</width>
-            <height>120</height>
-            <align>center</align>
-            <aligny>center</aligny>
-            <font>font_clock</font>
-            <textcolor>FFFFFFFF</textcolor>
-            <label>Jelly[COLOR FFAA5CC3]ELEC[/COLOR]</label>
-        </control>
-        <control type="image">
-            <left>900</left>
-            <top>575</top>
-            <width>120</width>
-            <height>4</height>
-            <texture>jellyelec-white.png</texture>
-            <colordiffuse>FFAA5CC3</colordiffuse>
-        </control>
-        <control type="label">
-            <left>0</left>
-            <top>600</top>
+            <top>690</top>
             <width>1920</width>
             <height>40</height>
             <align>center</align>

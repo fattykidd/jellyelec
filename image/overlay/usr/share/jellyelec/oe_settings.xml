@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<!-- Starting settings for CoreELEC's settings add-on in JellyELEC images: its first-run
+     wizard is marked done, the box is named JellyELEC (the add-on sets the network name
+     from here at every boot), and p3i's automatic updates are off. -->
+<coreelec>
+	<addon_config/>
+	<settings>
+		<system>
+			<wizard_completed>True</wizard_completed>
+			<hostname>JellyELEC</hostname>
+		</system>
+		<connman>
+			<wizard_completed>True</wizard_completed>
+		</connman>
+		<services>
+			<wizard_completed>True</wizard_completed>
+		</services>
+		<about>
+			<wizard_completed>True</wizard_completed>
+		</about>
+		<coreelec>
+			<wizard_completed>True</wizard_completed>
+		</coreelec>
+		<updates>
+			<AutoUpdate>manual</AutoUpdate>
+		</updates>
+	</settings>
+</coreelec>

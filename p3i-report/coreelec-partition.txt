@@ -1,0 +1,97 @@
+ Volume in drive : is COREELEC   
+ Volume Serial Number is 1208-4031
+Directory for ::/
+
+AML_AU~1          1466 2026-08-12  12:41  aml_autoscript
+cfgload           2193 2026-08-12  12:41 
+DEVICE~1     <DIR>     2026-08-12  12:41  device_trees
+config   ini      5997 2026-08-12  12:41 
+kernel   img  18753536 2026-08-12  12:41 
+SYSTEM        241176576 2026-08-12  12:41 
+KERNEL~1 MD5        48 2026-08-12  12:41  kernel.img.md5
+SYSTEM   md5        48 2026-08-12  12:41 
+        8 files         259 939 864 bytes
+
+Directory for ::/device_trees
+
+.            <DIR>     2026-08-12  12:41 
+..           <DIR>     2026-08-12  12:41 
+G12A_S~1 DTB     70496 2026-08-12  12:41  g12a_s905x2_2g.dtb
+G12A_S~2 DTB     70491 2026-08-12  12:41  g12a_s905x2_2g_1gbit.dtb
+G12A_S~3 DTB     70496 2026-08-12  12:41  g12a_s905x2_4g.dtb
+G12A_S~4 DTB     70491 2026-08-12  12:41  g12a_s905x2_4g_1gbit.dtb
+G12A_S~5 DTB     35493 2026-08-12  12:41  g12a_s905x2_beelink_gt1_mini.dtb
+G12A_S~6 DTB     35337 2026-08-12  12:41  g12a_s905x2_beelink_gt_mini_a.dtb
+G12A_S~7 DTB     70572 2026-08-12  12:41  g12a_s905y2_2g.dtb
+G12A_S~8 DTB     70572 2026-08-12  12:41  g12a_s905y2_4g.dtb
+G12A_S~9 DTB     70492 2026-08-12  12:41  g12a_s905y2_radxa_zero.dtb
+G12B_A~1 DTB     75208 2026-08-12  12:41  g12b_a311d_khadas_vim3.dtb
+G12B_A~2 DTB     75139 2026-08-12  12:41  g12b_a311d_radxa_zero2.dtb
+G12B_B~1 DTB     38256 2026-08-12  12:41  g12b_bananapi_m2s.dtb
+G12B_S~1 DTB     38002 2026-08-12  12:41  g12b_s922x_beelink_gs_king_x.dtb
+G12B_S~2 DTB     37627 2026-08-12  12:41  g12b_s922x_beelink_gt_king.dtb
+G12B_S~3 DTB     74353 2026-08-12  12:41  g12b_s922x_minix_u22xj.dtb
+G12B_S~5 DTB     76083 2026-08-12  12:41  g12b_s922x_minix_u22xj_max.dtb
+G12B_S~6 DTB     74288 2026-08-12  12:41  g12b_s922x_minix_u22xj_max_rev_a.dtb
+G12B_S~7 DTB     55269 2026-08-12  12:41  g12b_s922x_odroid_n2.dtb
+G12B_S~8 DTB     73110 2026-08-12  12:41  g12b_s922x_odroid_n2l.dtb
+G12B_S~9 DTB     76256 2026-08-12  12:41  g12b_s922x_ugoos_am6.dtb
+G12B_~10 DTB     76264 2026-08-12  12:41  g12b_s922x_ugoos_am6b.dtb
+G12B_~11 DTB     73256 2026-08-12  12:41  g12b_s922x_x88_king_rev_a.dtb
+G12B_~12 DTB     77115 2026-08-12  12:41  g12b_s922z_amazon_2nd_gen_cube.dtb
+GXL_P2~1 DTB     56832 2026-08-12  12:41  gxl_p212_1g.dtb
+GXL_P2~2 DTB     56800 2026-08-12  12:41  gxl_p212_1g_g9sx.dtb
+GXL_P2~3 DTB     56844 2026-08-12  12:41  gxl_p212_1g_slowemmc.dtb
+GXL_P2~4 DTB     56539 2026-08-12  12:41  gxl_p212_2g.dtb
+GXL_P2~5 DTB     56507 2026-08-12  12:41  gxl_p212_2g_g9sx.dtb
+GXL_P2~6 DTB     55585 2026-08-12  12:41  gxl_p212_2g_kvim.dtb
+GXL_P2~7 DTB     56551 2026-08-12  12:41  gxl_p212_2g_slowemmc.dtb
+GXL_P2~8 DTB     56539 2026-08-12  12:41  gxl_p212_3g.dtb
+GXL_P2~9 DTB     29505 2026-08-12  12:41  gxl_p212_lepotato.dtb
+GXL_P~10 DTB     57956 2026-08-12  12:41  gxl_p230_2g.dtb
+GXL_P~11 DTB     58442 2026-08-12  12:41  gxl_p230_k1_pro.dtb
+GXL_P~12 DTB     58442 2026-08-12  12:41  gxl_p230_k1_pro_ser.dtb
+GXL_P~13 DTB     58450 2026-08-12  12:41  gxl_p230_k2_pro_100mbit.dtb
+GXL_P~14 DTB     53867 2026-08-12  12:41  gxl_p231_1g.dtb
+GXL_P~15 DTB     55506 2026-08-12  12:41  gxl_p231_1g_dm14.dtb
+GXL_P~16 DTB     54368 2026-08-12  12:41  gxl_p231_1g_dvb.dtb
+GXL_P~17 DTB     54368 2026-08-12  12:41  gxl_p231_1g_dvb_ser.dtb
+GXL_P~18 DTB     54483 2026-08-12  12:41  gxl_p231_1g_m8s_dvb-s2.dtb
+GXL_P~19 DTB     54444 2026-08-12  12:41  gxl_p231_1g_m8s_dvb.dtb
+GXL_P~20 DTB     54932 2026-08-12  12:41  gxl_p231_2g.dtb
+GXL_P~21 DTB     55433 2026-08-12  12:41  gxl_p231_2g_dvb.dtb
+GXL_P~22 DTB     55433 2026-08-12  12:41  gxl_p231_2g_dvb_ser.dtb
+GXL_P~23 DTB     55502 2026-08-12  12:41  gxl_p231_c300.dtb
+GXL_P~24 DTB     56461 2026-08-12  12:41  gxl_p241_1g.dtb
+GXL_P~25 DTB     54921 2026-08-12  12:41  gxl_p241_1g_lafrite.dtb
+GXL_P~26 DTB     56465 2026-08-12  12:41  gxl_p241_v2-1g.dtb
+GXL_P~27 DTB     54005 2026-08-12  12:41  gxl_p281_1g.dtb
+GXL_P~28 DTB     53965 2026-08-12  12:41  gxl_p281_1g_a95xr2.dtb
+GXL_P~29 DTB     54005 2026-08-12  12:41  gxl_p281_2g.dtb
+GXL_P~30 DTB     53965 2026-08-12  12:41  gxl_p281_2g_a95xr2.dtb
+SC2_S9~1 DTB     86439 2026-08-12  12:41  sc2_s905x4_2g.dtb
+SC2_S9~2 DTB     86536 2026-08-12  12:41  sc2_s905x4_2g_1gbit.dtb
+SC2_S9~3 DTB     86439 2026-08-12  12:41  sc2_s905x4_4g.dtb
+SC2_S9~4 DTB     86536 2026-08-12  12:41  sc2_s905x4_4g_1gbit.dtb
+SC2_S9~5 DTB     86235 2026-08-12  12:41  sc2_s905x4_buzztv_u5_4g_1gbit.dtb
+SC2_S9~6 DTB     86377 2026-08-12  12:41  sc2_s905x4_buzztv_x5.dtb
+SC2_S9~7 DTB     86792 2026-08-12  12:41  sc2_s905x4_kinhank_g1.dtb
+SC2_S9~8 DTB     65603 2026-08-12  12:41  sc2_s905x4_sei_smb_280.dtb
+SC2_S9~9 DTB     88037 2026-08-12  12:41  sc2_s905x4_ugoos_am7.dtb
+SC2_S~10 DTB     87800 2026-08-12  12:41  sc2_s905x4_ugoos_x4.dtb
+SM1_S9~1 DTB     73803 2026-08-12  12:41  sm1_s905d3_khadas_vim3l.dtb
+SM1_S9~2 DTB     73338 2026-08-12  12:41  sm1_s905x3_2g.dtb
+SM1_S9~3 DTB     73342 2026-08-12  12:41  sm1_s905x3_2g_1gbit.dtb
+SM1_S9~4 DTB     73338 2026-08-12  12:41  sm1_s905x3_4g.dtb
+SM1_S9~5 DTB     73342 2026-08-12  12:41  sm1_s905x3_4g_1gbit.dtb
+SM1_S9~6 DTB     70682 2026-08-12  12:41  sm1_s905x3_bananapi_m2pro.dtb
+SM1_S9~7 DTB     70678 2026-08-12  12:41  sm1_s905x3_bananapi_m5.dtb
+SM1_S9~8 DTB     37355 2026-08-12  12:41  sm1_s905x3_beelink_gt1mini2.dtb
+SM1_S9~9 DTB     70410 2026-08-12  12:41  sm1_s905x3_odroid_c4.dtb
+SM1_S~10 DTB     71799 2026-08-12  12:41  sm1_s905x3_odroid_hc4.dtb
+       75 files           4 666 662 bytes
+
+Total files listed:
+       83 files         264 606 526 bytes
+                        271 687 680 bytes free
+

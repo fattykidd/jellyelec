@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    JellyELEC: Kodi's startup screen, replacing the skin's own.
+
+    The skin's version switches straight to Kodi's home screen. This one stays on the
+    JellyELEC splash until JellyELEC opens over it, so the home screen is never seen at
+    boot. JellyELEC's service switches to the home screen itself when it's needed: with
+    appliance mode off, or after Exit to Kodi.
+
+    OK on this screen also opens Kodi's home screen, in case JellyELEC can't start.
+-->
+<window>
+    <onload>SetProperty(jellyelec.startup_screen,true,home)</onload>
+    <defaultcontrol always="true">10</defaultcontrol>
+    <controls>
+        <control type="image">
+            <left>0</left>
+            <top>0</top>
+            <width>1920</width>
+            <height>1080</height>
+            <texture>special://xbmc/media/splash.png</texture>
+        </control>
+        <control type="button" id="10">
+            <left>0</left>
+            <top>0</top>
+            <width>1</width>
+            <height>1</height>
+            <texturefocus />
+            <texturenofocus />
+            <onclick>ReplaceWindow(home)</onclick>
+        </control>
+    </controls>
+</window>

@@ -1,0 +1,1624 @@
+# Kodi Media Center language file
+# Addon Name: CoreELEC Configuration
+# Addon id: service.coreelec.settings
+# Addon Provider: CoreELEC
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: de_DE\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#600"
+msgid "CoreELEC Settings"
+msgstr "CoreELEC-Einstellungen"
+
+msgctxt "#601"
+msgid "Interface"
+msgstr "Schnittstelle"
+
+msgctxt "#602"
+msgid "Address"
+msgstr "Adresse"
+
+msgctxt "#603"
+msgid "Type"
+msgstr "Typ"
+
+msgctxt "#604"
+msgid "State"
+msgstr "Status"
+
+msgctxt "#605"
+msgid "Address"
+msgstr "Adresse"
+
+msgctxt "#606"
+msgid "Distribution: "
+msgstr "Distribution: "
+
+msgctxt "#607"
+msgid "Version: "
+msgstr "Version: "
+
+msgctxt "#608"
+msgid "Architecture: "
+msgstr "Architektur: "
+
+msgctxt "#609"
+msgid "CoreELEC is created by a global team of Linux and Kodi enthusiasts who contribute time and effort to manage the project, write code, and provide support. We have fun making it. We hope you have fun using it!"
+msgstr "CoreELEC wird von einem weltweiten Team aus Linux- und Kodi-Enthusiasten entwickelt, die Zeit und Mühe investieren, um das Projekt zu betreuen, Code zu schreiben und Support zu leisten. Wir haben Spaß daran, es zu entwickeln. Wir hoffen, es macht genauso viel Spaß, es zu benutzen!"
+
+msgctxt "#610"
+msgid "[B]Support[/B] is provided via our forum:[CR]https://discourse.coreelec.org[CR][CR][B]Documentation[/B] can be read at our website:[CR]https://coreelec.org[CR][CR][B]Wiki[/B] can be read at our website:[CR]https://wiki.coreelec.org[CR][CR][B]Code[/B] can be found on GitHub:[CR]https://github.com/CoreELEC[CR][CR]"
+msgstr "[B]Support[/B] gibt es in unserem Forum:[CR]https://discourse.coreelec.org[CR][CR][B]Dokumentation[/B] ist auf unserer Website zu finden:[CR]https://coreelec.org[CR][CR][B]Wiki[/B] ist auf unserer Website zu finden:[CR]https://wiki.coreelec.org[CR][CR][B]Code[/B] ist auf GitHub zu finden:[CR]https://github.com/CoreELEC[CR][CR]"
+
+msgctxt "#700"
+msgid ""
+"Configure a hostname, keyboard type, perform a reset, update, or backups and"
+" restores"
+msgstr "Konfiguriere einen Gerätenamen, einen Tastaturtypen, setze das System zurück, erstelle Datensicherungen oder stelle eine Datensicherung wieder her, übermittele einen Fehlerbericht."
+
+msgctxt "#701"
+msgid "Configure network startup options, NTP and VPNs"
+msgstr "Netzwerkeinstellungen, Startoptionen, NTP und VPN konfigurieren."
+
+msgctxt "#702"
+msgid ""
+"Manage the Ethernet, Wireless and VPN connections available to the system"
+msgstr "Verfügbare LAN-, Drahtlos- und VPN-Verbindungen konfigurieren"
+
+msgctxt "#703"
+msgid "Configure system services like Samba, SSH, Cron, Avahi and Syslog"
+msgstr "Systemdienste z.B. Samba Dateifreigaben, SSH Fernzugriffe, Cron, Avahi und Syslog konfigurieren"
+
+msgctxt "#704"
+msgid "Configure and pair Bluetooth devices"
+msgstr "Bluetoothgeräte verbinden und verwalten"
+
+msgctxt "#705"
+msgid "Useful information like version and architecture details, support and documentation links."
+msgstr "Nützliche Informationen wie Versions- und Architekturdetails sowie Support- und Dokumentations-Links."
+
+msgctxt "#707"
+msgid "Configure updates"
+msgstr "Konfiguriere Aktualisierungen"
+
+msgctxt "#710"
+msgid ""
+"Configure the Hostname of your CoreELEC system. This will be used for "
+"the HTPC \\\\hostname in Windows and SMB server name in the Mac OS Finder"
+msgstr "Konfigurieren Sie den Hostnamen Ihres CoreELEC Systems. Dies wird für den HTPC \\\\Hostnamen in Windows und für den SMB-Servernamen im Mac OS Finder verwendet werden."
+
+msgctxt "#711"
+msgid "Configure the 1st keyboard software layout"
+msgstr "Primäres Tastaturschema"
+
+msgctxt "#712"
+msgid "Configure the 2nd keyboard software layout"
+msgstr "Sekundäres Tastaturschema"
+
+msgctxt "#713"
+msgid "Configure the physical keyboard type"
+msgstr "Tastaturbelegung konfigurieren"
+
+msgctxt "#714"
+msgid ""
+"CoreELEC can be configured for automatic or manual updates. Automatic "
+"updates are available on stable releases and stable release candidates. "
+"Automatic update self-disables on beta and development builds"
+msgstr "CoreELEC kann für automatische oder manuelle Aktualisierungen konfiguriert werden. Automatische Aktualisierungen sind für stabile Releases und Release Candidates für stabile Releases verfügbar. Automatische Aktualisierungen werden für Beta- und Entwickler- Versionen standardmäßig abgeschaltet."
+
+msgctxt "#715"
+msgid ""
+"Set to ON and an on-screen notification will be displayed when a new update "
+"is available"
+msgstr "Auf EIN stellen und eine Bildschirm-Benachrichtigung wird angezeigt, sobald eine neue Aktualisierung verfügbar ist."
+
+msgctxt "#716"
+msgid "Update to the next stable release instead of remaining on nightly builds, when the next stable release is ready."
+msgstr "Auf die nächste stabile Version aktualisieren, statt auf Nightly-Builds zu bleiben, sobald die nächste stabile Version verfügbar ist."
+
+msgctxt "#718"
+msgid ""
+"Send boot config files from /flash, kodi.log, kernel log and Samba configs "
+"to https://paste.coreelec.org, and display the short URL"
+msgstr "Boot-Konfigurationen von /flash, kodi.log, kernel log und Samba-Konfigurationen an https://paste.coreelec.org übermitteln und die Kurz-URL anzeigen"
+
+msgctxt "#719"
+msgid ""
+"Send boot config files from /flash, kodi_crash.log, kernel log and Samba "
+"configs to https://paste.coreelec.org, and display the short URL"
+msgstr "Boot-Konfigurationen von /flash, kodi_crash.log, kernel log und Samba-Konfigurationen an https://paste.coreelec.org übermitteln und die Kurz-URL anzeigen"
+
+msgctxt "#720"
+msgid "Set to ON to enable the Bluetooth service"
+msgstr "Auf EIN stellen, um Bluetooth zu aktivieren"
+
+msgctxt "#721"
+msgid "Send CoreELEC debug info without logs to https://paste.coreelec.org, and display the short URL"
+msgstr "CoreELEC-Debug-Informationen ohne Protokolle an https://paste.coreelec.org senden und die Kurz-URL anzeigen"
+
+msgctxt "#722"
+msgid ""
+"Create a tar archive containing all CoreELEC and Kodi configuration "
+"settings, databases and thumbnail content. Backup files will be stored in "
+"/storage/backup/"
+msgstr "Erzeugt ein Backup als tar-Archiv, welches die gesamten Einstellungen, Datenbanken und Vorschaubilder von CoreELEC und Kodi enthält. Die Sicherungen werden unter /storage/backup/ abgelegt."
+
+msgctxt "#723"
+msgid ""
+"Restore a tar archive backup previously created using the backup option "
+"above"
+msgstr "Wiederherstellung einer Datensicherung, die hier mit der Sicherungsoption erstellt wurde"
+
+msgctxt "#724"
+msgid ""
+"[COLOR FF00FF00]SOFT RESET[/COLOR]\n"
+"Permanently reset CoreELEC configuration to defaults (resets also Kodi to default including your library. your media - music/videos/etc are not touched)"
+msgstr "[COLOR FF00FF00]SOFT RESET[/COLOR]\nStandardeinstellungen von CoreELEC und Kodi dauerhaft wiederherstellen (inklusive Reset der Datenbank. Musik- und Video-Dateien etc. werden dabei aber nicht  verändert)."
+
+msgctxt "#725"
+msgid ""
+"[COLOR FFFF0000]HARD RESET[/COLOR]\n"
+"Permanently reset CoreELEC and Kodi configuration to defaults (everything in your storage partition will be deleted)"
+msgstr "[COLOR FFFF0000]HARD RESET[/COLOR]\nStandardeinstellungen von CoreELEC und Kodi dauerhaft wiederherstellen (die gesamte Partition \"storage\" wird gelöscht)."
+
+msgctxt "#726"
+msgid "Enable or disable support for Wireless (WLAN) networks"
+msgstr "Drahtlose Netzwerke (WLAN) aktivieren oder deaktivieren"
+
+msgctxt "#727"
+msgid ""
+"Enable a 'tethered' Wireless Access Point. This requires your wireless card "
+"(and driver) to support bridging and access point mode. Not all cards are "
+"capable."
+msgstr "Aktiviert die Freigabe Ihres Netzwerkes (Tethering). Hierfür ist ein Drahtlosnetzwerkadapter erforderlich, der als Zugriffspunkt arbeiten kann. Nicht alle Drahtlosnetzwerkadapter unterstützen diesen Modus."
+
+msgctxt "#728"
+msgid "Configure the Access Point SSID"
+msgstr "Tethering Zugriffspunkt SSID (Name)"
+
+msgctxt "#729"
+msgid "Configure the Access Point Passphrase"
+msgstr "Tethering Zugriffspunkt Passwort"
+
+msgctxt "#730"
+msgid "Enable or disable support for Wired (Ethernet) networks"
+msgstr "Aktivieren bzw. deaktivieren von Kabelgebundenen Netzwerken (Ethernet)"
+
+msgctxt "#732"
+msgid "Configure the 1st time (NTP) server"
+msgstr "Erster Zeitserver (NTP)"
+
+msgctxt "#733"
+msgid "Configure the 2nd time (NTP) server"
+msgstr "Zweiter Zeitserver (NTP)"
+
+msgctxt "#734"
+msgid "Configure the 3rd time (NTP) server"
+msgstr "Dritter Zeitserver (NTP)"
+
+msgctxt "#736"
+msgid ""
+"Set to ON to delay Kodi startup until the network is available. Use this if "
+"the OS is booting into Kodi before the network is up and central MySQL "
+"databases are accessible."
+msgstr "Auf EIN stellen, um den Start von Kodi zu verzögern, bis das Netzwerk verfügbar ist. Verwende dies, wenn das Betriebssystem Kodi startet, bevor das Netzwerk und MySQL-Datenbanken verfügbar sind."
+
+msgctxt "#737"
+msgid "Time in seconds to wait for an established network connection."
+msgstr "Zeit in Sekunden, um auf eine bestehende Netzwerkverbindung zu warten."
+
+msgctxt "#738"
+msgid "Set to ON to enable the embedded Samba (SMB) filesharing service"
+msgstr "Auf EIN stellen, um den eingebetteten Samba (SMB) Datenfreigabedienst zu aktivieren"
+
+msgctxt "#739"
+msgid ""
+"Set to ON to require username/password access to local Samba fileshares"
+msgstr "Auf EIN stellen, um beim Zugriff auf lokale Samba-Dateifreigaben einen Benutzernamen/ein Passwort zu benötigen"
+
+msgctxt "#740"
+msgid "Set the username for Samba sharing"
+msgstr "Samba-Benutzername für Freigaben"
+
+msgctxt "#741"
+msgid "Set the password for Samba sharing"
+msgstr "Samba-Passwort für Freigaben"
+
+msgctxt "#742"
+msgid ""
+"Set to ON to enable the embedded SSH server. The SSH console can be accessed"
+" with username 'root' and password 'coreelec'."
+msgstr "Auf EIN stellen, um den eingebetteten SSH-Server zu aktivieren. Auf die SSH-Konsole kann mit dem Benutzernamen 'root' und dem Passwort 'coreelec' zugegriffen werden."
+
+msgctxt "#743"
+msgid ""
+"Set to ON if you have copied private SSH keys to your HTPC and would like to"
+" improve security by disabling SSH username and password authentication."
+msgstr "Auf EIN stellen, wenn du private SSH-Schlüssel auf deinen HTPC kopiert haben und die Sicherheit durch Deaktivierung der SSH-Benutzernamen- und Passwort-Authentifizierung verbessern möchtest."
+
+msgctxt "#744"
+msgid ""
+"Set to ON to enable the Avahi (Zeroconf/Bonjour) network discovery service"
+msgstr "Auf EIN stellen, um den Avahi (Zeroconf/Bonjour) Netzwerkverzeichnisdienst zu aktivieren"
+
+msgctxt "#745"
+msgid "Set to ON to enable the cron daemon"
+msgstr "Auf EIN stellen, um den Cron-Daemon zu aktivieren."
+
+msgctxt "#746"
+msgid "Set the password for SSH"
+msgstr "Passwort für SSH setzen"
+
+msgctxt "#747"
+msgid "Enable a PIN for CoreELEC Settings access"
+msgstr "PIN für den Zugriff auf die CoreELEC Einstellungen aktivieren"
+
+msgctxt "#748"
+msgid "Change the PIN Lock for CoreELEC Settings access"
+msgstr "PIN für den Zugriff auf die CoreELEC Einstellungen ändern"
+
+msgctxt "#749"
+msgid ""
+"Overrride the Wireless Regulatory Domain so radio properties (channels and "
+"transmit power) comply with local laws or match the country configuration of"
+" your router."
+msgstr "Die Behördliche Bestimmungen (für Funkkanäle und Sendeleistung) überschreiben, um mit den örtlichen Gesetzen im Einklang zu stehen."
+
+msgctxt "#750"
+msgid "750"
+msgstr "750"
+
+msgctxt "#751"
+msgid ""
+"With OBEX filetransfer you can send files, for example movies or pictures "
+"over bluetooth to CoreELEC."
+msgstr "Mit OBEX-Dateiübertragung kannst du Dateien, zum Beispiel Filme oder Bilder, über Bluetooth an CoreELEC senden."
+
+msgctxt "#752"
+msgid ""
+"Here you can set the folder location where OBEX file transfer should store "
+"incoming files"
+msgstr "Hier kannst du den Speicherort auswählen, wo OBEX-Dateiübertragung die eingehenden Dateien abspeichert"
+
+msgctxt "#753"
+msgid "Configure the 1st keyboard software Variant"
+msgstr "Konfiguration des 1. Tastaturschemas"
+
+msgctxt "#754"
+msgid "Configure the 2nd keyboard software Variant"
+msgstr "Konfiguration des zweiten Tastaturschemas"
+
+msgctxt "#755"
+msgid "Auto share external drives / partitions"
+msgstr "Automatische Freigabe externer Laufwerke / Partitionen"
+
+msgctxt "#756"
+msgid ""
+"Disable older SMB protocols by specifying the minimum supported protocol."
+msgstr "Zur Definition der niedrigsten unterstützten Protokoll-Version ältere SMB-Protokolle deaktivieren."
+
+msgctxt "#757"
+msgid ""
+"Disable more recent SMB protocols for backward compatability with legacy "
+"clients."
+msgstr "Neuere SMB-Protokolle für die Abwärtskompatibilität mit veralteten Clients deaktivieren."
+
+msgctxt "#758"
+msgid "NetBIOS group to which the server belongs. Default is WORKGROUP."
+msgstr "NetBIOS-Gruppe, zu der der Server gehört. Standard ist WORKGROUP."
+
+msgctxt "#760"
+msgid "Select an update channel"
+msgstr "Update-Kanal auswählen"
+
+msgctxt "#761"
+msgid "Enable to allow entering a custom update url"
+msgstr "Aktiveren, um die Eingabe einer benutzerdefinierten URL zu erlauben"
+
+msgctxt "#762"
+msgid "Enter a custom update url (url should be the root of the update files)"
+msgstr "Benutzerdefinierte URL eingeben (URL sollte das Wurzelverzeichnis der Update-Dateien sein)"
+
+msgctxt "#770"
+msgid "Select an available version"
+msgstr "Eine verfügbare Version auswählen"
+
+msgctxt "#771"
+msgid ""
+"The firewall blocks unwanted network traffic. Home (default) allows traffic "
+"from private network ranges (192.168.x.x, 172.16.x.x and 10.x.x.x) only. "
+"Public blocks all traffic from all networks. Custom uses rules in "
+"/storage/.config/iptables. Off disables the firewall."
+msgstr "Die Firewall blockiert unerwünschten Netzwerkverkehr. Privat (Standard) erlaubt nur den Datenverkehr von privaten Netzwerkbereichen (192.168.x.x, 172.16.x.x und 10.x.x.x). Öffentlich blockiert den Datenverkehr von allen Netzwerken. Benutzerdefiniert verwendet die Regeln unter /storage/.config/iptables. Deaktiviert schaltet die Firewall aus."
+
+msgctxt "#772"
+msgid ""
+"Checking for a new version will submit the installed Distribution, Project, "
+"CPU Arch and Version to the update server. This data is also used to report "
+"basic statistics for the project. To continue checking for updates while "
+"opting-out of stats reporting, disable this option."
+msgstr "Das Überprüfen auf eine neue Version übermittelt die installierte Distribution, das Projekt, die CPU-Architektur und die Version an den Update-Server. Diese Daten werden auch verwendet, um grundlegende Statistiken für das Projekt zu übermitteln. Um weiterhin nach Updates suchen zu können, bei dem das übermitteln der Statistiken deaktiviert ist, bitte diese Option deaktivieren."
+
+msgctxt "#773"
+msgid "Set the idle timeout (in minutes) before devices will be disconnected (defaults to 0 for no timeout). Applies to devices where \"Enable Standby\" has been activated in the CoreELEC device connection context menu."
+msgstr "Das Leerlauf-Timeout (in Minuten) festlegen, bevor Geräte getrennt werden (Standard 0 = kein Timeout). Gilt für Geräte, bei denen \"Standby aktivieren\" im Kontextmenü der CoreELEC-Geräteverbindung aktiviert wurde."
+
+msgctxt "#774"
+msgid "Automatic reconnect previously paired device after booting"
+msgstr "Zuvor gekoppelte Geräte nach dem Start automatisch wieder verbinden"
+
+msgctxt "#775"
+msgid "Automatic change audio output to PULSE when a audio device get connected"
+msgstr "Audioausgabe automatisch auf PULSE umstellen, wenn ein Audiogerät verbunden wird"
+
+msgctxt "#776"
+msgid "Show notification when a Bluetooth device connects or disconnects (excludes remotes and game controllers)"
+msgstr "Benachrichtigung anzeigen, wenn ein Bluetooth-Gerät verbunden oder getrennt wird (außer Fernbedienungen und Game-Controller)"
+
+msgctxt "#777"
+msgid "Specify which audio device to restore when Bluetooth disconnects. Leave empty to auto-detect. Example: ALSA: AML-AUGESOUND, HDMI"
+msgstr "Festlegen, welches Audiogerät wiederhergestellt wird, wenn Bluetooth getrennt wird. Leer lassen für automatische Erkennung. Beispiel: ALSA: AML-AUGESOUND, HDMI"
+
+msgctxt "#780"
+msgid "Configure hardware settings"
+msgstr "Hardware-Einstellungen konfigurieren"
+
+msgctxt "#781"
+msgid "Set fan mode (off/auto/manual)"
+msgstr "Lüftermodus festlegen (Aus/Auto/Manuell)"
+
+msgctxt "#782"
+msgid "Set fan speed level"
+msgstr "Lüftergeschwindigkeit festlegen"
+
+msgctxt "#785"
+msgid "Modify Vendor Bootloader to support all wake-up features such as CEC, Wake-On-LAN, IR, and GPIO wake-up from suspend or power off state!"
+msgstr "Hersteller-Bootloader anpassen, um alle Aufweckfunktionen wie CEC, Wake-on-LAN, IR und GPIO-Aufwecken aus dem Standby- oder ausgeschalteten Zustand zu unterstützen!"
+
+msgctxt "#786"
+msgid "Set the IR remote control power button code"
+msgstr "Code der Einschalttaste der IR-Fernbedienung festlegen"
+
+msgctxt "#787"
+msgid "Enable/Disable Wake-on-LAN"
+msgstr "Wake-on-LAN aktivieren/deaktivieren"
+
+msgctxt "#788"
+msgid "Enable/Disable USB Power when device is off/suspend"
+msgstr "USB-Stromversorgung aktivieren/deaktivieren, wenn das Gerät ausgeschaltet oder im Standby ist"
+
+msgctxt "#789"
+msgid "Change device LED behavior"
+msgstr "LED-Verhalten des Geräts ändern"
+
+msgctxt "#790"
+msgid "Enable/Disable VESA display modes"
+msgstr "VESA-Anzeigemodi aktivieren/deaktivieren"
+
+msgctxt "#791"
+msgid "Set CPU governor for all cores"
+msgstr "CPU-Governor für alle Kerne festlegen"
+
+msgctxt "#792"
+msgid "Enable/Disable HDD parking on power off/suspend"
+msgstr "Parken der Festplatte beim Ausschalten/Standby aktivieren/deaktivieren"
+
+msgctxt "#793"
+msgid "Time in seconds to wait for the HDD to spin down when parking"
+msgstr "Wartezeit in Sekunden, bis die Festplatte beim Parken zum Stillstand kommt"
+
+msgctxt "#794"
+msgid "Time in minutes/hours until the HDD should enter suspend mode"
+msgstr "Zeit in Minuten/Stunden, bis die Festplatte in den Ruhezustand wechselt"
+
+msgctxt "#900"
+msgid "Configure eMMC speed mode"
+msgstr "eMMC-Geschwindigkeitsmodus konfigurieren"
+
+msgctxt "#901"
+msgid "Configure WiFi SoC SDIO speed"
+msgstr "SDIO-Geschwindigkeit des WLAN-SoC konfigurieren"
+
+msgctxt "#902"
+msgid "Enable/Disable SPI interface"
+msgstr "SPI-Schnittstelle aktivieren/deaktivieren"
+
+msgctxt "#903"
+msgid "Choose IR protocol type for meson-remote"
+msgstr "IR-Protokolltyp für meson-remote auswählen"
+
+msgctxt "#904"
+msgid "Configure DVB GPIO support"
+msgstr "DVB-GPIO-Unterstützung konfigurieren"
+
+msgctxt "#905"
+msgid "Configure Wired Network Interface"
+msgstr "Kabelgebundene Netzwerkschnittstelle konfigurieren"
+
+msgctxt "#906"
+msgid "Choose if IP1001 is assembled"
+msgstr "Auswählen, ob ein IP1001 verbaut ist"
+
+msgctxt "#907"
+msgid "Switch between using the USB3 interface or the PCIE interface on m.2 connector"
+msgstr "Zwischen USB3- und PCIE-Schnittstelle am M.2-Anschluss umschalten"
+
+msgctxt "#908"
+msgid "Choose assembled Smartchip device"
+msgstr "Verbautes Smartchip-Gerät auswählen"
+
+msgctxt "#909"
+msgid "Set to ON to enable service"
+msgstr "Auf EIN stellen, um den Dienst zu aktivieren"
+
+msgctxt "#910"
+msgid "Set to ON to send invitation to the CoreELEC developers for remote debugging"
+msgstr "Auf EIN stellen, um den CoreELEC-Entwicklern eine Einladung zum Remote-Debugging zu senden"
+
+msgctxt "#911"
+msgid "Select the SSH key used for access control"
+msgstr "SSH-Schlüssel für die Zugriffskontrolle auswählen"
+
+msgctxt "#912"
+msgid "Forum username to identify the connection"
+msgstr "Forum-Benutzername zur Identifikation der Verbindung"
+
+msgctxt "#32001"
+msgid "Services"
+msgstr "Dienste"
+
+msgctxt "#32002"
+msgid "System"
+msgstr "System"
+
+msgctxt "#32003"
+msgid "Interface"
+msgstr "Schnittstelle"
+
+msgctxt "#32004"
+msgid "Hardware"
+msgstr "Hardware"
+
+msgctxt "#32005"
+msgid "Updates"
+msgstr "Aktualisierungen"
+
+msgctxt "#32009"
+msgid "Keyboard"
+msgstr "Tastatur"
+
+msgctxt "#32010"
+msgid "BusyBox Console Keyboard Layout"
+msgstr "Tastaturbelegung"
+
+msgctxt "#32012"
+msgid "Select Action"
+msgstr "Aktion auswählen"
+
+msgctxt "#32013"
+msgid "OS Updates"
+msgstr "Aktualisierungen des Betriebssystems"
+
+msgctxt "#32014"
+msgid "Automatic Updates"
+msgstr "Automatische Aktualisierungen"
+
+msgctxt "#32015"
+msgid "Update Channel"
+msgstr "Update-Kanal"
+
+msgctxt "#32016"
+msgid "Show Custom Channels"
+msgstr "Benutzerdefinierte Kanäle anzeigen"
+
+msgctxt "#32017"
+msgid "  - Custom Channel 1"
+msgstr "- Benutzerdefinierter Kanal 1"
+
+msgctxt "#32018"
+msgid "  - Custom Channel 2"
+msgstr "- Benutzerdefinierter Kanal 2"
+
+msgctxt "#32019"
+msgid "  - Custom Channel 3"
+msgstr "- Benutzerdefinierter Kanal 3"
+
+msgctxt "#32020"
+msgid "Available Versions"
+msgstr "Verfügbare Versionen"
+
+msgctxt "#32021"
+msgid "Submit Statistics"
+msgstr "Statistiken übermitteln"
+
+msgctxt "#32022"
+msgid "Firmware Updates"
+msgstr "Firmware-Aktualisierungen"
+
+msgctxt "#32023"
+msgid "Updating will occur once the system is rebooted."
+msgstr "Die Aktualisierung erfolgt nach dem nächsten Neustart des Systems."
+
+msgctxt "#32024"
+msgid "Bootloader EEPROM"
+msgstr "EEPROM-Bootloader"
+
+msgctxt "#32025"
+msgid ""
+"Update the Raspberry Pi Bootloader EEPROM to the latest version. This option"
+" is automatically disabled after rebooting. Reboot the system to apply the "
+"update."
+msgstr "Den EEPROM-Bootloader des Raspberry Pi auf die neueste Version aktualisieren. Diese Option wird nach dem nächsten Neustart des Systems automatisch wieder deaktiviert. Starte das System neu, um die Aktualisierung durchzuführen."
+
+msgctxt "#32026"
+msgid "VIA USB3 Firmware"
+msgstr "VIA USB 3.0 Firmware"
+
+msgctxt "#32027"
+msgid ""
+"Update the Raspberry Pi VIA USB3 firmware to the latest version. This option"
+" is automatically disabled after rebooting. Reboot the system to apply the "
+"update."
+msgstr "Die Raspberry-Pi-Firmware des VIA USB 3.0 auf die neueste Version aktualisieren. Diese Option wird nach dem nächsten Neustart automatisch wieder deaktiviert. Starte das System neu, um die Aktualisierung durchzuführen."
+
+msgctxt "#32028"
+msgid "update from %s to %s"
+msgstr "Aktualisierung von %s auf %s"
+
+msgctxt "#32029"
+msgid "up to date: %s"
+msgstr "Auf dem neusten Stand: %s"
+
+msgctxt "#32030"
+msgid "Update To Next Stable"
+msgstr "Auf nächste stabile Version aktualisieren"
+
+msgctxt "#32031"
+msgid "Show Pre-releases"
+msgstr "Vorabversionen anzeigen"
+
+msgctxt "#32032"
+msgid "Unlock Internal Channel"
+msgstr "Internen Kanal entsperren"
+
+msgctxt "#32033"
+msgid "Enter the internal channel password"
+msgstr "Passwort für den internen Kanal eingeben"
+
+msgctxt "#32034"
+msgid "Wrong password."
+msgstr "Falsches Passwort."
+
+msgctxt "#32035"
+msgid "Internal channel unlocked."
+msgstr "Interner Kanal entsperrt."
+
+msgctxt "#32036"
+msgid "The internal channel is not available in this build."
+msgstr "Der interne Kanal ist in dieser Version nicht verfügbar."
+
+msgctxt "#32037"
+msgid "Not enough free space to download this update."
+msgstr "Nicht genügend freier Speicherplatz für dieses Update."
+
+msgctxt "#32038"
+msgid "Checksum verification failed. The download was discarded."
+msgstr "Prüfsummenvergleich fehlgeschlagen. Download verworfen."
+
+msgctxt "#32039"
+msgid "No checksum published for this build. Download discarded."
+msgstr "Keine Prüfsumme veröffentlicht. Download verworfen."
+
+msgctxt "#32040"
+msgid "This is not the newest build in the %s channel. Automatic updates will be switched off so it is not replaced."
+msgstr "Dies ist nicht die neueste Version im Kanal %s. Automatische Updates werden deaktiviert, damit sie nicht ersetzt wird."
+
+msgctxt "#32041"
+msgid "No builds are available in this channel."
+msgstr "In diesem Kanal sind keine Versionen verfügbar."
+
+msgctxt "#32042"
+msgid "Channel unavailable: %s"
+msgstr "Kanal nicht verfügbar: %s"
+
+msgctxt "#32043"
+msgid "running"
+msgstr "aktiv"
+
+msgctxt "#32044"
+msgid "newest"
+msgstr "neueste"
+
+msgctxt "#32045"
+msgid "An update has been downloaded. Reboot now to apply it?"
+msgstr "Ein Update wurde heruntergeladen. Jetzt neu starten, um es anzuwenden?"
+
+msgctxt "#32046"
+msgid "Include releases marked as pre-release on GitHub. These are not production builds."
+msgstr "Versionen einbeziehen, die auf GitHub als Vorabversion markiert sind. Dies sind keine Produktivversionen."
+
+msgctxt "#32047"
+msgid "Unlock the restricted internal test channel with a password."
+msgstr "Den eingeschränkten internen Testkanal mit einem Passwort entsperren."
+
+msgctxt "#32048"
+msgid "Update downloaded - reboot to apply it"
+msgstr "Update heruntergeladen - zum Anwenden neu starten"
+
+msgctxt "#32049"
+msgid "Update failed - see the log for details."
+msgstr "Update fehlgeschlagen - Details siehe Log."
+
+msgctxt "#32050"
+msgid "This channel is locked. Unlock it with the password first."
+msgstr "Dieser Kanal ist gesperrt. Bitte zuerst mit dem Passwort entsperren."
+
+msgctxt "#32100"
+msgid "Connections"
+msgstr "Verbindungen"
+
+msgctxt "#32101"
+msgid "Network"
+msgstr "Netzwerk"
+
+msgctxt "#32102"
+msgid "Wireless Networks"
+msgstr "Drahtlose Netzwerke"
+
+msgctxt "#32103"
+msgid "Wired Networks"
+msgstr "Kabelgebundene Netzwerke"
+
+msgctxt "#32105"
+msgid "Active"
+msgstr "aktiv"
+
+msgctxt "#32106"
+msgid "Username"
+msgstr "Benutzername"
+
+msgctxt "#32107"
+msgid "Passphrase"
+msgstr "Passwort"
+
+msgctxt "#32108"
+msgid "Enable 'tethered' Wireless Access Point"
+msgstr "WLAN-Acces Point ('tethered') aktivieren"
+
+msgctxt "#32109"
+msgid "Connect Automatically"
+msgstr "Automatisch verbinden"
+
+msgctxt "#32110"
+msgid "Connection"
+msgstr "Verbindung"
+
+msgctxt "#32111"
+msgid "IPv4"
+msgstr "IPv4"
+
+msgctxt "#32112"
+msgid "IPv6"
+msgstr "IPv6"
+
+msgctxt "#32113"
+msgid "IP Address Method"
+msgstr "IP-Adressierungsmethode"
+
+msgctxt "#32114"
+msgid "IP Address"
+msgstr "IP-Adresse"
+
+msgctxt "#32115"
+msgid "Subnet Mask"
+msgstr "Subnetzmaske"
+
+msgctxt "#32116"
+msgid "Default Gateway"
+msgstr "Standard Gateway"
+
+msgctxt "#32117"
+msgid "Prefix Length"
+msgstr "Prefix Länge"
+
+msgctxt "#32118"
+msgid "Privacy"
+msgstr "Privatsphäre"
+
+msgctxt "#32119"
+msgid "DNS Servers"
+msgstr "DNS-Server"
+
+msgctxt "#32120"
+msgid "Nameserver #1"
+msgstr "Erster Nameserver"
+
+msgctxt "#32121"
+msgid "Nameserver #2"
+msgstr "Zweiter Nameserver"
+
+msgctxt "#32122"
+msgid "Nameserver #3"
+msgstr "Dritter Nameserver"
+
+msgctxt "#32123"
+msgid "NTP Servers"
+msgstr "Zeitserver (NTP)"
+
+msgctxt "#32124"
+msgid "Timeserver #1"
+msgstr "Erster Zeitserver"
+
+msgctxt "#32125"
+msgid "Timeserver #2"
+msgstr "Zweiter Zeitserver"
+
+msgctxt "#32126"
+msgid "Timeserver #3"
+msgstr "Dritter Zeitserver"
+
+msgctxt "#32127"
+msgid "DNS Domains"
+msgstr "DNS Domänen"
+
+msgctxt "#32128"
+msgid "Domain #1"
+msgstr "Erste Domäne"
+
+msgctxt "#32129"
+msgid "Domain #2"
+msgstr "Zweite Domäne"
+
+msgctxt "#32130"
+msgid "Domain #3"
+msgstr "Dritte Domäne"
+
+msgctxt "#32140"
+msgid "Save"
+msgstr "Speichern"
+
+msgctxt "#32141"
+msgid "Delete"
+msgstr "Löschen"
+
+msgctxt "#32142"
+msgid "Refresh"
+msgstr "Aktualisieren"
+
+msgctxt "#32143"
+msgid "Disconnect"
+msgstr "Verbindung trennen"
+
+msgctxt "#32144"
+msgid "Connect"
+msgstr "Verbinden"
+
+msgctxt "#32145"
+msgid "Pair"
+msgstr "Verbinden (pairing)"
+
+msgctxt "#32146"
+msgid "Hidden Network Name"
+msgstr "Name des unsichtbaren Funknetzwerkes"
+
+msgctxt "#32147"
+msgid "Wireless Network Passphrase"
+msgstr "WLAN Passwort"
+
+msgctxt "#32148"
+msgid "Wireless Network Username"
+msgstr "Funknetzwerk Benutzername"
+
+msgctxt "#32150"
+msgid "Edit"
+msgstr "Bearbeiten"
+
+msgctxt "#32180"
+msgid "Would you like to update CoreELEC now?"
+msgstr "Möchtest du CoreELEC jetzt aktualisieren?"
+
+msgctxt "#32181"
+msgid "Filename"
+msgstr "Dateiname"
+
+msgctxt "#32182"
+msgid "Download speed"
+msgstr "Geschwindigkeit"
+
+msgctxt "#32183"
+msgid "Time remaining"
+msgstr "Restzeit"
+
+msgctxt "#32184"
+msgid "Extract file"
+msgstr "Entpacke Datei"
+
+msgctxt "#32185"
+msgid "Extract speed"
+msgstr "Geschwindigkeit"
+
+msgctxt "#32186"
+msgid "Initialize Archive File"
+msgstr "Entpacke Datei"
+
+msgctxt "#32187"
+msgid "New Version"
+msgstr "Neue Version"
+
+msgctxt "#32188"
+msgid "Current Version"
+msgstr "Aktuelle Version"
+
+msgctxt "#32189"
+msgid "Identification"
+msgstr "Identifikation"
+
+msgctxt "#32190"
+msgid "System Name"
+msgstr "Systemname"
+
+msgctxt "#32191"
+msgid "Invalid URL"
+msgstr "Ungültige URL"
+
+msgctxt "#32192"
+msgid "PIN lock"
+msgstr "PIN-Sperre"
+
+msgctxt "#32193"
+msgid "Enable CoreELEC Settings PIN Lock"
+msgstr "PIN-Sperre für die CoreELEC Einstellungen aktivieren"
+
+msgctxt "#32194"
+msgid "Change CoreELEC Settings PIN Lock"
+msgstr "PIN-Sperre für CoreELEC Einstellungen ändern"
+
+msgctxt "#32196"
+msgid "About"
+msgstr "Über"
+
+msgctxt "#32198"
+msgid "SSID"
+msgstr "SSID"
+
+msgctxt "#32200"
+msgid "Samba"
+msgstr "Samba"
+
+msgctxt "#32201"
+msgid "SSH"
+msgstr "SSH"
+
+msgctxt "#32202"
+msgid "Use Samba Password Authentication"
+msgstr "Samba-Kennwortauthentifizierung benutzen"
+
+msgctxt "#32203"
+msgid "Disable SSH Password"
+msgstr "SSH-Passwort deaktivieren"
+
+msgctxt "#32204"
+msgid "Enable Samba"
+msgstr "Samba aktivieren"
+
+msgctxt "#32205"
+msgid "Enable SSH"
+msgstr "SSH aktivieren"
+
+msgctxt "#32206"
+msgid "Enable Avahi (Zeroconf)"
+msgstr "Avahi (Zeroconf) aktivieren"
+
+msgctxt "#32207"
+msgid "Avahi"
+msgstr "Avahi"
+
+msgctxt "#32208"
+msgid "Hidden Wlan"
+msgstr "Unsichtbares Wlan"
+
+msgctxt "#32209"
+msgid "SSH Password"
+msgstr "SSH-Passwort"
+
+msgctxt "#32210"
+msgid ""
+"The default SSH password is widely known and considered "
+"insecure.[CR][CR]Setting a personal password is recommended."
+msgstr "Das voreingestellte SSH-Passwort ist weithin bekannt und gilt als unsicher.[CR] [CR] Es wird empfohlen ein persönliches Passwort festzulegen."
+
+msgctxt "#32212"
+msgid "Cancel"
+msgstr "Abbrechen"
+
+msgctxt "#32213"
+msgid "Keep Existing"
+msgstr "Aktuelles beibehalten"
+
+msgctxt "#32214"
+msgid "Set Password"
+msgstr "Passwort festlegen"
+
+msgctxt "#32215"
+msgid "Workgroup name"
+msgstr "Name der Arbeitsgruppe"
+
+msgctxt "#32216"
+msgid "Auto-Share External Drives"
+msgstr "Automatische Freigabe externer Laufwerke"
+
+msgctxt "#32217"
+msgid "Minimum supported protocol"
+msgstr "Niedrigste unterstützte Protokoll-Version"
+
+msgctxt "#32218"
+msgid "Maximum supported protocol"
+msgstr "Höchste unterstützte Protokoll-Version"
+
+msgctxt "#32220"
+msgid "Bad password!"
+msgstr "Schlechtes Passwort!"
+
+msgctxt "#32221"
+msgid "The entered password is too weak.[CR]SSH password is unchanged."
+msgstr "Das eingegebene Passwort ist zu schwach.[CR]SSH-Passwort wurde nicht geändert."
+
+msgctxt "#32222"
+msgid "Password changed!"
+msgstr "Passwort wurde geändert!"
+
+msgctxt "#32223"
+msgid "The SSH password has been successfully changed."
+msgstr "Das SSH-Passwort wurde erfolgreich geändert."
+
+msgctxt "#32224"
+msgid "Unknown error!"
+msgstr "Unbekannter Fehler!"
+
+msgctxt "#32225"
+msgid "There was an error during the process.[CR]SSH password is unchanged."
+msgstr "Beim Bearbeiten des Vorgangs ist ein Fehler aufgetreten.[CR]SSH-Passwort wurde nicht geändert."
+
+msgctxt "#32226"
+msgid "Enter new 4 digit PIN"
+msgstr "Neue 4-stellige PIN eingeben"
+
+msgctxt "#32227"
+msgid "Re-enter PIN"
+msgstr "PIN wiederholen"
+
+msgctxt "#32228"
+msgid "Error - PIN codes did not match!"
+msgstr "Fehler: PINs stimmen nicht überein"
+
+msgctxt "#32229"
+msgid "CoreELEC Settings PIN lock not set.[CR][CR]Please try again."
+msgstr "PIN-Sperre für die CoreELEC Einstellungen wurde nicht eingerichtet.[CR][CR]Bitte nochmals versuchen."
+
+msgctxt "#32230"
+msgid "CoreELEC Settings PIN lock set."
+msgstr "PIN-Sperre für die CoreELEC Einstellungen eingerichtet."
+
+msgctxt "#32231"
+msgid "Your CoreELEC Settings PIN lock has been set to:"
+msgstr "Deine PIN-Sperre für die CoreELEC Einstellungen wurde eingestellt auf: "
+
+msgctxt "#32232"
+msgid "Error - PIN code not 4 digits!"
+msgstr "Fehler: PIN ist nicht 4-stellig!"
+
+msgctxt "#32233"
+msgid "CoreELEC Settings Locked[CR]Enter 4 digit PIN"
+msgstr "CoreELEC Einstellungen gesperrt[CR]4-stellige PIN eingeben"
+
+msgctxt "#32234"
+msgid "Incorrect PIN!"
+msgstr "Falsche PIN!"
+
+msgctxt "#32235"
+msgid " attempts remaining."
+msgstr "Verbleibende Eingabeversuche."
+
+msgctxt "#32236"
+msgid ""
+"You have entered an incorrect PIN too many times.[CR][CR]You will need to "
+"wait 5 minutes before trying again."
+msgstr "Du hast zu oft hintereinander eine falsche PIN eingegeben.[CR][CR]Du musst 5 Minuten warten, bevor Du es erneut versuchen kannst."
+
+msgctxt "#32237"
+msgid "CoreELEC Settings Locked!"
+msgstr "CoreELEC Einstellungen gesperrt!"
+
+msgctxt "#32238"
+msgid ""
+"Time remaining before PIN can be entered: %02d:%02d[CR][CR]Too many previous"
+" failed attempts."
+msgstr "Verbleibende Zeit bis die PIN erneut eigegeben werden darf %02d:%02d[CR][CR]Zu viele fehlgeschlagene Versuche."
+
+msgctxt "#32240"
+msgid "Wireless Regulatory Domain"
+msgstr "Behördliche Bestimmungen für Funkkanäle"
+
+msgctxt "#32300"
+msgid "Welcome to CoreELEC"
+msgstr "Willkommen bei CoreELEC"
+
+msgctxt "#32301"
+msgid "Welcome"
+msgstr "Willkommen"
+
+msgctxt "#32302"
+msgid ""
+"This wizard will guide you through the process of setting up your new "
+"CoreELEC installation - setting your location, timezone and connecting "
+"you to the internet.[CR][CR]These settings can be changed later by "
+"navigating to Programs > CoreELEC Settings."
+msgstr "Dieser Assistent führt dich durch die Einrichtung einer neuen Installation von CoreELEC. Dazu zählt u.a. die Auswahl des Standortes, der Zeitzone und die Konfiguration der Internetverbindung.[CR][CR]Diese Einstellungen können später über Programme > CoreELEC Konfiguration angepasst werden."
+
+msgctxt "#32303"
+msgid "Next"
+msgstr "Weiter"
+
+msgctxt "#32304"
+msgid ""
+"To be identified easily on the network, your new CoreELEC machine needs "
+"a name.[CR][CR]Try to choose something meaningful - like the room it's in - "
+"so you'll know what it is when you see it on the network.[CR][CR]This name "
+"is used when configuring network services, like file sharing using samba."
+msgstr "Damit die neue CoreELEC Installation im Netzwerk gefunden werden kann, wird ein Gerätename benötigt.[CR][CR]Wähle eine möglichst aussagekräftigen Namen, wie z.B. den Raum, in dem das Gerät steht.[CR][CR]Dieser Name wird auch für die Konfiguration weiterer Netzwerkdienste, z.B. Dateifreigaben per Samba, benötigt."
+
+msgctxt "#32305"
+msgid "Networking"
+msgstr "Netzwerk"
+
+msgctxt "#32306"
+msgid ""
+"In order to download backdrops, banners and thumbnails for your movies and "
+"TV shows and to stream online content from sites like YouTube, CoreELEC "
+"needs to be connected the Internet.[CR][CR]An Internet connection is also "
+"required for CoreELEC to automatically update itself."
+msgstr "CoreELEC muss mit dem Internet verbunden sein, um Hintergrundbilder, Banner und Vorschaubilder für Serien und Filme herunterladen zu können und um Online-Inhalte von z.B. Youtube streamen zu können.[CR][CR]Außerdem wird eine Internetverbindung auch für automatische Aktualisierungen von CoreELEC benötigt."
+
+msgctxt "#32307"
+msgid "Previous"
+msgstr "Zurück"
+
+msgctxt "#32308"
+msgid "Hostname:"
+msgstr "Rechnername:"
+
+msgctxt "#32309"
+msgid "The following Networks are currently available:"
+msgstr "Die folgenden Netzwerke sind derzeit verfügbar:"
+
+msgctxt "#32310"
+msgid "Language:"
+msgstr "Sprache:"
+
+msgctxt "#32311"
+msgid "Sharing and Remote Access"
+msgstr "Dateifreigaben und Fernzugriffe"
+
+msgctxt "#32312"
+msgid ""
+"CoreELEC also supports SSH for remote access. This is for advanced users"
+" who wish to interact with CoreELEC's underlying operating system. The "
+"default user is [COLOR blue]root[/COLOR] and the default password is [COLOR "
+"blue]coreelec[/COLOR]."
+msgstr "CoreELEC unterstützt SSH für den Fernzugriff. Diese Möglichkeit ist für erfahrene Benutzer gedacht, die direkt auf das CoreELEC basierende Betriebssystem zugreifen möchten. Der Standard-Benutzername lautet [COLOR blue]root[/COLOR]. Das Standard-Passwort ist [COLOR blue]coreelec[/COLOR]."
+
+msgctxt "#32313"
+msgid ""
+"In order to share your files between your computers CoreELEC has "
+"incorporated a samba server. This samba server can be integrated into your "
+"local network by accessing it in a familiar way with Finder or Windows "
+"Explorer."
+msgstr "Um Dateien mit anderen Geräten im Netzwerk teilen zu können, hat CoreELEC einen eingabauten Samba-Server. Dieser Server kann in das lokale Netzwerk eingebunden werden, sodass in gewohnter Weise, z.B. mit dem Finder oder Windows Explorer, darauf zugegriffen werden kann."
+
+msgctxt "#32316"
+msgid "Configure Services:"
+msgstr "Dienste konfigurieren:"
+
+msgctxt "#32317"
+msgid "Thank you"
+msgstr "Danke"
+
+msgctxt "#32318"
+msgid "Your CoreELEC installation is now complete and you are about to enter Kodi where you can set up your media libraries. For help with this, there is a guide available at wiki.kodi.tv[CR][CR]CoreELEC is developed by a dedicated team of developers who work purely in their spare time.[CR][CR]Finally, we hope you enjoy using CoreELEC as much as we've enjoyed building it. If you need any more help, you can find links to our support forum along with latest news at our website."
+msgstr "Die Installation von CoreELEC ist jetzt abgeschlossen, und gleich startet Kodi, wo die Medienbibliotheken eingerichtet werden können. Hilfe dazu bietet die Anleitung auf wiki.kodi.tv[CR][CR]CoreELEC wird von einem engagierten Team von Entwicklern ausschließlich in deren Freizeit entwickelt.[CR][CR]Wir wünschen mit CoreELEC genauso viel Freude, wie wir beim Entwickeln hatten. Für weitere Hilfe gibt es auf unserer Website Links zum Support-Forum sowie aktuelle Neuigkeiten."
+
+msgctxt "#32319"
+msgid "Cron"
+msgstr "Cron"
+
+msgctxt "#32320"
+msgid "Enable Cron"
+msgstr "Cron aktivieren"
+
+msgctxt "#32323"
+msgid "Reset to Defaults"
+msgstr "Standardwerte wiederherstellen"
+
+msgctxt "#32324"
+msgid "Reset System Settings to defaults"
+msgstr "Einstellungen in den Auslieferungszustand zurücksetzen"
+
+msgctxt "#32325"
+msgid "Reset CoreELEC to defaults"
+msgstr "CoreELEC auf Standardeinstellungen zurücksetzen"
+
+msgctxt "#32326"
+msgid "Are you sure?"
+msgstr "Bist du dir sicher?"
+
+msgctxt "#32328"
+msgid "The system must reboot."
+msgstr "Das System muss neu starten."
+
+msgctxt "#32329"
+msgid "Rebooting in %d seconds"
+msgstr "Neustart in %d Sekunden"
+
+msgctxt "#32330"
+msgid "Keyboard Type"
+msgstr "Tastaturbelegung"
+
+msgctxt "#32331"
+msgid "Bluetooth"
+msgstr "Bluetooth"
+
+msgctxt "#32333"
+msgid "Connected: "
+msgstr "Verbunden: "
+
+msgctxt "#32334"
+msgid "Yes"
+msgstr "Ja"
+
+msgctxt "#32335"
+msgid "No"
+msgstr "Nein"
+
+msgctxt "#32338"
+msgid "No Bluetooth adapter found."
+msgstr "Kein Bluetooth-Adapter gefunden."
+
+msgctxt "#32339"
+msgid ""
+"No Bluetooth device found. Please put your Bluetooth device into discovery "
+"mode[CR]and start the scan"
+msgstr "Keine Bluetooth-Geräte gefunden. Aktiviere im Bluetooth-Gerät den[CR]Verbindungsmodus und starte die Suche erneut."
+
+msgctxt "#32343"
+msgid "Enter the following Key on your Device."
+msgstr "Gebe den folgenden Code auf deinem Gerät ein."
+
+msgctxt "#32344"
+msgid "Enable Bluetooth"
+msgstr "Bluetooth aktivieren"
+
+msgctxt "#32346"
+msgid "Bluetooth is disabled"
+msgstr "Bluetooth ist deaktiviert"
+
+msgctxt "#32358"
+msgid "Trust and Connect"
+msgstr "Vertrauen und verbinden"
+
+msgctxt "#32362"
+msgid "Check for updates now:"
+msgstr "Jetzt nach Aktualisierungen suchen:"
+
+msgctxt "#32363"
+msgid "CoreELEC"
+msgstr "CoreELEC"
+
+msgctxt "#32364"
+msgid "Update available"
+msgstr "Aktualisierung verfügbar"
+
+msgctxt "#32365"
+msgid "Show Update Notifications"
+msgstr "Aktualisierungsbenachrichtigungen anzeigen"
+
+msgctxt "#32366"
+msgid "Update Download Completed"
+msgstr "Herunterladen der Aktualisierung abgeschlossen"
+
+msgctxt "#32367"
+msgid "Update Extract Complete"
+msgstr "Entpacken der Aktualisierung abgeschlossen"
+
+msgctxt "#32368"
+msgid "Advanced Network Settings"
+msgstr "Erweiterte Netzwerkeinstellungen"
+
+msgctxt "#32369"
+msgid "Wait for network before starting Kodi"
+msgstr "Vor dem Start von Kodi auf das Netzwerk warten"
+
+msgctxt "#32370"
+msgid "Maximum Wait Time (Sec.)"
+msgstr "Maximale Wartezeit (Sekunden)"
+
+msgctxt "#32371"
+msgid "Backup"
+msgstr "Sichern"
+
+msgctxt "#32372"
+msgid "Create System and Kodi Backup"
+msgstr "System und Kodi Datensicherung erstellen"
+
+msgctxt "#32373"
+msgid "Restore Backup"
+msgstr "Datensicherung wiederherstellen"
+
+msgctxt "#32374"
+msgid "Restore file cannot be accessed by the system, it must be located on the local filesystem"
+msgstr "Auf die Wiederherstellungsdatei kann nicht zugegriffen werden; sie muss sich im lokalen Dateisystem befinden"
+
+msgctxt "#32375"
+msgid "Backup Progress"
+msgstr "Fortschritt der Datensicherung"
+
+msgctxt "#32376"
+msgid "Submit Log"
+msgstr "Fehlerbericht (Log) übermitteln"
+
+msgctxt "#32377"
+msgid "Upload latest Kodi log and configs, and view the short URL"
+msgstr "Aktuelle Kodi Log und Konfigurationen übermitteln und die Kurz-URL anzeigen"
+
+msgctxt "#32378"
+msgid "Upload latest Kodi crash log and configs, and view the short URL"
+msgstr "Aktuelle Kodi Absturz-Log und Konfigurationen übermitteln und die Kurz-URL anzeigen"
+
+msgctxt "#32379"
+msgid "There is not enough free storage space to continue!"
+msgstr "Es ist nicht genügend freier Speicherplatz vorhanden!"
+
+msgctxt "#32380"
+msgid ""
+"Restoring system settings requires a reboot. Are you sure you want to "
+"restore?"
+msgstr "Die Wiederherstellung benötigt einen Neustart. Bist du dir sicher, dass du die Wiederherstellung durchführen möchten."
+
+msgctxt "#32381"
+msgid "Accept incoming Bluetooth Filetransfer ?"
+msgstr "Eingehende Bluetooth-Dateiübertragung annehmen?"
+
+msgctxt "#32382"
+msgid "Speed"
+msgstr "Geschwindigkeit"
+
+msgctxt "#32383"
+msgid "Play Files ?"
+msgstr "Wiedergeben von Dateien?"
+
+msgctxt "#32384"
+msgid "OBEX Enabled"
+msgstr "OBEX aktiviert"
+
+msgctxt "#32385"
+msgid "OBEX Upload Folder"
+msgstr "OBEX-Hochladeordner"
+
+msgctxt "#32386"
+msgid "Keyboard Layout Variant #1"
+msgstr "Tastaturbelegung Variante 1"
+
+msgctxt "#32387"
+msgid "Keyboard Layout Variant #2"
+msgstr "Tastaturbelegung Variante 2"
+
+msgctxt "#32388"
+msgid "Enable Standby"
+msgstr "Aktiviere Standby"
+
+msgctxt "#32389"
+msgid "Disable Standby"
+msgstr "Deaktivere Standby"
+
+msgctxt "#32390"
+msgid "Settings addon is not yet ready, please try again later."
+msgstr "Das Einstellungs-Addon ist nicht bereit. Versuch es später erneut."
+
+msgctxt "#32391"
+msgid "Upload configs and other debug info without logs, and view the short URL"
+msgstr "Konfigurationen und andere Debug-Informationen ohne Protokolle hochladen und die Kurz-URL anzeigen"
+
+msgctxt "#32393"
+msgid "** SAFE MODE! ** SAFE MODE! ** SAFE MODE! **"
+msgstr "** Sicherheitsmodus! ** Sicherheitsmodus! ** Sicherheitsmodus! **"
+
+msgctxt "#32394"
+msgid "CoreELEC has temporarily started in safe mode due to repeated Kodi crashes.[CR][CR]You may now investigate the cause of the crashes by enabling ssh or Samba.[CR][CR]Your original Kodi installation can be accessed via \"/storage/.kodi.FAILED\" and the Samba \"Kodi-Failed\" share.[CR][CR]Rebooting will return to your original Kodi installation.[CR][CR]Go to https://discourse.coreelec.org if you require further assistance. When posting to the forum include the link to your crash log which can be viewed by clicking the crash log option in Settings > CoreELEC > System > Submit Log."
+msgstr "CoreELEC wurde wegen wiederholter Kodi-Abstürze vorübergehend im abgesicherten Modus gestartet.[CR][CR]Die Absturzursache kann jetzt untersucht werden, indem SSH oder Samba aktiviert wird.[CR][CR]Die ursprüngliche Kodi-Installation ist über \"/storage/.kodi.FAILED\" und die Samba-Freigabe \"Kodi-Failed\" erreichbar.[CR][CR]Ein Neustart kehrt zur ursprünglichen Kodi-Installation zurück.[CR][CR]Weitere Hilfe gibt es auf https://discourse.coreelec.org. Bei Forenbeiträgen bitte den Link zum Absturzprotokoll angeben; dieser ist über die Absturzprotokoll-Option unter Einstellungen > CoreELEC > System > Fehlerbericht (Log) übermitteln einsehbar."
+
+msgctxt "#32395"
+msgid "Firewall"
+msgstr "Firewall"
+
+msgctxt "#32396"
+msgid "Custom"
+msgstr "Benutzerdefiniert"
+
+msgctxt "#32397"
+msgid "Off"
+msgstr "Deaktiviert"
+
+msgctxt "#32398"
+msgid "Home"
+msgstr "Privat"
+
+msgctxt "#32399"
+msgid "Public"
+msgstr "Öffentlich"
+
+msgctxt "#32400"
+msgid "Idle Timeout"
+msgstr "Leerlauf-Timeout"
+
+msgctxt "#913"
+msgid "Experimental. Enable UAS for USB storage (higher queue depth, lower latency, better concurrency). Applied at the next reboot. Some USB-SATA/NVMe bridges and cheap flash drives misbehave under UAS. To keep a specific device on BOT (standard) mode, add its lsusb VID:PID to /storage/.config/uas-blacklist.txt, one per line, and reboot. Full recovery if a drive becomes unusable: SSH in and run rm /storage/.config/uas.enabled && reboot. Do not enable on systems booting from a problematic USB stick."
+msgstr "Experimentell. Aktiviert UAS für USB-Speicher (höhere Warteschlangentiefe, geringere Latenz, bessere Parallelität). Wird beim nächsten Neustart angewendet. Manche USB-SATA/NVMe-Brücken und billige USB-Sticks verhalten sich unter UAS fehlerhaft. Um ein bestimmtes Gerät im BOT-Modus (Standard) zu halten, dessen lsusb VID:PID in /storage/.config/uas-blacklist.txt eintragen (eine pro Zeile) und neu starten. Vollständige Wiederherstellung bei unbenutzbarem Laufwerk: per SSH anmelden und ausführen: rm /storage/.config/uas.enabled && reboot. Nicht aktivieren, wenn das System von einem problematischen USB-Stick bootet."
+
+msgctxt "#32401"
+msgid "Connect paired devices"
+msgstr "Gekoppelte Geräte verbinden"
+
+msgctxt "#32402"
+msgid "Switch audio device on connection"
+msgstr "Audiogerät bei Verbindung umschalten"
+
+msgctxt "#32403"
+msgid "Show connection notifications"
+msgstr "Verbindungsbenachrichtigungen anzeigen"
+
+msgctxt "#32404"
+msgid "Restore audio device (optional)"
+msgstr "Audiogerät wiederherstellen (optional)"
+
+msgctxt "#32410"
+msgid "Logging"
+msgstr "Protokollierung"
+
+msgctxt "#32411"
+msgid "Use Persistent Logs"
+msgstr "Dauerhafte Protokolle verwenden"
+
+msgctxt "#32412"
+msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
+msgstr "Dauerhafte Journal- und Protokolldateien statt der standardmäßig flüchtigen verwenden. Neustart erforderlich, um Änderungen zu übernehmen."
+
+msgctxt "#32413"
+msgid "Journal Size"
+msgstr "Journal-Größe"
+
+msgctxt "#32414"
+msgid "Set max. size of persistent journal. Reboot to apply changes."
+msgstr "Maximale Größe des dauerhaften Journals festlegen. Neustart erforderlich, um Änderungen zu übernehmen."
+
+msgctxt "#32415"
+msgid "Disable journald Rate Limit"
+msgstr "journald-Ratenbegrenzung deaktivieren"
+
+msgctxt "#32416"
+msgid "Reboot to apply changes."
+msgstr "Neustart erforderlich, um Änderungen zu übernehmen."
+
+msgctxt "#32500"
+msgid "Fan"
+msgstr "Lüfter"
+
+msgctxt "#32501"
+msgid "Power"
+msgstr "Energie"
+
+msgctxt "#32502"
+msgid "Display"
+msgstr "Anzeige"
+
+msgctxt "#32503"
+msgid "Performance"
+msgstr "Leistung"
+
+msgctxt "#32504"
+msgid "CEC"
+msgstr "CEC"
+
+msgctxt "#32505"
+msgid "HDD"
+msgstr "Festplatte"
+
+msgctxt "#32506"
+msgid "Device Tree"
+msgstr "Device Tree"
+
+msgctxt "#32510"
+msgid "Fan Mode"
+msgstr "Lüftermodus"
+
+msgctxt "#32511"
+msgid "Speed Level"
+msgstr "Geschwindigkeitsstufe"
+
+msgctxt "#32515"
+msgid "Inject BL301 Blob"
+msgstr "BL301-Blob injizieren"
+
+msgctxt "#32516"
+msgid "IR Remote Power Code"
+msgstr "Power-Code der IR-Fernbedienung"
+
+msgctxt "#32517"
+msgid "Wake-on-LAN"
+msgstr "Wake-on-LAN"
+
+msgctxt "#32518"
+msgid "USB Power"
+msgstr "USB-Stromversorgung"
+
+msgctxt "#32519"
+msgid "System LED"
+msgstr "System-LED"
+
+msgctxt "#32520"
+msgid "VESA modes"
+msgstr "VESA-Modi"
+
+msgctxt "#32521"
+msgid "CPU governor"
+msgstr "CPU-Governor"
+
+msgctxt "#32522"
+msgid "Parking"
+msgstr "Parken"
+
+msgctxt "#32523"
+msgid "Parking Time"
+msgstr "Parkzeit"
+
+msgctxt "#32524"
+msgid "Idle Time"
+msgstr "Leerlaufzeit"
+
+msgctxt "#32525"
+msgid "eMMC Speed Mode"
+msgstr "eMMC-Geschwindigkeitsmodus"
+
+msgctxt "#32526"
+msgid "WiFi SoC SDIO Speed"
+msgstr "SDIO-Geschwindigkeit des WLAN-SoC"
+
+msgctxt "#32527"
+msgid "Red LED"
+msgstr "Rote LED"
+
+msgctxt "#32528"
+msgid "SPI Interface"
+msgstr "SPI-Schnittstelle"
+
+msgctxt "#32529"
+msgid "IR Protocol Type"
+msgstr "IR-Protokolltyp"
+
+msgctxt "#32530"
+msgid "DVB GPIO Support"
+msgstr "DVB-GPIO-Unterstützung"
+
+msgctxt "#32531"
+msgid "Wired Network Interface"
+msgstr "Kabelgebundene Netzwerkschnittstelle"
+
+msgctxt "#32532"
+msgid "Green LED"
+msgstr "Grüne LED"
+
+msgctxt "#32533"
+msgid "IP1001 Ethernet Transceiver"
+msgstr "IP1001-Ethernet-Transceiver"
+
+msgctxt "#32534"
+msgid "VIM3 USB3/PCIE Switch"
+msgstr "VIM3 USB3/PCIE-Umschalter"
+
+msgctxt "#32535"
+msgid "Smartchip WiFi Driver"
+msgstr "Smartchip-WLAN-Treiber"
+
+msgctxt "#32536"
+msgid "USB Attached SCSI (UAS)"
+msgstr "USB Attached SCSI (UAS)"
+
+msgctxt "#33510"
+msgid "Warning!"
+msgstr "Warnung!"
+
+msgctxt "#33511"
+msgid "Continue"
+msgstr "Fortfahren"
+
+msgctxt "#33512"
+msgid "Finished!"
+msgstr "Fertig!"
+
+msgctxt "#33513"
+msgid "Notice!"
+msgstr "Hinweis!"
+
+msgctxt "#33514"
+msgid "Error!"
+msgstr "Fehler!"
+
+msgctxt "#33515"
+msgid "Inject Bootloader BL301 Blob..."
+msgstr "Bootloader-BL301-Blob injizieren..."
+
+msgctxt "#33516"
+msgid "[B][COLOR red]Note: This will modify the firmware on your device.[/COLOR][/B][CR]The BL301 bootloader blob has been customized by the CoreELEC Team to support all features used to wake a device from a suspend or power off state!"
+msgstr "[B][COLOR red]Hinweis: Dies verändert die Firmware des Geräts.[/COLOR][/B][CR]Der BL301-Bootloader-Blob wurde vom CoreELEC-Team angepasst, um alle Funktionen zu unterstützen, mit denen ein Gerät aus dem Standby- oder ausgeschalteten Zustand aufgeweckt wird!"
+
+msgctxt "#33517"
+msgid "Finished update of the BL301 on internal eMMC.[CR]A reboot is now required!"
+msgstr "Aktualisierung des BL301 auf dem internen eMMC abgeschlossen.[CR]Ein Neustart ist jetzt erforderlich!"
+
+msgctxt "#33518"
+msgid "Error [%d] has occurred while using the 'inject_bl301' tool![CR]See '/storage/inject_bl301.log' for details."
+msgstr "Fehler [%d] beim Ausführen des 'inject_bl301'-Tools![CR]Details in '/storage/inject_bl301.log'."
+
+msgctxt "#33519"
+msgid "System is not supported by BL301 injection![CR]See '/storage/inject_bl301.log' for details."
+msgstr "Das System wird von der BL301-Injektion nicht unterstützt![CR]Details in '/storage/inject_bl301.log'."
+
+msgctxt "#33520"
+msgid "Update of BL301 on eMMC is not needed."
+msgstr "Eine Aktualisierung des BL301 auf dem eMMC ist nicht erforderlich."
+
+msgctxt "#33521"
+msgid "[B][COLOR red]Note: This will remove the bl301 injection on your device.[/COLOR][CR]The injected BL301 bootloader blob will be removed by the backup done automatically before injection.[/B]"
+msgstr "[B][COLOR red]Hinweis: Dies entfernt die BL301-Injektion vom Gerät.[/COLOR][CR]Der injizierte BL301-Bootloader-Blob wird anhand des vor der Injektion automatisch erstellten Backups entfernt.[/B]"
+
+msgctxt "#33522"
+msgid "Finished remove of the BL301 on internal eMMC.[CR]A reboot is now required!"
+msgstr "Entfernen des BL301 vom internen eMMC abgeschlossen.[CR]Ein Neustart ist jetzt erforderlich!"
+
+msgctxt "#33523"
+msgid "Finished update of /flash/dtb.img.[CR]A reboot is now required!"
+msgstr "Aktualisierung von /flash/dtb.img abgeschlossen.[CR]Ein Neustart ist jetzt erforderlich!"
+
+msgctxt "#33524"
+msgid "[COLOR red]Are you sure to change this value?[/COLOR][CR]Please enter confirmation code '%s'"
+msgstr "[COLOR red]Diesen Wert wirklich ändern?[/COLOR][CR]Bitte Bestätigungscode '%s' eingeben"
+
+msgctxt "#33525"
+msgid "Terminal sharing"
+msgstr "Terminal-Freigabe"
+
+msgctxt "#33526"
+msgid "Enable terminal sharing"
+msgstr "Terminal-Freigabe aktivieren"
+
+msgctxt "#33527"
+msgid "Send invitation to CoreELEC developers"
+msgstr "Einladung an die CoreELEC-Entwickler senden"
+
+msgctxt "#33528"
+msgid "Hint: enable this option only when requested by team CoreELEC"
+msgstr "Hinweis: Diese Option nur aktivieren, wenn das CoreELEC-Team darum bittet"
+
+msgctxt "#33529"
+msgid "Access control key"
+msgstr "Schlüssel für die Zugriffskontrolle"
+
+msgctxt "#33530"
+msgid "Connection name"
+msgstr "Verbindungsname"
+
+msgctxt "#33531"
+msgid "UAS setting changed.[CR]A reboot is required for the new setting to take effect."
+msgstr "UAS-Einstellung geändert.[CR]Ein Neustart ist erforderlich, damit die neue Einstellung wirksam wird."

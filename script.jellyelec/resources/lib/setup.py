@@ -153,8 +153,7 @@ def _run_steps(steps):
 def _show_step(heading, title, body, options):
     """Show one setup screen. Returns the index of the option chosen, or None for Back."""
     window = SetupStepWindow("jellyelec-setup.xml", ADDON_PATH, "Default", "1080i")
-    window.texts = {"heading": heading, "title": title, "body": body}
-    window.options = options
+    window.fill({"heading": heading, "title": title, "body": body}, options)
     window.doModal()
     choice = window.choice
     del window
@@ -162,18 +161,26 @@ def _show_step(heading, title, body, options):
 
 
 class SetupStepWindow(xbmcgui.WindowXMLDialog):
-    """Set texts and options before calling doModal(). The answer is left in choice."""
+    """Call fill() before doModal(). The answer is left in choice."""
 
-    texts = None
-    options = None
+    options = ()
     choice = None
 
-    def onInit(self):
-        for name, text in self.texts.items():
+    def fill(self, texts, options):
+        """Set the step's texts and option buttons.
+
+        Done before the screen opens: a button without a label is hidden, and Kodi can't
+        focus a hidden button, so setting labels as the screen opens left nothing focused
+        and the remote did nothing.
+        """
+        self.options = options
+        for name, text in texts.items():
             self.setProperty(name, text)
         for index in range(MAX_OPTIONS):
-            label = self.options[index] if index < len(self.options) else ""
+            label = options[index] if index < len(options) else ""
             self.setProperty(f"option{index + 1}", label)
+
+    def onInit(self):
         self.setFocusId(FIRST_OPTION_BUTTON)
 
     def onAction(self, action):

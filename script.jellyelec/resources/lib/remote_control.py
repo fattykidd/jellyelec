@@ -11,9 +11,11 @@ from resources.lib import kodi_settings
 from resources.lib.kodi import log
 
 WEB_SERVER = "services.webserver"
+# In this order: with its password check still on, Kodi won't start the web server without
+# asking on screen, so the check is turned off first.
 SETTINGS_WHEN_ON = (
-    (WEB_SERVER, True),
     ("services.webserverauthentication", False),
+    (WEB_SERVER, True),
     ("services.esallinterfaces", True),
 )
 SETTINGS_WHEN_OFF = (

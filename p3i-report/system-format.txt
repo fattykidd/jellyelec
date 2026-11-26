@@ -1,0 +1,18 @@
+Found a valid SQUASHFS 4:0 superblock on /tmp/tmp.JziI7uXoOW/SYSTEM.
+Creation or last append time Wed Aug 12 04:40:11 2026
+Filesystem size 241174339 bytes (235521.82 Kbytes / 230.00 Mbytes)
+Compression lzo
+	algorithm lzo1x_999
+	compression level 9
+Block size 524288
+Filesystem is exportable via NFS
+Inodes are compressed
+Data is compressed
+Uids/Gids (Id table) are compressed
+Fragments are compressed
+Tailends are not packed into fragments
+Xattrs are not stored
+Duplicates are removed
+Number of fragments 420
+Number of inodes 12664
+Number of ids 2
