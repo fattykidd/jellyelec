@@ -2,7 +2,7 @@
 <!--
     JellyELEC home screen (v2 look: library bar on top, spotlight, fanart fading in on the right).
     Control IDs here must match the constants in resources/lib/home.py:
-      100  library bar
+      100  library bar (a grouplist of buttons 1001-1012, one per library)
       110  Settings button
       150  scrolling stack of rows
       200  Continue Watching row
@@ -55,85 +55,176 @@
             <label>Jelly[COLOR FFAA5CC3]ELEC[/COLOR]</label>
         </control>
 
-        <control type="list" id="100">
+        <!-- Library bar: one button per library, sized to its name; library_bar.py fills them
+             and hides the spare ones. Focused: a blue pill. The library the rows are from,
+             when the bar isn't focused: a blue underline (colour set per button by
+             library_bar.py) and white text. Slides along to keep the focused one in view. -->
+        <control type="grouplist" id="100">
             <left>300</left>
             <top>40</top>
             <width>1000</width>
             <height>64</height>
             <orientation>horizontal</orientation>
+            <itemgap>4</itemgap>
             <onright>110</onright>
             <ondown>150</ondown>
-            <scrolltime tween="cubic" easing="out">200</scrolltime>
-            <itemlayout width="200" height="64">
-                <control type="label">
-                    <left>0</left>
-                    <top>0</top>
-                    <width>200</width>
-                    <height>64</height>
-                    <align>center</align>
-                    <aligny>center</aligny>
-                    <font>JE_Label</font>
-                    <textcolor>FFB7B9C6</textcolor>
-                    <label>$INFO[ListItem.Label]</label>
-                </control>
-            </itemlayout>
-            <focusedlayout width="200" height="64">
-                <!-- Jellyfin blue marks the library (purple is for focused cards).
-                     Focused: a blue outlined pill with a faint blue fill. Selected but not
-                     focused: a blue underline, showing which library the rows are from. -->
-                <control type="image">
-                    <left>4</left>
-                    <top>4</top>
-                    <width>192</width>
-                    <height>56</height>
-                    <texture border="28">jellyelec-pill.png</texture>
-                    <colordiffuse>2E00A4DC</colordiffuse>
-                    <visible>Control.HasFocus(100)</visible>
-                </control>
-                <control type="image">
-                    <left>4</left>
-                    <top>4</top>
-                    <width>192</width>
-                    <height>56</height>
-                    <texture border="28">jellyelec-pill-ring.png</texture>
-                    <colordiffuse>FF00A4DC</colordiffuse>
-                    <visible>Control.HasFocus(100)</visible>
-                </control>
-                <control type="label">
-                    <left>0</left>
-                    <top>0</top>
-                    <width>200</width>
-                    <height>64</height>
-                    <align>center</align>
-                    <aligny>center</aligny>
-                    <font>JE_Label</font>
-                    <textcolor>FFFFFFFF</textcolor>
-                    <scroll>true</scroll>
-                    <label>$INFO[ListItem.Label]</label>
-                    <visible>Control.HasFocus(100)</visible>
-                </control>
-                <control type="label">
-                    <left>0</left>
-                    <top>0</top>
-                    <width>200</width>
-                    <height>64</height>
-                    <align>center</align>
-                    <aligny>center</aligny>
-                    <font>JE_Label</font>
-                    <textcolor>FFF2F2F5</textcolor>
-                    <label>$INFO[ListItem.Label]</label>
-                    <visible>!Control.HasFocus(100)</visible>
-                </control>
-                <control type="image">
-                    <left>60</left>
-                    <top>56</top>
-                    <width>80</width>
-                    <height>4</height>
-                    <texture>jellyelec-white.png</texture>
-                    <colordiffuse>FF00A4DC</colordiffuse>
-                    <visible>!Control.HasFocus(100)</visible>
-                </control>
-            </focusedlayout>
+            <scrolltime tween="cubic" easing="out">260</scrolltime>
+            <control type="button" id="1001">
+                <width min="140" max="620">auto</width>
+                <height>64</height>
+                <textoffsetx>30</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Label</font>
+                <textcolor>FFB7B9C6</textcolor>
+                <focusedcolor>FFFFFFFF</focusedcolor>
+                <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
+                <texturenofocus border="22,0,22,0" colordiffuse="$INFO[Window.Property(library_underline_1001)]">jellyelec-library-underline.png</texturenofocus>
+                <ondown>150</ondown>
+            </control>
+            <control type="button" id="1002">
+                <width min="140" max="620">auto</width>
+                <height>64</height>
+                <textoffsetx>30</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Label</font>
+                <textcolor>FFB7B9C6</textcolor>
+                <focusedcolor>FFFFFFFF</focusedcolor>
+                <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
+                <texturenofocus border="22,0,22,0" colordiffuse="$INFO[Window.Property(library_underline_1002)]">jellyelec-library-underline.png</texturenofocus>
+                <ondown>150</ondown>
+            </control>
+            <control type="button" id="1003">
+                <width min="140" max="620">auto</width>
+                <height>64</height>
+                <textoffsetx>30</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Label</font>
+                <textcolor>FFB7B9C6</textcolor>
+                <focusedcolor>FFFFFFFF</focusedcolor>
+                <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
+                <texturenofocus border="22,0,22,0" colordiffuse="$INFO[Window.Property(library_underline_1003)]">jellyelec-library-underline.png</texturenofocus>
+                <ondown>150</ondown>
+            </control>
+            <control type="button" id="1004">
+                <width min="140" max="620">auto</width>
+                <height>64</height>
+                <textoffsetx>30</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Label</font>
+                <textcolor>FFB7B9C6</textcolor>
+                <focusedcolor>FFFFFFFF</focusedcolor>
+                <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
+                <texturenofocus border="22,0,22,0" colordiffuse="$INFO[Window.Property(library_underline_1004)]">jellyelec-library-underline.png</texturenofocus>
+                <ondown>150</ondown>
+            </control>
+            <control type="button" id="1005">
+                <width min="140" max="620">auto</width>
+                <height>64</height>
+                <textoffsetx>30</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Label</font>
+                <textcolor>FFB7B9C6</textcolor>
+                <focusedcolor>FFFFFFFF</focusedcolor>
+                <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
+                <texturenofocus border="22,0,22,0" colordiffuse="$INFO[Window.Property(library_underline_1005)]">jellyelec-library-underline.png</texturenofocus>
+                <ondown>150</ondown>
+            </control>
+            <control type="button" id="1006">
+                <width min="140" max="620">auto</width>
+                <height>64</height>
+                <textoffsetx>30</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Label</font>
+                <textcolor>FFB7B9C6</textcolor>
+                <focusedcolor>FFFFFFFF</focusedcolor>
+                <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
+                <texturenofocus border="22,0,22,0" colordiffuse="$INFO[Window.Property(library_underline_1006)]">jellyelec-library-underline.png</texturenofocus>
+                <ondown>150</ondown>
+            </control>
+            <control type="button" id="1007">
+                <width min="140" max="620">auto</width>
+                <height>64</height>
+                <textoffsetx>30</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Label</font>
+                <textcolor>FFB7B9C6</textcolor>
+                <focusedcolor>FFFFFFFF</focusedcolor>
+                <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
+                <texturenofocus border="22,0,22,0" colordiffuse="$INFO[Window.Property(library_underline_1007)]">jellyelec-library-underline.png</texturenofocus>
+                <ondown>150</ondown>
+            </control>
+            <control type="button" id="1008">
+                <width min="140" max="620">auto</width>
+                <height>64</height>
+                <textoffsetx>30</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Label</font>
+                <textcolor>FFB7B9C6</textcolor>
+                <focusedcolor>FFFFFFFF</focusedcolor>
+                <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
+                <texturenofocus border="22,0,22,0" colordiffuse="$INFO[Window.Property(library_underline_1008)]">jellyelec-library-underline.png</texturenofocus>
+                <ondown>150</ondown>
+            </control>
+            <control type="button" id="1009">
+                <width min="140" max="620">auto</width>
+                <height>64</height>
+                <textoffsetx>30</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Label</font>
+                <textcolor>FFB7B9C6</textcolor>
+                <focusedcolor>FFFFFFFF</focusedcolor>
+                <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
+                <texturenofocus border="22,0,22,0" colordiffuse="$INFO[Window.Property(library_underline_1009)]">jellyelec-library-underline.png</texturenofocus>
+                <ondown>150</ondown>
+            </control>
+            <control type="button" id="1010">
+                <width min="140" max="620">auto</width>
+                <height>64</height>
+                <textoffsetx>30</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Label</font>
+                <textcolor>FFB7B9C6</textcolor>
+                <focusedcolor>FFFFFFFF</focusedcolor>
+                <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
+                <texturenofocus border="22,0,22,0" colordiffuse="$INFO[Window.Property(library_underline_1010)]">jellyelec-library-underline.png</texturenofocus>
+                <ondown>150</ondown>
+            </control>
+            <control type="button" id="1011">
+                <width min="140" max="620">auto</width>
+                <height>64</height>
+                <textoffsetx>30</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Label</font>
+                <textcolor>FFB7B9C6</textcolor>
+                <focusedcolor>FFFFFFFF</focusedcolor>
+                <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
+                <texturenofocus border="22,0,22,0" colordiffuse="$INFO[Window.Property(library_underline_1011)]">jellyelec-library-underline.png</texturenofocus>
+                <ondown>150</ondown>
+            </control>
+            <control type="button" id="1012">
+                <width min="140" max="620">auto</width>
+                <height>64</height>
+                <textoffsetx>30</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Label</font>
+                <textcolor>FFB7B9C6</textcolor>
+                <focusedcolor>FFFFFFFF</focusedcolor>
+                <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
+                <texturenofocus border="22,0,22,0" colordiffuse="$INFO[Window.Property(library_underline_1012)]">jellyelec-library-underline.png</texturenofocus>
+                <ondown>150</ondown>
+            </control>
         </control>
 
         <control type="label">

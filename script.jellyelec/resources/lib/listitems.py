@@ -22,14 +22,6 @@ CHANNEL_LOGO_WIDTH = 300
 LOGO_WIDTH = 720
 
 
-def library_item(library):
-    """A library tile for the bar along the top."""
-    item = xbmcgui.ListItem(label=library.get("Name", ""), offscreen=True)
-    item.setProperty("id", library["Id"])
-    item.setProperty("collection_type", library.get("CollectionType", ""))
-    return item
-
-
 def media_item(client, data):
     """A movie, show, episode or collection, with artwork and basic details."""
     item = xbmcgui.ListItem(label=data.get("Name", ""), offscreen=True)

@@ -64,6 +64,24 @@ def rounded_ring(size, radius, thickness):
         (0, 0, size * s - 1, size * s - 1), radius=radius * s, outline=WHITE, width=thickness * s))
 
 
+def library_focus_pill():
+    """The focused library: a Jellyfin-blue outline with a faint blue fill, 4px clear above and
+    below so it sits inside the 64px-tall bar. Coloured here, as it's used as a button texture."""
+    blue = (0, 164, 220)
+    def draw_pill(draw, s):
+        box = (0, 4 * s, 64 * s - 1, 60 * s - 1)
+        draw.rounded_rectangle(box, radius=28 * s, fill=(*blue, 46), outline=(*blue, 255), width=3 * s)
+    return smooth(64, 64, draw_pill)
+
+
+def library_underline():
+    """The current library when the bar isn't focused: a bar along the bottom, 22px in from
+    each end (stretched with border="22,0,22,0"). White, coloured with colordiffuse."""
+    def draw_line(draw, s):
+        draw.rounded_rectangle((22 * s, 56 * s, 42 * s - 1, 60 * s - 1), radius=2 * s, fill=WHITE)
+    return smooth(64, 64, draw_line)
+
+
 def card_mask(width, height, radius):
     return smooth(width, height, lambda draw, s: draw.rounded_rectangle(
         (0, 0, width * s - 1, height * s - 1), radius=radius * s, fill=WHITE))
@@ -100,6 +118,8 @@ def main():
     save(rounded_box(64, 32), "jellyelec-pill.png")
     save(rounded_ring(64, 18, 4), "jellyelec-ring.png")
     save(rounded_ring(64, 32, 3), "jellyelec-pill-ring.png")
+    save(library_focus_pill(), "jellyelec-library-focus.png")
+    save(library_underline(), "jellyelec-library-underline.png")
     # Rounded corners for posters, used as <texture diffuse="...">.
     save(card_mask(180, 270, 12), "jellyelec-mask-poster.png")
     save(cogs_icon(96), "jellyelec-icon-settings.png")

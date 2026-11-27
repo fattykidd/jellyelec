@@ -12,11 +12,11 @@ from resources.lib.formatting import ends_at_text, episode_line, spotlight_meta
 from resources.lib.kodi import ADDON_NAME, log
 from resources.lib.library import show_library
 from resources.lib.live_tv import show_live_tv
-from resources.lib.listitems import backdrop_url, library_item, logo_url, media_item
+from resources.lib.library_bar import LibraryBar
+from resources.lib.listitems import backdrop_url, logo_url, media_item
 from resources.lib.settings_screen import SIGN_OUT, show_settings
 
-# Control IDs, matching jellyelec-home.xml.
-LIBRARY_BAR = 100
+# Control IDs, matching jellyelec-home.xml. The library bar's are in library_bar.py.
 SETTINGS_BUTTON = 110
 CONTINUE_WATCHING_ROW = 200
 NEXT_UP_ROW = 205
@@ -55,6 +55,7 @@ class HomeWindow(xbmcgui.WindowXML):
         if not self._loaded:
             self._loaded = True
             self._row_data = {row: {} for row in ROWS}
+            self._bar = LibraryBar(self)
             self._load_libraries()
 
     def onAction(self, action):
@@ -67,7 +68,7 @@ class HomeWindow(xbmcgui.WindowXML):
             return
 
         focus = self.getFocusId()
-        if focus == LIBRARY_BAR:
+        if self._bar.follow_focus(focus):
             self._show_selected_library()
         elif focus in ROWS:
             self._update_spotlight(focus)
@@ -75,7 +76,8 @@ class HomeWindow(xbmcgui.WindowXML):
     def onClick(self, control_id):
         if control_id == SETTINGS_BUTTON:
             self._open_settings()
-        elif control_id == LIBRARY_BAR:
+        elif self._bar.owns(control_id):
+            self._bar.follow_focus(control_id)
             self._open_selected_library()
         elif control_id in ROWS:
             self._open_selected_item(control_id)
@@ -95,15 +97,17 @@ class HomeWindow(xbmcgui.WindowXML):
             self._notify("Couldn't load your libraries.")
             libraries = []
 
-        bar = self.getControl(LIBRARY_BAR)
-        bar.reset()
-        bar.addItems([library_item(library) for library in libraries])
+        self._bar.fill(libraries)
         self._show_selected_library()
         # With no libraries, Settings is the way to sort the box out.
-        self.setFocusId(LIBRARY_BAR if libraries else SETTINGS_BUTTON)
+        if libraries:
+            self._bar.focus()
+        else:
+            self.setFocusId(SETTINGS_BUTTON)
 
     def _selected_library(self):
-        return self.getControl(LIBRARY_BAR).getSelectedItem()
+        """The selected library's data from Jellyfin, or None."""
+        return self._bar.selected
 
     def _show_selected_library(self):
         """Load the rows when the selected library changes."""
@@ -111,16 +115,16 @@ class HomeWindow(xbmcgui.WindowXML):
 
     def _show_library(self, library):
         """Load the rows for a library tile, unless they're already showing."""
-        if library is None or library.getProperty("id") == self._library_id:
+        if library is None or library["Id"] == self._library_id:
             return
-        self._library_id = library.getProperty("id")
+        self._library_id = library["Id"]
         self._load_rows(library)
         self._update_spotlight()
 
     def _load_rows(self, library, keep_random=False):
         """Fill the rows for a library. keep_random leaves the Random row as it is."""
-        library_id = library.getProperty("id")
-        collection_type = library.getProperty("collection_type")
+        library_id = library["Id"]
+        collection_type = library.get("CollectionType", "")
         if collection_type in TILE_MESSAGES:
             # Live TV and Settings have their own screens; their home page says how to open them.
             for row in ROWS:
@@ -154,12 +158,12 @@ class HomeWindow(xbmcgui.WindowXML):
         selected = self._selected_library()
         if selected is None:
             return
-        collection_type = selected.getProperty("collection_type")
+        collection_type = selected.get("CollectionType", "")
         if collection_type == LIVE_TV:
             show_live_tv(self.client)
             return
         item_type = LIBRARY_ITEM_TYPES[collection_type]
-        show_library(self.client, selected.getProperty("id"), selected.getLabel(), item_type)
+        show_library(self.client, selected["Id"], selected.get("Name", ""), item_type)
         self._refresh_rows()
 
     # Spotlight --------------------------------------------------------------------
@@ -218,7 +222,7 @@ class HomeWindow(xbmcgui.WindowXML):
 
         row = self.getControl(focus_row) if focus_row else None
         if row is None or not row.size():
-            self.setFocusId(LIBRARY_BAR)
+            self._bar.focus()
             self._update_spotlight()
             return
 
@@ -238,7 +242,7 @@ class HomeWindow(xbmcgui.WindowXML):
         """
         focus = self.getFocusId()
         if focus == SETTINGS_BUTTON:
-            self.setFocusId(LIBRARY_BAR)
+            self._bar.focus()
             return
         if focus in ROWS:
             row = self.getControl(focus)
@@ -249,10 +253,10 @@ class HomeWindow(xbmcgui.WindowXML):
                 self._leave_rows_for_library_bar()
             return
 
-        bar = self.getControl(LIBRARY_BAR)
-        if focus == LIBRARY_BAR and bar.getSelectedPosition() > 0:
-            bar.selectItem(0)
-            self._show_library(bar.getListItem(0))
+        if self._bar.owns(focus) and self._bar.selected_index > 0:
+            self._bar.select(0)
+            self._bar.focus()
+            self._show_selected_library()
             return
 
         if not appliance.is_enabled():
@@ -267,7 +271,7 @@ class HomeWindow(xbmcgui.WindowXML):
         first_row = next((row for row in ROWS if self.getControl(row).size()), None)
         if first_row is not None:
             self.setFocusId(first_row)
-        self.setFocusId(LIBRARY_BAR)
+        self._bar.focus()
         self._update_spotlight()
 
     # Settings and signing out ----------------------------------------------------
