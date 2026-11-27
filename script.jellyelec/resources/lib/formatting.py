@@ -76,7 +76,7 @@ def spotlight_meta(item):
     if item.get("ProductionYear"):
         parts.append(str(item["ProductionYear"]))
     if item.get("OfficialRating"):
-        parts.append(item["OfficialRating"])
+        parts.append(age_rating(item["OfficialRating"]))
     remaining = remaining_ticks(item)
     if remaining and remaining < (item.get("RunTimeTicks") or 0):
         parts.append(f"{runtime_text(remaining)} left")
@@ -85,6 +85,12 @@ def spotlight_meta(item):
     if item.get("CommunityRating"):
         parts.append(f"★ {item['CommunityRating']:.1f}")
     return "  ·  ".join(parts)
+
+
+def age_rating(rating):
+    """PG from "US:PG / US:Rated PG": the first rating given, without its country code."""
+    first = rating.split("/")[0].strip()
+    return re.sub(r"^[A-Za-z]{2}:\s*", "", first)
 
 
 def remaining_ticks(item):
