@@ -246,7 +246,7 @@ class HomeWindow(xbmcgui.WindowXML):
                 row.selectItem(0)
                 self._update_spotlight(focus, 0)
             else:
-                self.setFocusId(LIBRARY_BAR)
+                self._leave_rows_for_library_bar()
             return
 
         bar = self.getControl(LIBRARY_BAR)
@@ -257,6 +257,18 @@ class HomeWindow(xbmcgui.WindowXML):
 
         if not appliance.is_enabled():
             self.close()
+
+    def _leave_rows_for_library_bar(self):
+        """Go up to the library bar, so that Down comes back to the first row, not this one.
+
+        The stack of rows remembers its last focused row; focusing the first row on the way
+        up makes that the one it remembers.
+        """
+        first_row = next((row for row in ROWS if self.getControl(row).size()), None)
+        if first_row is not None:
+            self.setFocusId(first_row)
+        self.setFocusId(LIBRARY_BAR)
+        self._update_spotlight()
 
     # Settings and signing out ----------------------------------------------------
 
