@@ -1,15 +1,15 @@
 {
-  "release": "T4b",
-  "release_url": "https://github.com/pannal/CoreELEC/releases/tag/T4b",
+  "release": "T5",
+  "release_url": "https://github.com/pannal/CoreELEC/releases/tag/T5",
   "image": {
-    "name": "Flash_CoreELEC-Amlogic-ng.arm-21.3-Omega_p3i_T4b_20260704001258-Generic.img.gz",
-    "url": "https://github.com/pannal/CoreELEC/releases/download/T4b/Flash_CoreELEC-Amlogic-ng.arm-21.3-Omega_p3i_T4b_20260704001258-Generic.img.gz",
-    "sha256": "241e57bf7389b1838c84e6ba959ce4c380b61b1f68f72152853c4ec3f0c5e4ce"
+    "name": "Flash_CoreELEC-Amlogic-ng.arm-21.3-Omega_p3i_T5_20261127221930-Generic.img.gz",
+    "url": "https://github.com/pannal/CoreELEC/releases/download/T5/Flash_CoreELEC-Amlogic-ng.arm-21.3-Omega_p3i_T5_20261127221930-Generic.img.gz",
+    "sha256": "e6a19e761fbdcd6a709fccd40bd226b220a04b6afb870b67354f92712506f571"
   },
   "update": {
-    "name": "Update_CoreELEC-Amlogic-ng.arm-21.3-Omega_p3i_T4b_20260704001258.tar",
-    "url": "https://github.com/pannal/CoreELEC/releases/download/T4b/Update_CoreELEC-Amlogic-ng.arm-21.3-Omega_p3i_T4b_20260704001258.tar",
-    "sha256": "d344adbb33d28aa0e256d21307b390191d27cc3c8226f4c15e44e4151c0cef31"
+    "name": "Update_CoreELEC-Amlogic-ng.arm-21.3-Omega_p3i_T5_20261127221930.tar",
+    "url": "https://github.com/pannal/CoreELEC/releases/download/T5/Update_CoreELEC-Amlogic-ng.arm-21.3-Omega_p3i_T5_20261127221930.tar",
+    "sha256": "49de0982915c0f3ae8278226e5c666c15a909a5111ff141cea47cae8c9cbc833"
   },
   "dovi_module": "dovi.ko"
 }
