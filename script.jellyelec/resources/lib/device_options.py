@@ -65,6 +65,23 @@ def apply_box_name(name):
         log(f"Couldn't set Kodi's device name: {error}")
 
 
+def keep_box_name():
+    """Put the box's name back if something (a system update) changed it since JellyELEC set it.
+
+    A box JellyELEC hasn't named yet, still on CoreELEC's name, gets the JellyELEC name.
+    """
+    wanted = box_name.wanted_name()
+    current = box_name.current_name()
+    if not wanted:
+        if current in ("", box_name.COREELEC_NAME):
+            wanted = box_name.JELLYELEC_NAME
+        else:
+            return
+    if current != wanted:
+        log(f"The box is named {current or 'nothing'}; putting its name back to {wanted}.")
+        apply_box_name(wanted)
+
+
 # Time zone ----------------------------------------------------------------------------
 
 def time_zone_summary():

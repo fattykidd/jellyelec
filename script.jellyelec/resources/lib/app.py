@@ -5,7 +5,7 @@ import threading
 import xbmc
 import xbmcgui
 
-from resources.lib import after_update, appliance, output_setup, setup, storage, updater
+from resources.lib import after_update, appliance, device_options, output_setup, setup, storage, updater
 from resources.lib.home import HomeWindow
 from resources.lib.keymap import install_keymap, remove_live_tv_keymap
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log
@@ -25,6 +25,7 @@ def run(splash):
     if setup.is_complete():
         # Finishes video processor mode once dovi.ko has been added after setup.
         output_setup.apply_pending_dolby_vision()
+        device_options.keep_box_name()
         closing_steps_due = False
     elif setup.run_before_sign_in():
         closing_steps_due = True
