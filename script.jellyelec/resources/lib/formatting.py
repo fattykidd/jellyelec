@@ -4,7 +4,7 @@ This module has no Kodi imports, so it can be tested on a PC.
 """
 
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from resources.lib.api import TICKS_PER_SECOND
 
@@ -68,6 +68,38 @@ def meta_line(item):
     if item.get("CommunityRating"):
         parts.append(f"★ {item['CommunityRating']:.1f}")
     return "  ·  ".join(parts)
+
+
+def spotlight_meta(item):
+    """Year · age rating · runtime (or time left, once started) · community rating."""
+    parts = []
+    if item.get("ProductionYear"):
+        parts.append(str(item["ProductionYear"]))
+    if item.get("OfficialRating"):
+        parts.append(item["OfficialRating"])
+    remaining = remaining_ticks(item)
+    if remaining and remaining < (item.get("RunTimeTicks") or 0):
+        parts.append(f"{runtime_text(remaining)} left")
+    elif item.get("RunTimeTicks"):
+        parts.append(runtime_text(item["RunTimeTicks"]))
+    if item.get("CommunityRating"):
+        parts.append(f"★ {item['CommunityRating']:.1f}")
+    return "  ·  ".join(parts)
+
+
+def remaining_ticks(item):
+    """How much is left to watch, from where it was stopped. 0 if the length isn't known."""
+    runtime = item.get("RunTimeTicks") or 0
+    position = (item.get("UserData") or {}).get("PlaybackPositionTicks") or 0
+    return max(runtime - position, 0)
+
+
+def ends_at_text(item, now):
+    """Ends at 9:56 PM: when it would finish if started (or resumed) now. "" if unknown."""
+    remaining = remaining_ticks(item)
+    if not remaining:
+        return ""
+    return f"Ends at {clock_text(now + timedelta(seconds=remaining / TICKS_PER_SECOND))}"
 
 
 def episode_line(item):

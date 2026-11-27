@@ -1,37 +1,43 @@
 """The home screen: library bar, spotlight and stacked poster rows."""
 
+from datetime import datetime, timezone
+
 import xbmc
 import xbmcgui
 
 from resources.lib import appliance, storage
 from resources.lib.api import JellyfinError
 from resources.lib.detail import show_details
-from resources.lib.formatting import episode_line, meta_line
-from resources.lib.kodi import ADDON_NAME, ADDON_VERSION, log
+from resources.lib.formatting import ends_at_text, episode_line, spotlight_meta
+from resources.lib.kodi import ADDON_NAME, log
 from resources.lib.library import show_library
 from resources.lib.live_tv import show_live_tv
-from resources.lib.listitems import backdrop_url, library_item, media_item
+from resources.lib.listitems import backdrop_url, library_item, logo_url, media_item
 from resources.lib.settings_screen import SIGN_OUT, show_settings
 
 # Control IDs, matching jellyelec-home.xml.
 LIBRARY_BAR = 100
+SETTINGS_BUTTON = 110
 CONTINUE_WATCHING_ROW = 200
 NEXT_UP_ROW = 205
 RECENTLY_ADDED_ROW = 210
 RANDOM_ROW = 220
 ROWS = (CONTINUE_WATCHING_ROW, NEXT_UP_ROW, RECENTLY_ADDED_ROW, RANDOM_ROW)
 
+# The small heading above the spotlight: which row its title comes from.
+ROW_NAMES = {
+    CONTINUE_WATCHING_ROW: "CONTINUE WATCHING",
+    NEXT_UP_ROW: "NEXT UP",
+    RECENTLY_ADDED_ROW: "RECENTLY ADDED",
+    RANDOM_ROW: "RANDOM",
+}
+
 # The item type each library holds, as Jellyfin names it.
 LIBRARY_ITEM_TYPES = {"movies": "Movie", "tvshows": "Series"}
 LIVE_TV = "livetv"
 
-# The Settings tile at the end of the library bar. Not a Jellyfin library, so it gets a
-# collection type of its own.
-SETTINGS = "jellyelec_settings"
-SETTINGS_TILE = {"Id": SETTINGS, "Name": "Settings", "CollectionType": SETTINGS}
-
 # Messages shown in place of the rows for tiles that open their own screen.
-TILE_MESSAGES = {LIVE_TV: "Press OK to open Live TV.", SETTINGS: "Press OK to open Settings."}
+TILE_MESSAGES = {LIVE_TV: "Press OK to open Live TV."}
 CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
 
 
@@ -53,9 +59,6 @@ class HomeWindow(xbmcgui.WindowXML):
     # Kodi events ------------------------------------------------------------------
 
     def onInit(self):
-        self.setProperty("version", ADDON_VERSION)
-        self.setProperty("user_name", self.connection.user_name)
-
         # onInit runs again whenever a dialog closes over this window; load only once.
         if not self._loaded:
             self._loaded = True
@@ -78,7 +81,9 @@ class HomeWindow(xbmcgui.WindowXML):
             self._update_spotlight(focus)
 
     def onClick(self, control_id):
-        if control_id == LIBRARY_BAR:
+        if control_id == SETTINGS_BUTTON:
+            self._open_settings()
+        elif control_id == LIBRARY_BAR:
             self._open_selected_library()
         elif control_id in ROWS:
             self._open_selected_item(control_id)
@@ -98,12 +103,12 @@ class HomeWindow(xbmcgui.WindowXML):
             self._notify("Couldn't load your libraries.")
             libraries = []
 
-        # Settings is always there, so the box can be sorted out even if the server isn't.
         bar = self.getControl(LIBRARY_BAR)
         bar.reset()
-        bar.addItems([library_item(library) for library in libraries + [SETTINGS_TILE]])
+        bar.addItems([library_item(library) for library in libraries])
         self._show_selected_library()
-        self.setFocusId(LIBRARY_BAR)
+        # With no libraries, Settings is the way to sort the box out.
+        self.setFocusId(LIBRARY_BAR if libraries else SETTINGS_BUTTON)
 
     def _selected_library(self):
         return self.getControl(LIBRARY_BAR).getSelectedItem()
@@ -161,9 +166,6 @@ class HomeWindow(xbmcgui.WindowXML):
         if collection_type == LIVE_TV:
             show_live_tv(self.client)
             return
-        if collection_type == SETTINGS:
-            self._open_settings()
-            return
         item_type = LIBRARY_ITEM_TYPES[collection_type]
         show_library(self.client, selected.getProperty("id"), selected.getLabel(), item_type)
         self._refresh_rows()
@@ -177,20 +179,28 @@ class HomeWindow(xbmcgui.WindowXML):
         a moment later.
         """
         rows = (row_id,) if row_id else ROWS
-        data = None
+        data, shown_row = None, None
         for row in rows:
             control = self.getControl(row)
             selected = control.getListItem(position) if position is not None else control.getSelectedItem()
             if selected is not None:
                 data = self._row_data[row].get(selected.getProperty("id"))
+                shown_row = row
                 break
 
         data = data or {}
         is_episode = data.get("Type") == "Episode"
-        details = [part for part in (episode_line(data), meta_line(data)) if part]
-        self.setProperty("spot_show_title", data.get("SeriesName", "") if is_episode else "")
-        self.setProperty("spot_title", data.get("Name", ""))
-        self.setProperty("spot_meta", "     ".join(details))
+        title = data.get("SeriesName", "") if is_episode else data.get("Name", "")
+        details = (
+            episode_line(data),
+            data.get("Name", "") if is_episode else "",
+            spotlight_meta(data),
+            ends_at_text(data, datetime.now(timezone.utc)),
+        )
+        self.setProperty("spot_kicker", ROW_NAMES.get(shown_row, "") if data else "")
+        self.setProperty("spot_title", title.upper())
+        self.setProperty("spot_logo", (logo_url(self.client, data) if data else None) or "")
+        self.setProperty("spot_meta", "  ·  ".join(part for part in details if part))
         self.setProperty("spot_plot", data.get("Overview", ""))
         self.setProperty("spot_backdrop", (backdrop_url(self.client, data) if data else None) or "")
 
@@ -237,6 +247,9 @@ class HomeWindow(xbmcgui.WindowXML):
         nothing behind it (Settings has Exit to Kodi for that).
         """
         focus = self.getFocusId()
+        if focus == SETTINGS_BUTTON:
+            self.setFocusId(LIBRARY_BAR)
+            return
         if focus in ROWS:
             row = self.getControl(focus)
             if row.getSelectedPosition() > 0:

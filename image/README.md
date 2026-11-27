@@ -34,6 +34,10 @@ In the system (read-only) part:
     wizard marked done. (JellyELEC's setup names the box JellyELEC on the network.)
 - `skin/Startup.xml` replaces the skins' startup screen, so the boot goes from the splash
   straight into JellyELEC without showing Kodi's home screen.
+- JellyELEC's fonts (Inter and Outfit, from `skin/fonts/`) are added to the skins, with
+  their definitions from `skin/jellyelec-fonts.xml` added to each skin's `Font.xml`.
+  JellyELEC's screens use them by name; without them (an older image), Kodi's default font
+  is used instead.
 - JellyELEC's still splash (from the add-on, `resources/skins/Default/media/jellyelec-splash.png`)
   becomes Kodi's splash screen, which is turned on. Once Kodi is up, the startup screen and
   JellyELEC's backdrop take over from it, animated. The pictures are built by
@@ -75,3 +79,5 @@ JellyELEC images are p3i by pannal and the p3i contributors, based on U3k by Jam
 CoreELEC, LibreELEC and Kodi projects. Their code is GPLv2 and owned by its authors.
 `boot/remote.conf` is the standard key map for the Ugoos UR-01 remote. The splash artwork was
 created by fattykidd with Google Gemini and upscaled with Upscayl (see `artwork/README.md`).
+The fonts are Inter by The Inter Project Authors and Outfit by The Outfit Project Authors,
+both under the SIL Open Font License 1.1 (licences in `skin/fonts/`).

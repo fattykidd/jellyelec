@@ -10,6 +10,7 @@
 #     - adds the JellyELEC add-on as a built-in add-on that's always enabled
 #     - adds the files in image/overlay/: first-boot settings and the update block
 #     - replaces the skins' startup screen with image/skin/Startup.xml (no Kodi home screen at boot)
+#     - adds JellyELEC's fonts (image/skin/fonts/) to the skins, defined in each Font.xml
 #     - uses JellyELEC's splash for Kodi's splash screen, and turns that screen on
 #     - for new installs: names Kodi JellyELEC, turns off automatic add-on updates, and
 #       allows installing add-ons from zip files
@@ -111,6 +112,28 @@ for skin in "${SKINS[@]}"; do
         cp "$IMAGE_DIR/skin/Startup.xml" "$target"
         echo "  $skin"
     fi
+done
+
+step "Adding JellyELEC's fonts to the skins"
+# The font files go into each skin's fonts folder, and their definitions into every
+# fontset in its Font.xml, so JellyELEC's screens can use them by name.
+for skin in "${SKINS[@]}"; do
+    skin_dir="$work/system/usr/share/kodi/addons/$skin"
+    [ -f "$skin_dir/xml/Font.xml" ] || continue
+    install -o root -g root -m 0644 "$IMAGE_DIR"/skin/fonts/*.otf "$IMAGE_DIR"/skin/fonts/*.ttf "$skin_dir/fonts/"
+    python3 - "$skin_dir/xml/Font.xml" "$IMAGE_DIR/skin/jellyelec-fonts.xml" <<'PYTHON'
+import re, sys
+font_xml, fragment = sys.argv[1], sys.argv[2]
+with open(fragment, encoding="utf-8") as file:
+    fonts = re.sub(r"<!--.*?-->", "", file.read(), flags=re.S).strip()
+with open(font_xml, encoding="utf-8") as file:
+    text = file.read()
+if "<name>JE_Title</name>" not in text:
+    text = text.replace("</fontset>", f"{fonts}\n</fontset>")
+    with open(font_xml, "w", encoding="utf-8") as file:
+        file.write(text)
+PYTHON
+    echo "  $skin"
 done
 
 step "Using JellyELEC's splash for Kodi's splash screen"

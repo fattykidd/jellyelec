@@ -19,6 +19,7 @@ BACKDROP_WIDTH = 1280
 EXTRA_THUMB_WIDTH = 480
 EPISODE_THUMB_WIDTH = 480
 CHANNEL_LOGO_WIDTH = 300
+LOGO_WIDTH = 720
 
 
 def library_item(library):
@@ -168,5 +169,17 @@ def backdrop_url(client, data):
             "Backdrop",
             data["ParentBackdropImageTags"][0],
             max_width=BACKDROP_WIDTH,
+        )
+    return None
+
+
+def logo_url(client, data):
+    """The title's clearlogo, or its show's for an episode. None if it has none."""
+    tag = data.get("ImageTags", {}).get("Logo")
+    if tag:
+        return client.image_url(data["Id"], "Logo", tag, max_width=LOGO_WIDTH)
+    if data.get("ParentLogoItemId") and data.get("ParentLogoImageTag"):
+        return client.image_url(
+            data["ParentLogoItemId"], "Logo", data["ParentLogoImageTag"], max_width=LOGO_WIDTH
         )
     return None
