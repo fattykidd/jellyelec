@@ -73,7 +73,15 @@ jobs:
             echo
             echo "### pannal's release notes"
             echo
-            gh api "repos/pannal/CoreELEC/releases/tags/$RELEASE" --jq .body
+            # Linked, not copied: they can be longer than a pull request description may be.
+            echo "Read them on the release: https://github.com/pannal/CoreELEC/releases/tag/$RELEASE"
+            echo
+            echo 'Lines in them that mention a Dolby Vision module (`dovi`):'
+            echo
+            echo '```'
+            gh api "repos/pannal/CoreELEC/releases/tags/$RELEASE" --jq .body > release-notes.md
+            grep -i "dovi" release-notes.md | cut -c1-300 | head -n 40 || echo "(none)"
+            echo '```'
           } > pull-request.md
           gh pr create --head "$BRANCH" --title "Build on p3i $RELEASE" --body-file pull-request.md
 
