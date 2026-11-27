@@ -47,8 +47,9 @@ DOLBY_VISION_PENDING_SETTING = "dolby_vision_pending"
 
 # Passthrough has to go out of the HDMI port: the S/PDIF device that's often chosen by default
 # can't carry E-AC-3, TrueHD or DTS-HD, so Kodi hides those switches. This is the Amlogic HDMI
-# device's ID, used if Kodi doesn't list its devices.
+# device's ID, used for both devices if Kodi doesn't list them.
 HDMI_PASSTHROUGH_DEVICE = "ALSA:hdmi:CARD=AMLAUGESOUND,DEV=0|AML-AUGESOUND"
+HDMI_AUDIO_DEVICE = HDMI_PASSTHROUGH_DEVICE
 
 PASSTHROUGH_FORMATS = (
     "audiooutput.ac3passthrough",
@@ -62,6 +63,9 @@ PASSTHROUGH_FORMATS = (
 SPEAKERS_7_1 = 10
 
 DOLBY_VISION_TYPE = "coreelec.amlogic.dolbyvision.type"
+# How forks label the LLDV (low-latency Dolby Vision) type: "Player Led (LLDV)" on CoreELEC,
+# "Player Led (DV as DV-LL 422 12 Bit)" on p3i.
+LLDV_LABELS = ("LLDV", "DV-LL")
 VS10_SETTINGS = (
     "coreelec.amlogic.dolbyvision.vs10.sdr8",
     "coreelec.amlogic.dolbyvision.vs10.sdr10",
@@ -118,9 +122,9 @@ def apply_pending_dolby_vision():
 
     _log_dolby_vision_choices()
     # The type goes first: it decides which VS10 settings CoreELEC shows.
-    lldv_offered = kodi_settings.has_choice(DOLBY_VISION_TYPE, "LLDV")
+    lldv_offered = any(kodi_settings.has_choice(DOLBY_VISION_TYPE, label) for label in LLDV_LABELS)
     if lldv_offered:
-        worked = _try(kodi_settings.set_by_label, DOLBY_VISION_TYPE, "LLDV")
+        worked = _try(kodi_settings.set_by_label, DOLBY_VISION_TYPE, *LLDV_LABELS)
     else:
         log("Video processor mode: LLDV isn't offered by this display chain yet, so the "
             "Dolby Vision type is left as it is until a start where it is.")
@@ -152,7 +156,12 @@ def _set_passthrough(enabled):
     if not enabled:
         return worked
 
-    worked = _try(kodi_settings.set_value, "audiooutput.passthroughdevice", _hdmi_passthrough_device()) and worked
+    # Both devices on HDMI: sound that isn't bitstreamed, such as menus and PCM tracks, then
+    # takes the same path as bitstreamed audio, instead of p3i's default "HDMI Multi Ch PCM".
+    worked = _try(kodi_settings.set_value, "audiooutput.audiodevice",
+                  _hdmi_device("audiooutput.audiodevice", HDMI_AUDIO_DEVICE)) and worked
+    worked = _try(kodi_settings.set_value, "audiooutput.passthroughdevice",
+                  _hdmi_device("audiooutput.passthroughdevice", HDMI_PASSTHROUGH_DEVICE)) and worked
     worked = _try(kodi_settings.set_value, "audiooutput.channels", SPEAKERS_7_1) and worked
     # One at a time, so a format this build doesn't offer doesn't stop the others.
     for setting_id in PASSTHROUGH_FORMATS:
@@ -160,18 +169,18 @@ def _set_passthrough(enabled):
     return worked
 
 
-def _hdmi_passthrough_device():
-    """The HDMI device from Kodi's list of passthrough devices."""
+def _hdmi_device(setting_id, fallback):
+    """The plain HDMI device from the setting's list of devices (not "HDMI Multi Ch PCM")."""
     try:
-        devices = kodi_settings.choices("audiooutput.passthroughdevice")
+        devices = kodi_settings.choices(setting_id)
     except kodi_settings.KodiSettingError as error:
-        log(f"Couldn't list passthrough devices: {error}", xbmc.LOGWARNING)
+        log(f"Couldn't list the devices for {setting_id}: {error}", xbmc.LOGWARNING)
         devices = []
     for value, label in devices:
         if ":hdmi:" in str(value):
-            log(f"Passthrough device: {label}")
+            log(f"{setting_id}: {label}")
             return value
-    return HDMI_PASSTHROUGH_DEVICE
+    return fallback
 
 
 # Helpers ----------------------------------------------------------------------------------
