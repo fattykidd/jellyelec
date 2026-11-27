@@ -24,17 +24,6 @@ RECENTLY_ADDED_ROW = 210
 RANDOM_ROW = 220
 ROWS = (CONTINUE_WATCHING_ROW, NEXT_UP_ROW, RECENTLY_ADDED_ROW, RANDOM_ROW)
 
-# Each row's dimmed copy, shown above it behind the spotlight once focus moves below it.
-GHOST_ROWS = {row: row + 100 for row in ROWS}
-
-# The small heading above the spotlight: which row its title comes from.
-ROW_NAMES = {
-    CONTINUE_WATCHING_ROW: "CONTINUE WATCHING",
-    NEXT_UP_ROW: "NEXT UP",
-    RECENTLY_ADDED_ROW: "RECENTLY ADDED",
-    RANDOM_ROW: "RANDOM",
-}
-
 # The item type each library holds, as Jellyfin names it.
 LIBRARY_ITEM_TYPES = {"movies": "Movie", "tvshows": "Series"}
 LIVE_TV = "livetv"
@@ -82,7 +71,6 @@ class HomeWindow(xbmcgui.WindowXML):
             self._show_selected_library()
         elif focus in ROWS:
             self._update_spotlight(focus)
-        self._update_ghost_row(focus)
 
     def onClick(self, control_id):
         if control_id == SETTINGS_BUTTON:
@@ -158,10 +146,9 @@ class HomeWindow(xbmcgui.WindowXML):
             items = []
 
         self._row_data[row_id] = {item["Id"]: item for item in items}
-        for control_id in (row_id, GHOST_ROWS[row_id]):
-            row = self.getControl(control_id)
-            row.reset()
-            row.addItems([media_item(self.client, item) for item in items])
+        row = self.getControl(row_id)
+        row.reset()
+        row.addItems([media_item(self.client, item) for item in items])
 
     def _open_selected_library(self):
         selected = self._selected_library()
@@ -184,13 +171,12 @@ class HomeWindow(xbmcgui.WindowXML):
         a moment later.
         """
         rows = (row_id,) if row_id else ROWS
-        data, shown_row = None, None
+        data = None
         for row in rows:
             control = self.getControl(row)
             selected = control.getListItem(position) if position is not None else control.getSelectedItem()
             if selected is not None:
                 data = self._row_data[row].get(selected.getProperty("id"))
-                shown_row = row
                 break
 
         data = data or {}
@@ -202,27 +188,11 @@ class HomeWindow(xbmcgui.WindowXML):
             spotlight_meta(data),
             ends_at_text(data, datetime.now(timezone.utc)),
         )
-        self.setProperty("spot_kicker", ROW_NAMES.get(shown_row, "") if data else "")
         self.setProperty("spot_title", title.upper())
         self.setProperty("spot_logo", (logo_url(self.client, data) if data else None) or "")
         self.setProperty("spot_meta", "  ·  ".join(part for part in details if part))
         self.setProperty("spot_plot", data.get("Overview", ""))
         self.setProperty("spot_backdrop", (backdrop_url(self.client, data) if data else None) or "")
-
-    def _update_ghost_row(self, focus):
-        """Show the row above the focused one, dimmed behind the spotlight, scrolled as it was left."""
-        above = None
-        if focus in ROWS:
-            for row in reversed(ROWS[: ROWS.index(focus)]):
-                if self.getControl(row).size():
-                    above = row
-                    break
-        if above is None:
-            self.clearProperty("ghost_row")
-            return
-        if self.getProperty("ghost_row") != str(above):
-            self.getControl(GHOST_ROWS[above]).selectItem(self.getControl(above).getSelectedPosition())
-            self.setProperty("ghost_row", str(above))
 
     # Details --------------------------------------------------------------------
 
@@ -257,7 +227,6 @@ class HomeWindow(xbmcgui.WindowXML):
         row.selectItem(index)
         self.setFocusId(focus_row)
         self._update_spotlight(focus_row, index)
-        self._update_ghost_row(focus_row)
 
     # Back --------------------------------------------------------------------------
 
@@ -278,7 +247,6 @@ class HomeWindow(xbmcgui.WindowXML):
                 self._update_spotlight(focus, 0)
             else:
                 self.setFocusId(LIBRARY_BAR)
-                self._update_ghost_row(LIBRARY_BAR)
             return
 
         bar = self.getControl(LIBRARY_BAR)

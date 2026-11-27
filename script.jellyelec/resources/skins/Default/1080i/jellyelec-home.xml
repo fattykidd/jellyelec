@@ -9,7 +9,6 @@
       205  Next Up row (TV libraries only)
       210  Recently Added row
       220  Random row
-      300-320  the same rows, dimmed, shown above the focused row (row ID + 100)
     The spotlight is filled by home.py through window properties (spot_*).
     Fonts named JE_* come with the JellyELEC image; elsewhere Kodi uses its default font.
 -->
@@ -180,208 +179,13 @@
             <visible>Control.HasFocus(110)</visible>
         </control>
 
-        <!-- The row above the focused one, slid up and dimmed behind the spotlight. Never focused:
-             home.py fills each with the same items as its row and says which to show (ghost_row). -->
-        <control type="group">
-            <left>0</left>
-            <top>380</top>
-            <visible>String.IsEqual(Window.Property(ghost_row),200)</visible>
-            <animation effect="slide" start="0,350" end="0,0" time="260" tween="cubic" easing="out">Visible</animation>
-            <animation effect="fade" start="100" end="0" time="120">Hidden</animation>
-            <animation effect="zoom" start="100" end="96" center="960,550" time="0" condition="true">Conditional</animation>
-            <control type="label">
-                <left>96</left>
-                <top>0</top>
-                <width>900</width>
-                <height>40</height>
-                <font>JE_Heading</font>
-                <textcolor>40F2F2F5</textcolor>
-                <label>Continue watching</label>
-            </control>
-            <control type="list" id="300">
-                <left>84</left>
-                <top>40</top>
-                <width>1836</width>
-                <height>306</height>
-                <orientation>horizontal</orientation>
-                <itemlayout width="204" height="306">
-                    <control type="image">
-                        <left>12</left>
-                        <top>16</top>
-                        <width>180</width>
-                        <height>270</height>
-                        <aspectratio>scale</aspectratio>
-                        <colordiffuse>59FFFFFF</colordiffuse>
-                        <texture background="true" diffuse="jellyelec-mask-poster.png">$INFO[ListItem.Art(poster)]</texture>
-                    </control>
-                </itemlayout>
-                <focusedlayout width="204" height="306">
-                    <control type="image">
-                        <left>12</left>
-                        <top>16</top>
-                        <width>180</width>
-                        <height>270</height>
-                        <aspectratio>scale</aspectratio>
-                        <colordiffuse>59FFFFFF</colordiffuse>
-                        <texture background="true" diffuse="jellyelec-mask-poster.png">$INFO[ListItem.Art(poster)]</texture>
-                    </control>
-                </focusedlayout>
-            </control>
-        </control>
-        <control type="group">
-            <left>0</left>
-            <top>380</top>
-            <visible>String.IsEqual(Window.Property(ghost_row),205)</visible>
-            <animation effect="slide" start="0,350" end="0,0" time="260" tween="cubic" easing="out">Visible</animation>
-            <animation effect="fade" start="100" end="0" time="120">Hidden</animation>
-            <animation effect="zoom" start="100" end="96" center="960,550" time="0" condition="true">Conditional</animation>
-            <control type="label">
-                <left>96</left>
-                <top>0</top>
-                <width>900</width>
-                <height>40</height>
-                <font>JE_Heading</font>
-                <textcolor>40F2F2F5</textcolor>
-                <label>Next up</label>
-            </control>
-            <control type="list" id="305">
-                <left>84</left>
-                <top>40</top>
-                <width>1836</width>
-                <height>306</height>
-                <orientation>horizontal</orientation>
-                <itemlayout width="204" height="306">
-                    <control type="image">
-                        <left>12</left>
-                        <top>16</top>
-                        <width>180</width>
-                        <height>270</height>
-                        <aspectratio>scale</aspectratio>
-                        <colordiffuse>59FFFFFF</colordiffuse>
-                        <texture background="true" diffuse="jellyelec-mask-poster.png">$INFO[ListItem.Art(poster)]</texture>
-                    </control>
-                </itemlayout>
-                <focusedlayout width="204" height="306">
-                    <control type="image">
-                        <left>12</left>
-                        <top>16</top>
-                        <width>180</width>
-                        <height>270</height>
-                        <aspectratio>scale</aspectratio>
-                        <colordiffuse>59FFFFFF</colordiffuse>
-                        <texture background="true" diffuse="jellyelec-mask-poster.png">$INFO[ListItem.Art(poster)]</texture>
-                    </control>
-                </focusedlayout>
-            </control>
-        </control>
-        <control type="group">
-            <left>0</left>
-            <top>380</top>
-            <visible>String.IsEqual(Window.Property(ghost_row),210)</visible>
-            <animation effect="slide" start="0,350" end="0,0" time="260" tween="cubic" easing="out">Visible</animation>
-            <animation effect="fade" start="100" end="0" time="120">Hidden</animation>
-            <animation effect="zoom" start="100" end="96" center="960,550" time="0" condition="true">Conditional</animation>
-            <control type="label">
-                <left>96</left>
-                <top>0</top>
-                <width>900</width>
-                <height>40</height>
-                <font>JE_Heading</font>
-                <textcolor>40F2F2F5</textcolor>
-                <label>Recently added</label>
-            </control>
-            <control type="list" id="310">
-                <left>84</left>
-                <top>40</top>
-                <width>1836</width>
-                <height>306</height>
-                <orientation>horizontal</orientation>
-                <itemlayout width="204" height="306">
-                    <control type="image">
-                        <left>12</left>
-                        <top>16</top>
-                        <width>180</width>
-                        <height>270</height>
-                        <aspectratio>scale</aspectratio>
-                        <colordiffuse>59FFFFFF</colordiffuse>
-                        <texture background="true" diffuse="jellyelec-mask-poster.png">$INFO[ListItem.Art(poster)]</texture>
-                    </control>
-                </itemlayout>
-                <focusedlayout width="204" height="306">
-                    <control type="image">
-                        <left>12</left>
-                        <top>16</top>
-                        <width>180</width>
-                        <height>270</height>
-                        <aspectratio>scale</aspectratio>
-                        <colordiffuse>59FFFFFF</colordiffuse>
-                        <texture background="true" diffuse="jellyelec-mask-poster.png">$INFO[ListItem.Art(poster)]</texture>
-                    </control>
-                </focusedlayout>
-            </control>
-        </control>
-        <control type="group">
-            <left>0</left>
-            <top>380</top>
-            <visible>String.IsEqual(Window.Property(ghost_row),220)</visible>
-            <animation effect="slide" start="0,350" end="0,0" time="260" tween="cubic" easing="out">Visible</animation>
-            <animation effect="fade" start="100" end="0" time="120">Hidden</animation>
-            <animation effect="zoom" start="100" end="96" center="960,550" time="0" condition="true">Conditional</animation>
-            <control type="label">
-                <left>96</left>
-                <top>0</top>
-                <width>900</width>
-                <height>40</height>
-                <font>JE_Heading</font>
-                <textcolor>40F2F2F5</textcolor>
-                <label>Random</label>
-            </control>
-            <control type="list" id="320">
-                <left>84</left>
-                <top>40</top>
-                <width>1836</width>
-                <height>306</height>
-                <orientation>horizontal</orientation>
-                <itemlayout width="204" height="306">
-                    <control type="image">
-                        <left>12</left>
-                        <top>16</top>
-                        <width>180</width>
-                        <height>270</height>
-                        <aspectratio>scale</aspectratio>
-                        <colordiffuse>59FFFFFF</colordiffuse>
-                        <texture background="true" diffuse="jellyelec-mask-poster.png">$INFO[ListItem.Art(poster)]</texture>
-                    </control>
-                </itemlayout>
-                <focusedlayout width="204" height="306">
-                    <control type="image">
-                        <left>12</left>
-                        <top>16</top>
-                        <width>180</width>
-                        <height>270</height>
-                        <aspectratio>scale</aspectratio>
-                        <colordiffuse>59FFFFFF</colordiffuse>
-                        <texture background="true" diffuse="jellyelec-mask-poster.png">$INFO[ListItem.Art(poster)]</texture>
-                    </control>
-                </focusedlayout>
-            </control>
-        </control>
         <!-- Spotlight: whatever is focused, or the first item of the library when the bar is -->
         <control type="group">
             <left>96</left>
-            <top>160</top>
-            <control type="label">
-                <left>0</left>
-                <top>0</top>
-                <width>820</width>
-                <height>28</height>
-                <font>JE_Kicker</font>
-                <textcolor>FFAA5CC3</textcolor>
-                <label>$INFO[Window.Property(spot_kicker)]</label>
-            </control>
+            <top>170</top>
             <control type="image">
                 <left>0</left>
-                <top>38</top>
+                <top>0</top>
                 <width>720</width>
                 <height>170</height>
                 <aspectratio align="left" aligny="center">keep</aspectratio>
@@ -391,7 +195,7 @@
             </control>
             <control type="label">
                 <left>0</left>
-                <top>38</top>
+                <top>0</top>
                 <width>820</width>
                 <height>170</height>
                 <aligny>center</aligny>
@@ -403,7 +207,7 @@
             </control>
             <control type="label">
                 <left>0</left>
-                <top>222</top>
+                <top>186</top>
                 <width>1100</width>
                 <height>36</height>
                 <font>JE_Label</font>
@@ -412,7 +216,7 @@
             </control>
             <control type="textbox">
                 <left>0</left>
-                <top>272</top>
+                <top>236</top>
                 <width>860</width>
                 <height>150</height>
                 <autoscroll delay="6000" time="4000" repeat="8000">true</autoscroll>
@@ -434,7 +238,8 @@
             <visible>Integer.IsEqual(Container(200).NumItems,0) + Integer.IsEqual(Container(205).NumItems,0) + Integer.IsEqual(Container(210).NumItems,0) + Integer.IsEqual(Container(220).NumItems,0)</visible>
         </control>
 
-        <!-- Stack of rows. Scrolls to keep the focused row in view; empty rows are hidden. -->
+        <!-- Stack of rows, one row tall: the focused row always sits here, and the row above slides
+         up out of view behind the spotlight. Empty rows are hidden. -->
         <control type="grouplist" id="150">
             <left>0</left>
             <top>730</top>
