@@ -30,6 +30,27 @@ def set_value(setting_id, value):
     log(f"Kodi setting {setting_id} set to {value!r}.")
 
 
+def reset_all(prefix):
+    """Put every Kodi setting whose ID starts with prefix back to its default.
+
+    Returns how many were reset. One that Kodi won't reset is logged and skipped.
+    """
+    global _cached_settings
+    count = 0
+    for setting in _all_settings():
+        setting_id = setting.get("id", "")
+        if not setting_id.startswith(prefix) or setting.get("type") == "action":
+            continue
+        try:
+            _call("Settings.ResetSettingValue", setting=setting_id)
+            count += 1
+        except KodiSettingError as error:
+            log(f"Couldn't reset {setting_id}: {error}", xbmc.LOGWARNING)
+    _cached_settings = None
+    log(f"Reset {count} Kodi settings starting {prefix!r} to their defaults.")
+    return count
+
+
 def choices(setting_id):
     """A setting's choices as a list of (value, label), or [] if it has none or doesn't exist."""
     for setting in _all_settings():

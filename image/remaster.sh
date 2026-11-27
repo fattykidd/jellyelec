@@ -1,9 +1,22 @@
 #!/usr/bin/env bash
 #
-# Build a JellyELEC image from a p3i (CoreELEC) release image.
+# Build JellyELEC from a p3i (CoreELEC) release: an image to flash, and an update tar that
+# updates a box already running JellyELEC without reflashing.
 #
-# Usage:   sudo bash image/remaster.sh path/to/CoreELEC-...p3i...img.gz
-# Result:  dist/JellyELEC-<version>-p3i-<release>-AM6B.img.gz, ready to flash like any CoreELEC image.
+# Usage:   sudo bash image/remaster.sh
+#              Builds on the p3i release in image/p3i-base.json. Its flash image and update
+#              tar are downloaded into image/downloads/ (once) and checked against the file's
+#              SHA-256 checksums.
+#          sudo bash image/remaster.sh path/to/Flash_...img.gz [path/to/Update_...tar]
+#              Builds on files you already have. Without an update tar, only the image is made.
+#
+# Result, in dist/ (<build> is the build's date and time in UTC, such as 202611271830):
+#   JellyELEC-<build>-p3i-<release>-AM6B.img.gz   the image to flash
+#   JellyELEC-<build>-p3i-<release>.tar           the update: copy it into the box's Update
+#                                                 folder and restart, or install it from
+#                                                 JellyELEC's Settings once it's released
+#   JellyELEC-<build>-p3i-<release>.json          what the build contains (also inside it)
+#   *.sha256                                      checksums of the image and the tar
 #
 # What it changes (everything else is pannal's p3i image, untouched):
 #   SYSTEM (the read-only system)
@@ -19,16 +32,18 @@
 #     - oemsplash.png: JellyELEC's splash in place of p3i's during the early boot
 #     - Wake-on-LAN turned on
 #   dovi.ko is NOT included: it's added by hand after flashing (see the README).
+# The update tar is p3i's own update tar with JellyELEC's SYSTEM in it; everything else in it
+# (the kernel, device trees) is p3i's. Boxes keep their COREELEC partition settings.
 #
 # Needs root, so the system files keep their owners when unpacked and repacked.
-# Needs: gzip, python3, mtools, squashfs-tools.
+# Needs: gzip, python3, mtools, squashfs-tools, tar.
 
 set -euo pipefail
 
-IMAGE_GZ="${1:?Usage: sudo bash image/remaster.sh path/to/CoreELEC-...img.gz}"
-
 IMAGE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$IMAGE_DIR")"
+BASE_FILE="$IMAGE_DIR/p3i-base.json"
+DOWNLOAD_DIR="$IMAGE_DIR/downloads"
 ADDON_DIR="$REPO_DIR/script.jellyelec"
 DIST_DIR="$REPO_DIR/dist"
 
@@ -64,12 +79,33 @@ PYTHON
 # Checks -----------------------------------------------------------------------------
 
 [ "$(id -u)" -eq 0 ] || fail "run this with sudo, so system files keep their owners."
-for tool in gzip python3 mdir mcopy mdel unsquashfs mksquashfs md5sum; do
+for tool in gzip python3 mdir mcopy mdel unsquashfs mksquashfs md5sum sha256sum tar; do
     command -v "$tool" >/dev/null || fail "missing tool: $tool (install mtools and squashfs-tools)"
 done
+
+# Which p3i files to build on: the ones named on the command line, or the base file's.
+if [ $# -ge 1 ]; then
+    IMAGE_GZ="$1"
+    UPDATE_TAR="${2:-}"
+    BASE_RELEASE=""
+    DOVI_MODULE="dovi.ko"
+else
+    step "Getting p3i's files"
+    mapfile -t base_files < <(python3 "$REPO_DIR/tools/p3i_base.py" fetch "$DOWNLOAD_DIR")
+    [ "${#base_files[@]}" -eq 2 ] || fail "couldn't get p3i's files (see above)."
+    IMAGE_GZ="${base_files[0]}"
+    UPDATE_TAR="${base_files[1]}"
+    BASE_RELEASE="$(python3 -c "import json; print(json.load(open('$BASE_FILE'))['release'])")"
+    DOVI_MODULE="$(python3 -c "import json; print(json.load(open('$BASE_FILE')).get('dovi_module', 'dovi.ko'))")"
+    if [ -n "${SUDO_USER:-}" ]; then
+        chown -R "$SUDO_USER": "$DOWNLOAD_DIR"
+    fi
+fi
 [ -f "$IMAGE_GZ" ] || fail "no such file: $IMAGE_GZ"
+[ -z "$UPDATE_TAR" ] || [ -f "$UPDATE_TAR" ] || fail "no such file: $UPDATE_TAR"
 
 ADDON_VERSION="$(python3 -c "import xml.etree.ElementTree as e; print(e.parse('$ADDON_DIR/addon.xml').getroot().get('version'))")"
+BUILD_ID="$(date -u +%Y%m%d%H%M)"
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
@@ -86,7 +122,12 @@ unsquashfs -no-progress -d "$work/system" "$work/SYSTEM" > /dev/null
 
 P3I_RELEASE="$(sed -n 's/^VERSION=".*_p3i_\([^_]*\)_.*"$/\1/p' "$work/system/etc/os-release")"
 [ -n "$P3I_RELEASE" ] || fail "this doesn't look like a p3i image (no p3i version in /etc/os-release)."
-echo "p3i $P3I_RELEASE, JellyELEC $ADDON_VERSION"
+[ -z "$BASE_RELEASE" ] || [ "$P3I_RELEASE" = "$BASE_RELEASE" ] \
+    || fail "the image is p3i $P3I_RELEASE, but p3i-base.json says $BASE_RELEASE."
+# p3i's own SYSTEM, to check the update tar holds the same one.
+p3i_system_md5="$(md5sum "$work/SYSTEM" | cut -d' ' -f1)"
+NAME="JellyELEC-$BUILD_ID-p3i-$P3I_RELEASE"
+echo "p3i $P3I_RELEASE, JellyELEC $ADDON_VERSION, build $BUILD_ID"
 
 # SYSTEM changes ---------------------------------------------------------------------
 
@@ -156,6 +197,20 @@ add_kodi_setting general.addonupdates 2
 # Allow installing add-ons from zip files, such as a new JellyELEC test build.
 add_kodi_setting addons.unknownsources true
 
+step "Recording what this build contains"
+# JellyELEC reads this to know which build a box runs, and the release carries a copy so a
+# box can see what an update needs before installing it.
+python3 - "$work/build.json" "$BUILD_ID" "$P3I_RELEASE" "$ADDON_VERSION" "$DOVI_MODULE" <<'PYTHON'
+import json, sys
+path, build, release, addon_version, dovi_module = sys.argv[1:]
+with open(path, "w", encoding="utf-8") as file:
+    json.dump({"build": build, "p3i_release": release, "addon_version": addon_version,
+               "dovi_module": dovi_module}, file, indent=2)
+    file.write("\n")
+PYTHON
+install -o root -g root -m 0644 "$work/build.json" "$work/system/usr/share/jellyelec/build.json"
+cat "$work/build.json"
+
 step "Packing SYSTEM"
 rm -f "$work/SYSTEM"
 mksquashfs "$work/system" "$work/SYSTEM" "${SQUASHFS_OPTIONS[@]}" -quiet
@@ -190,10 +245,46 @@ dd if="$work/boot.img" of="$work/image.img" bs="$SECTOR_SIZE" seek="$boot_start"
 
 step "Compressing the image"
 mkdir -p "$DIST_DIR"
-output="$DIST_DIR/JellyELEC-$ADDON_VERSION-p3i-$P3I_RELEASE-$DEVICE_NAME.img.gz"
-gzip -c "$work/image.img" > "$output"
+outputs=()
+image_output="$DIST_DIR/$NAME-$DEVICE_NAME.img.gz"
+gzip -c "$work/image.img" > "$image_output"
+outputs+=("$image_output")
+rm -f "$work/image.img" "$work/boot.img"
+
+if [ -n "$UPDATE_TAR" ]; then
+    step "Making the update tar from $(basename "$UPDATE_TAR")"
+    # p3i's update tar holds one folder, with the kernel and SYSTEM under target/.
+    mkdir "$work/update"
+    tar -xf "$UPDATE_TAR" -C "$work/update"
+    folders=("$work"/update/*/)
+    [ "${#folders[@]}" -eq 1 ] && [ -f "${folders[0]}target/SYSTEM" ] \
+        || fail "$(basename "$UPDATE_TAR") isn't laid out like a CoreELEC update tar."
+    update_dir="${folders[0]%/}"
+    # It must be the same p3i build as the image, so its kernel matches our SYSTEM's modules.
+    [ "$(cut -d' ' -f1 "$update_dir/target/SYSTEM.md5")" = "$p3i_system_md5" ] \
+        || fail "$(basename "$UPDATE_TAR") isn't the same p3i build as $(basename "$IMAGE_GZ")."
+    cp "$work/SYSTEM" "$update_dir/target/SYSTEM"
+    cp "$work/SYSTEM.md5" "$update_dir/target/SYSTEM.md5"
+    if [ -f "$update_dir/target/SYSTEM.sha256" ]; then
+        echo "$(sha256sum "$work/SYSTEM" | cut -d' ' -f1)  target/SYSTEM" > "$update_dir/target/SYSTEM.sha256"
+    fi
+    mv "$update_dir" "$work/update/$NAME"
+    tar_output="$DIST_DIR/$NAME.tar"
+    tar -cf "$tar_output" -C "$work/update" "$NAME"
+    outputs+=("$tar_output")
+fi
+
+step "Writing checksums"
+cp "$work/build.json" "$DIST_DIR/$NAME.json"
+for file in "${outputs[@]}"; do
+    (cd "$DIST_DIR" && sha256sum "$(basename "$file")" > "$(basename "$file").sha256")
+done
+
 if [ -n "${SUDO_USER:-}" ]; then
-    chown "$SUDO_USER": "$output" "$DIST_DIR"
+    chown -R "$SUDO_USER": "$DIST_DIR"
 fi
 echo
-echo "Done: $output"
+echo "Done:"
+for file in "${outputs[@]}" "$DIST_DIR/$NAME.json"; do
+    echo "  $file"
+done

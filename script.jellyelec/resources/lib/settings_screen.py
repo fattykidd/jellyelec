@@ -8,7 +8,15 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-from resources.lib import appliance, box_name, device_options, output_setup, remote_control, updater
+from resources.lib import (
+    appliance,
+    box_name,
+    build_info,
+    device_options,
+    output_setup,
+    remote_control,
+    updater,
+)
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, ADDON_VERSION, log
 from resources.lib.setup import show_settings_warning
 
@@ -130,7 +138,8 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                  "Sets up sound (passthrough to your receiver) and picture (Dolby Vision mode) to suit "
                  "your equipment."),
             _row(DOLBY_VISION, "Dolby Vision", _dolby_vision_status(),
-                 "Whether the Dolby Vision module (dovi.ko) is installed. Press OK for details."),
+                 f"Whether the Dolby Vision module ({build_info.dovi_module()}) is installed. "
+                 "Press OK for details."),
             _row(COLLECTIONS, "Movie collections",
                  "Grouped" if xbmcaddon.Addon().getSettingBool(GROUP_COLLECTIONS_SETTING) else "Every movie listed",
                  "Grouped shows each collection once in a movie library, in place of the movies in it. "
@@ -169,9 +178,10 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             _row(SIGN_OUT_ROW, "Sign out",
                  f"{self.connection.user_name} on {self.connection.server_name}",
                  "Sign out of this server, to sign in as someone else or choose another server."),
-            _row(UPDATES, "Check for updates", f"Version {ADDON_VERSION}",
-                 "Look for a newer version of JellyELEC on GitHub, and install it. JellyELEC also "
-                 "checks once a day by itself."),
+            _row(UPDATES, "Check for updates", _version_summary(),
+                 "Look for a newer JellyELEC on GitHub and install it: the add-on, or a system update "
+                 "(a newer p3i with JellyELEC built in) that installs with a restart. JellyELEC also "
+                 "checks once a day and mentions it when there's one."),
             _row(POWER, "Power", "",
                  "Restart or power off the box."),
             _row(EXIT_TO_KODI_ROW, "Exit to Kodi", "",
@@ -200,7 +210,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
     def _check_dolby_vision(self):
         if not output_setup.dolby_vision_ready():
-            xbmcgui.Dialog().textviewer("Dolby Vision", output_setup.DOVI_INSTRUCTIONS)
+            xbmcgui.Dialog().textviewer("Dolby Vision", output_setup.dovi_instructions())
         elif output_setup.dolby_vision_pending():
             if not output_setup.apply_pending_dolby_vision():
                 show_settings_warning()
@@ -262,7 +272,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         progress = xbmcgui.DialogProgress()
         progress.create("Check for updates", "Looking for a newer version…")
         try:
-            release = updater.available_update()
+            system_update, addon_release = updater.check()
         except updater.UpdateError as error:
             progress.close()
             log(f"Update check failed: {error}", xbmc.LOGWARNING)
@@ -272,17 +282,70 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             return
         progress.close()
 
-        if release is None:
-            xbmcgui.Dialog().ok("Check for updates", f"JellyELEC is up to date (version {ADDON_VERSION}).")
-            return
-        if not xbmcgui.Dialog().yesno(
+        # A system update includes the newest add-on, so it comes first.
+        if system_update:
+            self._offer_system_update(system_update)
+        elif addon_release:
+            self._offer_addon_update(addon_release)
+        else:
+            xbmcgui.Dialog().ok("Check for updates", f"JellyELEC is up to date ({_version_summary()}).")
+
+    def _offer_addon_update(self, release):
+        if xbmcgui.Dialog().yesno(
             "Check for updates",
             f"JellyELEC {release.version} is available (this is {ADDON_VERSION}).[CR]Install it now?",
             nolabel="Not now",
             yeslabel="Install",
         ):
+            self._install_update(release)
+
+    def _offer_system_update(self, update):
+        size = f"about {update.tar_size // 2**20} MB" if update.tar_size else "a large download"
+        if not xbmcgui.Dialog().yesno(
+            "System update",
+            f"A system update is available: {update.description}.[CR][CR]"
+            f"It downloads now ({size}) and installs when the box restarts, which takes a few "
+            "minutes. Settings, sign-in and Dolby Vision setup are kept.",
+            nolabel="Not now",
+            yeslabel="Download",
+        ):
             return
-        self._install_update(release)
+
+        missing = updater.missing_dovi_module(update)
+        if missing and not xbmcgui.Dialog().yesno(
+            "System update",
+            f"This update needs a different Dolby Vision module: {missing}.[CR][CR]"
+            f"Before restarting, shut the box down and copy {missing} onto the drive named "
+            "COREELEC, next to the one there now. Without it, Dolby Vision titles play in HDR10.",
+            nolabel="Cancel",
+            yeslabel="Continue",
+        ):
+            return
+
+        progress = xbmcgui.DialogProgress()
+        progress.create("System update", f"Downloading {update.description}…")
+        try:
+            updater.download_system_update(
+                update, lambda percent: progress.update(percent) or not progress.iscanceled()
+            )
+        except updater.UpdateError as error:
+            progress.close()
+            log(f"System update download failed: {error}", xbmc.LOGWARNING)
+            xbmcgui.Dialog().ok("System update", f"The update didn't download: {error}")
+            return
+        progress.close()
+
+        if xbmcgui.Dialog().yesno(
+            "System update",
+            "The update is ready. Restart now to install it?[CR][CR]"
+            "The box shows CoreELEC's progress while it installs, then starts JellyELEC again.",
+            nolabel="Later",
+            yeslabel="Restart now",
+        ):
+            log(f"Restarting to install system update build {update.build}.")
+            xbmc.executebuiltin("Reboot")
+        else:
+            _notify("The system update installs the next time the box restarts.")
 
     def _install_update(self, release):
         progress = xbmcgui.DialogProgress()
@@ -335,6 +398,14 @@ def _dolby_vision_status():
     if output_setup.dolby_vision_pending():
         return "Installed · waiting for LLDV"
     return "Installed"
+
+
+def _version_summary():
+    """Version 0.0.59 · p3i T4c, build 202611271830 (or just the version on older images)."""
+    build = build_info.installed_build()
+    if not build:
+        return f"Version {ADDON_VERSION}"
+    return f"Version {ADDON_VERSION} · p3i {build.get('p3i_release', '?')}, build {build.get('build', '?')}"
 
 
 def _notify(message):

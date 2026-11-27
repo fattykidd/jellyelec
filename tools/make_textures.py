@@ -95,9 +95,11 @@ def main():
     # solid at the bottom, where the rows start.
     save(fade(512, [(0, 255), (0.22, 217), (0.55, 0), (1, 0)], horizontal=True), "jellyelec-fade-left.png")
     save(fade(512, [(0, 0), (1, 255)], horizontal=False), "jellyelec-fade-bottom.png")
-    # Stretchable with <texture border="...">: pills for the library bar, rings for focus.
+    # Stretchable with <texture border="...">: pills and pill outlines for the library bar,
+    # rings for focused cards.
     save(rounded_box(64, 32), "jellyelec-pill.png")
     save(rounded_ring(64, 18, 4), "jellyelec-ring.png")
+    save(rounded_ring(64, 32, 3), "jellyelec-pill-ring.png")
     # Rounded corners for posters, used as <texture diffuse="...">.
     save(card_mask(180, 270, 12), "jellyelec-mask-poster.png")
     save(cogs_icon(96), "jellyelec-icon-settings.png")

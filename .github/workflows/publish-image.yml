@@ -1,0 +1,60 @@
+# Builds JellyELEC on the p3i release in image/p3i-base.json and publishes it as an image
+# release: the image to flash, the update tar, and what the build contains. Boxes find it under
+# Settings > Check for updates and install it without reflashing.
+#
+# Run it by hand from the Actions tab once a build has been tested on a box. Image releases
+# are tagged image-<build> and never marked "latest", so add-on releases (v0.0.x) and image
+# releases don't get in each other's way.
+
+name: Publish an image release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq mtools squashfs-tools
+          sudo -E bash image/remaster.sh
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          json="$(ls dist/JellyELEC-*.json)"
+          name="$(basename "$json" .json)"
+          read -r build release addon dovi < <(python3 -c "
+          import json, sys
+          info = json.load(open(sys.argv[1]))
+          print(info['build'], info['p3i_release'], info['addon_version'], info['dovi_module'])
+          " "$json")
+
+          {
+            echo "JellyELEC $addon on p3i $release."
+            echo
+            echo "**Already running JellyELEC?** Settings > Check for updates offers this build and"
+            echo "installs it with a restart. Or copy \`$name.tar\` into the box's Update folder"
+            echo "(the Update share in Files/Samba) and restart."
+            echo
+            echo "**New box?** Flash \`$name-AM6B.img.gz\` like any CoreELEC image."
+            echo
+            echo "Dolby Vision needs \`$dovi\` on the COREELEC partition (see the image README)."
+          } > release-notes.md
+
+          gh release create "image-$build" \
+            "dist/$name-AM6B.img.gz" "dist/$name-AM6B.img.gz.sha256" \
+            "dist/$name.tar" "dist/$name.tar.sha256" \
+            "$json" \
+            --target "$GITHUB_SHA" \
+            --title "JellyELEC image $build (p3i $release, JellyELEC $addon)" \
+            --notes-file release-notes.md \
+            --latest=false

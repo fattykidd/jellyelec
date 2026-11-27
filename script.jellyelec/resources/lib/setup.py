@@ -12,7 +12,7 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-from resources.lib import box_name, device_options, output_setup, remote_control
+from resources.lib import box_name, build_info, device_options, output_setup, remote_control
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log
 
 # Control IDs, matching jellyelec-setup.xml.
@@ -112,8 +112,8 @@ def _dolby_vision_step():
         choice = _show_step(
             heading="Setup · Dolby Vision",
             title="Dolby Vision is ready",
-            body="The Dolby Vision module (dovi.ko) is installed, so Dolby Vision and FEL titles "
-                 "will play as intended.",
+            body=f"The Dolby Vision module ({build_info.dovi_module()}) is installed, so Dolby Vision "
+                 "and FEL titles will play as intended.",
             options=["Continue"],
         )
         return NEXT if choice == 0 else BACK
@@ -121,11 +121,11 @@ def _dolby_vision_step():
     choice = _show_step(
         heading="Setup · Dolby Vision",
         title="Dolby Vision isn't set up yet",
-        body=output_setup.DOVI_INSTRUCTIONS + "[CR]Setup picks up where it left off when the box starts again.",
+        body=output_setup.dovi_instructions() + "[CR]Setup picks up where it left off when the box starts again.",
         options=["Shut down so I can add it", "Skip for now"],
     )
     if choice == 0:
-        log("Shutting down so dovi.ko can be added.")
+        log(f"Shutting down so {build_info.dovi_module()} can be added.")
         xbmc.executebuiltin("Powerdown")
         return QUIT
     return NEXT if choice == 1 else BACK

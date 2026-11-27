@@ -1,8 +1,9 @@
 # JellyELEC images
 
 JellyELEC images are built from pannal's [p3i](https://github.com/pannal/CoreELEC) CoreELEC
-release images. `remaster.sh` unpacks a p3i image, adds JellyELEC and a handful of settings,
-and packs it back up. Everything else is p3i exactly as released.
+releases. `remaster.sh` unpacks a p3i image, adds JellyELEC and a handful of settings, and packs
+it back up. Everything else is p3i exactly as released. Each build comes as an image to flash
+and as an update tar, which updates a box already running JellyELEC without reflashing.
 
 ## Building an image
 
@@ -11,15 +12,70 @@ Needs Linux with `mtools` and `squashfs-tools`:
 - Fedora/RHEL: `sudo dnf install mtools squashfs-tools`
 - Ubuntu/Debian: `sudo apt install mtools squashfs-tools`
 
-1. Download the p3i Flash image (`.img.gz`) from its GitHub releases page.
-2. From the repo folder, run:
+From the repo folder, run:
 
-   ```
-   sudo bash image/remaster.sh ~/Downloads/<p3i image>.img.gz
-   ```
+```
+sudo bash image/remaster.sh
+```
 
-The image is written to `dist/`, named for the JellyELEC and p3i versions inside it. It needs
-`sudo` so the system files keep their owners when they're unpacked and packed again.
+It builds on the p3i release recorded in `p3i-base.json`. The first time, it downloads that
+release's flash image and update tar into `image/downloads/` (about 500 MB, kept for next
+time) and checks them against the SHA-256 checksums in the file. It needs `sudo` so the system
+files keep their owners when they're unpacked and packed again.
+
+The results go in `dist/`, named for the build (its date and time in UTC) and p3i release:
+
+| File | What it's for |
+|---|---|
+| `JellyELEC-<build>-p3i-<release>-AM6B.img.gz` | A new box: flash it like any CoreELEC image. |
+| `JellyELEC-<build>-p3i-<release>.tar` | A box already running JellyELEC: the update. |
+| `JellyELEC-<build>-p3i-<release>.json` | What the build contains (also inside it, as `/usr/share/jellyelec/build.json`). |
+| `*.sha256` | Checksums of the image and the tar. |
+
+To build on p3i files you already have instead:
+`sudo bash image/remaster.sh <Flash_...img.gz> [<Update_...tar>]`.
+
+## Updating a box without reflashing
+
+The update tar is p3i's own update tar with JellyELEC's system in it, so it installs the same
+way p3i's and CoreELEC's updates do. Settings, sign-in, the COREELEC partition (dovi.ko,
+config.ini) and everything in `/storage` are kept.
+
+- **From JellyELEC:** Settings › Check for updates offers the newest published image release
+  (see below), downloads its tar, and restarts to install it.
+- **By hand:** copy the `.tar` into the box's **Update** folder (the `Update` share over Samba,
+  or `/storage/.update` over SSH) and restart. CoreELEC installs it while the box starts.
+
+p3i asks for one more step after an in-place update (from T5 on): Kodi's CoreELEC settings
+(Settings › System › CoreELEC) must be reset to their defaults, followed by a restart.
+JellyELEC does this by itself on the first start after an update to a different p3i release:
+it resets those settings, sets video processor mode's Dolby Vision settings to be made again,
+and restarts once. A freshly flashed box skips it.
+
+If an update's p3i needs a different Dolby Vision module (the `.json`'s `dovi_module`),
+JellyELEC says so before downloading. Copy the new module onto the COREELEC drive before
+restarting, or Dolby Vision titles play in HDR10 until it's there.
+
+## Keeping up with p3i
+
+`p3i-base.json` records the p3i release JellyELEC is built on: its tag, the flash image and
+update tar with their checksums, and the Dolby Vision module it needs. Two GitHub workflows
+(in `.github/workflows/`) look after it:
+
+- **Watch p3i for new releases** runs every day. When pannal publishes a new p3i release, it
+  opens a pull request that moves `p3i-base.json` to it, with pannal's release notes and a
+  checklist, and builds JellyELEC on it. The test build (image and tar) is linked in the pull
+  request; if the build fails, the pull request says so. `tools/p3i_base.py` does the looking.
+- **Publish an image release** is run by hand from the Actions tab, once a build has been
+  tested on a box. It builds JellyELEC on the base and publishes it as an image release
+  (tagged `image-<build>`), which boxes find under Check for updates.
+
+Both need, in the repository's Settings › Actions › General › Workflow permissions: **Read and
+write permissions**, and **Allow GitHub Actions to create and approve pull requests**.
+
+A new p3i release usually means checking one thing by hand: whether it needs a new Dolby Vision
+module. pannal's release notes say so. If it does, change `dovi_module` in `p3i-base.json` on
+the pull request's branch before merging.
 
 ## What JellyELEC changes
 
@@ -57,7 +113,12 @@ On the COREELEC (boot) partition:
 ## Dolby Vision: adding dovi.ko
 
 The Dolby Vision module can't be included in the image, so it's added by hand once, after
-flashing:
+flashing. Its name is `dovi_module` in `p3i-base.json`: `dovi.ko` for p3i T4 and T5. It could
+change with a later p3i release.
+
+p3i T5 can also load a second, newer Dolby library, `dovi5.ko`, from avdvplus R10. It's
+optional, sits alongside `dovi.ko` (which is still needed), and goes in `/storage/.config/`
+rather than on the COREELEC drive. See pannal's T5 release notes.
 
 1. Put the freshly flashed card or USB stick in a computer.
 2. Open the drive named **COREELEC**.

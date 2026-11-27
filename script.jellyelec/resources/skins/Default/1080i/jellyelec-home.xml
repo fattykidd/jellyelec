@@ -78,14 +78,25 @@
                 </control>
             </itemlayout>
             <focusedlayout width="200" height="64">
-                <!-- Focused: a white pill. Selected but not focused: an accent underline. -->
+                <!-- Jellyfin blue marks the library (purple is for focused cards).
+                     Focused: a blue outlined pill with a faint blue fill. Selected but not
+                     focused: a blue underline, showing which library the rows are from. -->
                 <control type="image">
                     <left>4</left>
                     <top>4</top>
                     <width>192</width>
                     <height>56</height>
                     <texture border="28">jellyelec-pill.png</texture>
-                    <colordiffuse>FFF2F2F5</colordiffuse>
+                    <colordiffuse>2E00A4DC</colordiffuse>
+                    <visible>Control.HasFocus(100)</visible>
+                </control>
+                <control type="image">
+                    <left>4</left>
+                    <top>4</top>
+                    <width>192</width>
+                    <height>56</height>
+                    <texture border="28">jellyelec-pill-ring.png</texture>
+                    <colordiffuse>FF00A4DC</colordiffuse>
                     <visible>Control.HasFocus(100)</visible>
                 </control>
                 <control type="label">
@@ -96,7 +107,7 @@
                     <align>center</align>
                     <aligny>center</aligny>
                     <font>JE_Label</font>
-                    <textcolor>FF0B0C11</textcolor>
+                    <textcolor>FFFFFFFF</textcolor>
                     <scroll>true</scroll>
                     <label>$INFO[ListItem.Label]</label>
                     <visible>Control.HasFocus(100)</visible>
@@ -119,7 +130,7 @@
                     <width>80</width>
                     <height>4</height>
                     <texture>jellyelec-white.png</texture>
-                    <colordiffuse>FFAA5CC3</colordiffuse>
+                    <colordiffuse>FF00A4DC</colordiffuse>
                     <visible>!Control.HasFocus(100)</visible>
                 </control>
             </focusedlayout>
@@ -155,7 +166,7 @@
             <width>60</width>
             <height>60</height>
             <label></label>
-            <texturefocus colordiffuse="FFAA5CC3">jellyelec-pill.png</texturefocus>
+            <texturefocus colordiffuse="FF00A4DC">jellyelec-pill.png</texturefocus>
             <texturenofocus colordiffuse="17FFFFFF">jellyelec-pill.png</texturenofocus>
             <onleft>100</onleft>
             <ondown>150</ondown>

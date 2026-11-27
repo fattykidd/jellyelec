@@ -2,3 +2,4 @@ dist/
 __pycache__/
 *.pyc
 p3i-report.tar.gz
+image/downloads/

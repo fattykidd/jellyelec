@@ -5,7 +5,7 @@ import os
 import xbmc
 import xbmcaddon
 
-from resources.lib import kodi_settings
+from resources.lib import build_info, kodi_settings
 from resources.lib.kodi import log
 
 # The three answers to "How is this box connected?", in the order they're offered.
@@ -21,9 +21,6 @@ CONNECTIONS = (
 # Add-on setting that remembers the answer.
 CONNECTION_SETTING = "box_connection"
 
-# CoreELEC loads the Dolby Vision module from the boot partition at startup.
-DOVI_MODULE_PATH = "/flash/dovi.ko"
-
 # Shown when video processor mode is chosen but the display chain isn't offering LLDV.
 LLDV_WAITING_MESSAGE = (
     "Your display chain isn't offering LLDV right now, so the Dolby Vision type was left as "
@@ -32,14 +29,19 @@ LLDV_WAITING_MESSAGE = (
     "processor connected and offering LLDV."
 )
 
-# How to add dovi.ko, shown during setup and in Settings.
-DOVI_INSTRUCTIONS = (
-    "JellyELEC can't include the Dolby Vision module (dovi.ko), so it's added by hand:[CR][CR]"
-    "1.  Shut down this box and put its card or USB stick in a computer.[CR]"
-    "2.  Copy dovi.ko onto the drive named COREELEC (into the top folder, not a subfolder).[CR]"
-    "3.  Put the card back and turn the box on.[CR][CR]"
-    "Without it, Dolby Vision titles play in HDR10 instead."
-)
+
+
+def dovi_instructions():
+    """How to add the Dolby Vision module, shown during setup and in Settings."""
+    module = build_info.dovi_module()
+    return (
+        f"JellyELEC can't include the Dolby Vision module ({module}), so it's added by hand:[CR][CR]"
+        "1.  Shut down this box and put its card or USB stick in a computer.[CR]"
+        f"2.  Copy {module} onto the drive named COREELEC (into the top folder, not a subfolder).[CR]"
+        "3.  Put the card back and turn the box on.[CR][CR]"
+        "Without it, Dolby Vision titles play in HDR10 instead."
+    )
+
 
 # Add-on setting: video processor mode was chosen, but its Dolby Vision settings are still to
 # be made. CoreELEC hides those settings until dovi.ko is installed, so they can wait.
@@ -77,8 +79,8 @@ VS10_SETTINGS = (
 
 
 def dolby_vision_ready():
-    """True if dovi.ko has been copied to the boot partition."""
-    return os.path.isfile(DOVI_MODULE_PATH)
+    """True if the Dolby Vision module has been copied to the boot partition."""
+    return os.path.isfile(build_info.dovi_module_path())
 
 
 def dolby_vision_pending():
@@ -193,6 +195,14 @@ def _try(change, *args, **kwargs):
         log(f"Couldn't change a setting: {error}", xbmc.LOGWARNING)
         return False
     return result is not False
+
+
+def redo_dolby_vision_settings():
+    """After CoreELEC's settings were reset: in video processor mode, make the Dolby Vision
+    settings again at the next start, as if setup had just chosen it."""
+    if current_connection() == VIDEO_PROCESSOR:
+        _set_dolby_vision_pending(True)
+        log("Video processor mode: Dolby Vision settings will be made again.")
 
 
 def _set_dolby_vision_pending(pending):

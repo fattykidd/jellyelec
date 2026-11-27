@@ -5,7 +5,7 @@ import threading
 import xbmc
 import xbmcgui
 
-from resources.lib import appliance, output_setup, setup, storage, updater
+from resources.lib import after_update, appliance, output_setup, setup, storage, updater
 from resources.lib.home import HomeWindow
 from resources.lib.keymap import install_keymap, remove_live_tv_keymap
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log
@@ -20,6 +20,8 @@ def run(splash):
     """
     install_keymap()
     remove_live_tv_keymap()
+    if after_update.finish_if_updated(splash):
+        return
     if setup.is_complete():
         # Finishes video processor mode once dovi.ko has been added after setup.
         output_setup.apply_pending_dolby_vision()
@@ -62,14 +64,17 @@ def _check_for_updates_in_background():
 
     def check():
         try:
-            release = updater.available_update()
+            system_update, addon_release = updater.check()
         except updater.UpdateError as error:
             log(f"Background update check failed: {error}", xbmc.LOGWARNING)
             return
-        if release:
-            xbmcgui.Dialog().notification(
-                ADDON_NAME, f"Version {release.version} is available: Settings, Check for updates.", time=10000
-            )
+        if system_update:
+            message = f"A system update is available ({system_update.description}): Settings, Check for updates."
+        elif addon_release:
+            message = f"Version {addon_release.version} is available: Settings, Check for updates."
+        else:
+            return
+        xbmcgui.Dialog().notification(ADDON_NAME, message, time=10000)
 
     threading.Thread(target=check, name="JellyELEC update check", daemon=True).start()
 

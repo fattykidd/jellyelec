@@ -1,0 +1,110 @@
+# Watches pannal's p3i for new releases. When there is one, this opens a pull request that
+# moves image/p3i-base.json to it, builds JellyELEC on it, and links the test build in the
+# pull request. Nothing changes for anyone until the pull request is merged and an image
+# release is published (see publish-image.yml).
+#
+# Needs, in the repository's Settings > Actions > General > Workflow permissions:
+# "Read and write permissions" and "Allow GitHub Actions to create and approve pull requests".
+
+name: Watch p3i for new releases
+
+on:
+  schedule:
+    - cron: "17 11 * * *"  # every day at 11:17 UTC
+  workflow_dispatch:        # or now, from the Actions tab
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Look for a newer p3i release
+        id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          release="$(python3 tools/p3i_base.py update)"
+          if [ -z "$release" ]; then
+            echo "p3i's newest release is already the base."
+            exit 0
+          fi
+          branch="p3i/$release"
+          if git ls-remote --exit-code --heads origin "$branch" > /dev/null; then
+            echo "There's already a pull request branch for p3i $release."
+            exit 0
+          fi
+          echo "New p3i release: $release"
+          echo "release=$release" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+
+      - name: Open a pull request
+        if: steps.check.outputs.release != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE: ${{ steps.check.outputs.release }}
+          BRANCH: ${{ steps.check.outputs.branch }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$BRANCH"
+          git commit -am "Build on p3i $RELEASE"
+          git push origin "$BRANCH"
+
+          {
+            echo "p3i **$RELEASE** is out. This moves JellyELEC's base to it."
+            echo
+            echo "A test build (image and update tar) is being made; a link will follow below."
+            echo
+            echo "### Before merging"
+            echo "- [ ] Read pannal's release notes below. If this release needs a different Dolby Vision"
+            echo "      module, change \`dovi_module\` in \`image/p3i-base.json\` on this branch."
+            echo "- [ ] Install the test build: copy the \`.tar\` into the box's Update folder and restart,"
+            echo "      or flash the image."
+            echo "- [ ] Check: it boots into JellyELEC, Dolby Vision still loads (LLDV with VS10 off),"
+            echo "      audio passthrough, Live TV, and Check for updates."
+            echo "- [ ] Merge, then run **Publish an image release** from the Actions tab."
+            echo
+            echo "### pannal's release notes"
+            echo
+            gh api "repos/pannal/CoreELEC/releases/tags/$RELEASE" --jq .body
+          } > pull-request.md
+          gh pr create --head "$BRANCH" --title "Build on p3i $RELEASE" --body-file pull-request.md
+
+      - name: Build the test image
+        if: steps.check.outputs.release != ''
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq mtools squashfs-tools
+          sudo -E bash image/remaster.sh
+
+      - name: Keep the test build
+        if: steps.check.outputs.release != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: JellyELEC-test-build-p3i-${{ steps.check.outputs.release }}
+          path: dist/JellyELEC-*
+          retention-days: 30
+          compression-level: 0  # the image is already compressed
+
+      - name: Link the test build in the pull request
+        if: steps.check.outputs.release != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.check.outputs.branch }}
+        run: |
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          gh pr comment "$BRANCH" --body "Test build ready: open [this run]($run_url) and download it under **Artifacts** at the bottom."
+
+      - name: Say so in the pull request if the build failed
+        if: failure() && steps.check.outputs.release != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.check.outputs.branch }}
+        run: |
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          gh pr comment "$BRANCH" --body "The test build failed: see [this run]($run_url). p3i may have changed something remaster.sh relies on." || true
