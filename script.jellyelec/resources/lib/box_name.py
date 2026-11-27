@@ -33,6 +33,11 @@ def set_name(name):
         return
     for command in (
         ["systemctl", "restart", "network-base"],
+        # Samba's settings file is written with the box name when it starts, so it's written
+        # again, then file sharing restarts if it's on. wsdd2 goes last: it reads its name
+        # from those settings.
+        ["systemctl", "try-restart", "samba-config"],
+        ["systemctl", "try-restart", "nmbd", "smbd"],
         ["systemctl", "try-restart", "avahi-daemon", "wsdd2"],
     ):
         subprocess.run(command, check=False, capture_output=True)
