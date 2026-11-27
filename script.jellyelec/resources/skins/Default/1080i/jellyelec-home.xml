@@ -227,6 +227,18 @@
             </control>
         </control>
 
+        <!-- Once the library bar has slid along, fades its left edge into the background, so a
+             library sliding out of view fades away rather than being cut off. -->
+        <control type="image">
+            <left>296</left>
+            <top>40</top>
+            <width>64</width>
+            <height>64</height>
+            <texture>jellyelec-fade-edge.png</texture>
+            <visible>Container(100).HasPrevious</visible>
+            <animation effect="fade" time="200">VisibleChange</animation>
+        </control>
+
         <control type="label">
             <left>1310</left>
             <top>40</top>
@@ -307,24 +319,38 @@
                 <label>$INFO[Window.Property(spot_title)]</label>
                 <visible>String.IsEmpty(Window.Property(spot_logo))</visible>
             </control>
-            <control type="label">
+            <!-- Details, stacked: an episode's own line (when there is one), the details line
+                 with Ends at, then the plot. -->
+            <control type="grouplist">
                 <left>0</left>
-                <top>186</top>
+                <top>182</top>
                 <width>1100</width>
-                <height>36</height>
-                <font>JE_Label</font>
-                <textcolor>FFD5D6DE</textcolor>
-                <label>$INFO[Window.Property(spot_meta)]</label>
-            </control>
-            <control type="textbox">
-                <left>0</left>
-                <top>236</top>
-                <width>860</width>
-                <height>176</height>
-                <autoscroll delay="6000" time="4000" repeat="8000">true</autoscroll>
-                <font>JE_Body</font>
-                <textcolor>FFC3C5D0</textcolor>
-                <label>$INFO[Window.Property(spot_plot)]</label>
+                <height>270</height>
+                <orientation>vertical</orientation>
+                <itemgap>6</itemgap>
+                <control type="label">
+                    <width>1100</width>
+                    <height>36</height>
+                    <font>JE_LabelBold</font>
+                    <textcolor>FFF2F2F5</textcolor>
+                    <label>$INFO[Window.Property(spot_episode)]</label>
+                    <visible>!String.IsEmpty(Window.Property(spot_episode))</visible>
+                </control>
+                <control type="label">
+                    <width>1100</width>
+                    <height>36</height>
+                    <font>JE_Label</font>
+                    <textcolor>FFD5D6DE</textcolor>
+                    <label>$INFO[Window.Property(spot_meta)]</label>
+                </control>
+                <control type="textbox">
+                    <width>860</width>
+                    <height>176</height>
+                    <autoscroll delay="6000" time="4000" repeat="8000">true</autoscroll>
+                    <font>JE_Body</font>
+                    <textcolor>FFC3C5D0</textcolor>
+                    <label>$INFO[Window.Property(spot_plot)]</label>
+                </control>
             </control>
         </control>
 

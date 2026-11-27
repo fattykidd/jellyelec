@@ -186,14 +186,11 @@ class HomeWindow(xbmcgui.WindowXML):
         data = data or {}
         is_episode = data.get("Type") == "Episode"
         title = data.get("SeriesName", "") if is_episode else data.get("Name", "")
-        details = (
-            episode_line(data),
-            data.get("Name", "") if is_episode else "",
-            spotlight_meta(data),
-            ends_at_text(data, datetime.now(timezone.utc)),
-        )
+        episode = (episode_line(data), data.get("Name", "")) if is_episode else ()
+        details = (spotlight_meta(data), ends_at_text(data, datetime.now(timezone.utc)))
         self.setProperty("spot_title", title.upper())
         self.setProperty("spot_logo", (logo_url(self.client, data) if data else None) or "")
+        self.setProperty("spot_episode", "  ·  ".join(part for part in episode if part))
         self.setProperty("spot_meta", "  ·  ".join(part for part in details if part))
         self.setProperty("spot_plot", data.get("Overview", ""))
         self.setProperty("spot_backdrop", (backdrop_url(self.client, data) if data else None) or "")
