@@ -21,12 +21,13 @@ jobs:
   watch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Look for a newer p3i release
         id: check
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           release="$(python3 tools/p3i_base.py update)"
           if [ -z "$release" ]; then
@@ -34,8 +35,8 @@ jobs:
             exit 0
           fi
           branch="p3i/$release"
-          if git ls-remote --exit-code --heads origin "$branch" > /dev/null; then
-            echo "There's already a pull request branch for p3i $release."
+          if [ "$(gh pr list --head "$branch" --state open --json number --jq length)" != "0" ]; then
+            echo "There's already an open pull request for p3i $release."
             exit 0
           fi
           echo "New p3i release: $release"
@@ -53,7 +54,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$BRANCH"
           git commit -am "Build on p3i $RELEASE"
-          git push origin "$BRANCH"
+          # --force: a branch left by an earlier run that couldn't open its pull request.
+          git push --force origin "$BRANCH"
 
           {
             echo "p3i **$RELEASE** is out. This moves JellyELEC's base to it."
