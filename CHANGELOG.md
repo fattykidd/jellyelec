@@ -2,6 +2,10 @@
 
 Every add-on version is listed from 0.0.77 on. Earlier versions are summarised by area.
 
+## 0.0.92
+- Player: the OSD shows at full brightness. The fade added in 0.0.89 to hide it behind Player
+  info's stats was leaving the whole OSD dimmed; it's gone, and the stats sit over the OSD.
+
 ## 0.0.91
 - Player: each OSD button has a bright white ring around a light fill, so it stands out on a
   projector; the focused one grows a little as well as turning blue. The dark pill behind the

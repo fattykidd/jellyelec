@@ -5,7 +5,7 @@
     Buttons, left to right: Chapters (when the file has them), back 10 seconds, Play/Pause,
     forward 30 seconds, Audio, Subtitles, Player info (Kodi's player process info) and Stop.
     Chapters, Audio and Subtitles ask JellyELEC to open its own panels (key_requests.py).
-    Player info shows Kodi's player process info over the faded-out OSD; OK hides it again.
+    Player info shows Kodi's player process info over the OSD; OK hides it again.
 -->
 <window>
     <defaultcontrol always="true">103</defaultcontrol>
@@ -14,9 +14,6 @@
     <!-- Player info's stats go when the OSD does -->
     <onunload>Dialog.Close(playerprocessinfo)</onunload>
     <controls>
-      <!-- Everything fades out while Player info's stats show (see PROCESS_INFO) -->
-      <control type="group">
-        <animation effect="fade" start="100" end="0" time="150" condition="Window.IsVisible(playerprocessinfo)">Conditional</animation>
 
         <!-- Clock, top right, with a little shade behind it -->
         <control type="image">
@@ -309,7 +306,6 @@
             <label>Pause</label>
             <visible>Control.HasFocus(103) + !Player.Paused</visible>
         </control>
-      </control>
 
         <!-- While the stats show: how to hide them -->
         <control type="label">
