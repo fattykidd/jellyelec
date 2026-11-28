@@ -2,6 +2,11 @@
 
 Every add-on version is listed from 0.0.77 on. Earlier versions are summarised by area.
 
+## 0.0.91
+- Player: each OSD button has a bright white ring around a light fill, so it stands out on a
+  projector; the focused one grows a little as well as turning blue. The dark pill behind the
+  row is gone.
+
 ## 0.0.90
 - Player: the OSD's buttons sit on a near-black pill, with a lighter fill and full-white icons,
   and the focused button's name is larger and brighter.

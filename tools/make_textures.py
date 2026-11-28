@@ -221,6 +221,12 @@ def osd_icons():
             draw_icon(draw, 96 * s / 24)
         save(smooth(96, 96, paint), f"jellyelec-osd-{name}.png")
 
+    # The buttons' own circle: a light fill inside a bright ring, so an unfocused button stands
+    # out on a projector, where "dark" behind it is never truly black. Coloured here.
+    save(smooth(96, 96, lambda draw, s: draw.ellipse(
+        (2 * s, 2 * s, 94 * s - 1, 94 * s - 1), fill=(255, 255, 255, 56),
+        outline=(255, 255, 255, 230), width=4 * s)), "jellyelec-osd-button.png")
+
 
 # Weather -----------------------------------------------------------------------------
 
