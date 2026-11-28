@@ -20,7 +20,8 @@ COREELEC_SETTINGS_WINDOW = "service-CoreELEC-Settings-mainWindow.xml"
 WIRED_CARRIER_FILE = "/sys/class/net/eth0/carrier"
 
 # The weather add-on offered in setup: no account or API key needed.
-WEATHER_ADDON = "weather.gismeteo"
+# Open-Meteo, from Kodi's add-on repository: free, no account, and finds places reliably.
+WEATHER_ADDON = "weather.openmeteo"
 # Kodi's dialogs that the weather add-on can open while it's being set up: its settings, and
 # the location search it may run the first time it's used.
 WEATHER_DIALOGS = (
@@ -80,6 +81,40 @@ def keep_box_name():
     if current != wanted:
         log(f"The box is named {current or 'nothing'}; putting its name back to {wanted}.")
         apply_box_name(wanted)
+    elif box_name.settings_addon_name() != wanted:
+        # Right for now, but CoreELEC's settings add-on would change it at the next start.
+        log(f"Saving the box name {wanted} in CoreELEC's settings too.")
+        box_name.save_in_settings_addon(wanted)
+
+
+# Region -------------------------------------------------------------------------------
+
+# Kodi's regional settings offered in JellyELEC's Settings: (setting, name, explanation).
+REGION_SETTINGS = (
+    ("locale.country", "Region",
+     "Date and time formats and units, as used in a country. Temperature and clock follow it "
+     "unless they're set on their own."),
+    ("locale.temperatureunit", "Temperature unit", "For the weather."),
+    ("locale.use24hourclock", "Clock", "12-hour or 24-hour time, here and in the Live TV guide."),
+)
+
+
+def region_settings():
+    """The regional settings this Kodi has, as (setting, name, explanation, current choice)."""
+    available = []
+    for setting_id, name, explanation in REGION_SETTINGS:
+        try:
+            choices = dict(kodi_settings.choices(setting_id))
+            current = kodi_settings.get_value(setting_id)
+        except kodi_settings.KodiSettingError:
+            continue
+        if choices:
+            available.append((setting_id, name, explanation, choices.get(current, str(current))))
+    return available
+
+
+def change_region_setting(setting_id, name):
+    return _pick(setting_id, name)
 
 
 # Time zone ----------------------------------------------------------------------------
@@ -181,27 +216,36 @@ def open_bluetooth_pairing():
 
 # Weather ------------------------------------------------------------------------------
 
-def weather_summary():
+def current_weather_addon():
+    """The weather add-on Kodi uses, or "" if the weather is off."""
     try:
-        return "On" if kodi_settings.get_value("weather.addon") == WEATHER_ADDON else "Off"
+        return kodi_settings.get_value("weather.addon") or ""
     except kodi_settings.KodiSettingError:
-        return "Off"
+        return ""
+
+
+def weather_summary():
+    return "On" if current_weather_addon() else "Off"
 
 
 def set_up_weather():
-    """Install the weather add-on if needed, choose a location in its settings, then use it."""
-    if not kodi_addons.is_installed(WEATHER_ADDON):
+    """Install the weather add-on if needed, choose a location in its settings, then use it.
+
+    A weather add-on already in use (one chosen in Kodi, say) is kept; otherwise Open-Meteo.
+    """
+    addon_id = current_weather_addon() or WEATHER_ADDON
+    if not kodi_addons.is_installed(addon_id):
         xbmcgui.Dialog().notification("Weather", "Finding the weather add-on…")
-        if not kodi_addons.install(WEATHER_ADDON):
+        if not kodi_addons.install(addon_id):
             xbmcgui.Dialog().ok(
                 "Weather", "The weather add-on couldn't be installed. Check the network and try again."
             )
             return False
     xbmcgui.Dialog().ok("Weather", "Next, choose your location in the weather add-on's settings, then go back.")
-    xbmc.executebuiltin(f"Addon.OpenSettings({WEATHER_ADDON})", True)
+    xbmc.executebuiltin(f"Addon.OpenSettings({addon_id})", True)
     _wait_for_weather_dialogs(appear_seconds=2)
     try:
-        kodi_settings.set_value("weather.addon", WEATHER_ADDON)
+        kodi_settings.set_value("weather.addon", addon_id)
     except kodi_settings.KodiSettingError as error:
         log(f"Couldn't turn on the weather: {error}")
         return False

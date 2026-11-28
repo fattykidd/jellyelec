@@ -37,6 +37,16 @@
             <texture>jellyelec-fade-bottom.png</texture>
         </control>
 
+        <!-- Darkens the top of the fanart, so the top bar reads over bright artwork -->
+        <control type="image">
+            <left>580</left>
+            <top>0</top>
+            <width>1340</width>
+            <height>230</height>
+            <texture flipy="true">jellyelec-fade-bottom.png</texture>
+            <colordiffuse>D9FFFFFF</colordiffuse>
+        </control>
+
         <!-- Top bar: library name, position in it, clock -->
         <control type="label">
             <left>96</left>
@@ -45,6 +55,7 @@
             <height>64</height>
             <aligny>center</aligny>
             <font>JE_Brand</font>
+            <shadowcolor>B3000000</shadowcolor>
             <textcolor>FFF2F2F5</textcolor>
             <label>$INFO[Window.Property(library_name)]</label>
         </control>
@@ -56,6 +67,7 @@
             <align>right</align>
             <aligny>center</aligny>
             <font>JE_Label</font>
+            <shadowcolor>B3000000</shadowcolor>
             <textcolor>FF8D90A0</textcolor>
             <label>$INFO[Container(500).CurrentItem]$INFO[Window.Property(item_count), of ,]</label>
         </control>
@@ -67,6 +79,7 @@
             <align>right</align>
             <aligny>center</aligny>
             <font>JE_Clock</font>
+            <shadowcolor>B3000000</shadowcolor>
             <textcolor>FFF2F2F5</textcolor>
             <label>$INFO[System.Time]</label>
         </control>

@@ -54,6 +54,8 @@ GUIDE_OK = "guide_ok"
 REMOTE_CONTROL = "remote_control"
 BOX_NAME = "box_name"
 TIME_ZONE = "time_zone"
+# Kodi's regional settings (Region, Temperature unit, Clock) have keys made from their IDs.
+REGION_PREFIX = "region:"
 WIFI = "wifi"
 SSH = "ssh"
 FILE_SHARING = "file_sharing"
@@ -123,8 +125,12 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             EXIT_TO_KODI_ROW: self._exit_to_kodi,
             UPDATES: self._check_for_updates,
         }
-        key = self.getControl(SETTINGS_LIST).getSelectedItem().getProperty("key")
-        handlers[key]()
+        selected = self.getControl(SETTINGS_LIST).getSelectedItem()
+        key = selected.getProperty("key")
+        if key.startswith(REGION_PREFIX):
+            device_options.change_region_setting(key[len(REGION_PREFIX):], selected.getLabel())
+        else:
+            handlers[key]()
         if not self.next_step:
             self._fill_list()  # show any value that changed
 
@@ -164,6 +170,10 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                  "network call this box."),
             _row(TIME_ZONE, "Time zone", device_options.time_zone_summary(),
                  "Used for the clock and the Live TV guide."),
+            *(
+                _row(REGION_PREFIX + setting_id, name, current, explanation)
+                for setting_id, name, explanation, current in device_options.region_settings()
+            ),
             _row(WIFI, "Wi-Fi", "Connected by cable" if device_options.wired_connected() else "",
                  "Join a Wi-Fi network, in CoreELEC's settings under Connections."),
             _row(SSH, "SSH", device_options.ssh_summary(),
@@ -174,7 +184,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             _row(BLUETOOTH, "Bluetooth", device_options.bluetooth_summary(),
                  "Pair a keyboard, remote, game controller or headphones (regular sound only)."),
             _row(WEATHER, "Weather", device_options.weather_summary(),
-                 "The weather for your location, from the Gismeteo add-on."),
+                 "The weather for your location, from the Open-Meteo add-on."),
             _row(APPLIANCE_MODE, "Open JellyELEC when the box starts",
                  "On" if appliance.is_enabled() else "Off",
                  "Starts JellyELEC with the box and reopens it if it ever closes, so the box always "

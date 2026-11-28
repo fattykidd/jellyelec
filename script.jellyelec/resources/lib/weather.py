@@ -6,6 +6,8 @@ JellyELEC draws its own simple icons for them (tools/make_textures.py) to match 
 rather than Kodi's large colourful ones.
 """
 
+import os
+
 import xbmc
 
 # Each icon, and the condition codes it stands for.
@@ -29,5 +31,9 @@ def icon():
     if not xbmc.getCondVisibility("Weather.IsFetched"):
         return ""
     code = xbmc.getInfoLabel("Weather.FanartCode").strip()
+    if not code.isdigit():
+        # Some add-ons give the code only as their icon's file name, such as ".../28.png".
+        icon_name = os.path.basename(xbmc.getInfoLabel("Weather.ConditionsIcon"))
+        code = os.path.splitext(icon_name)[0]
     name = ICON_FOR_CODE.get(int(code)) if code.isdigit() else None
     return f"jellyelec-weather-{name}.png" if name else ""

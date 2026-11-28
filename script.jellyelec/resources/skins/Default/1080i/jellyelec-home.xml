@@ -43,6 +43,16 @@
             <texture>jellyelec-fade-bottom.png</texture>
         </control>
 
+        <!-- Darkens the top of the fanart, so the top bar reads over bright artwork -->
+        <control type="image">
+            <left>580</left>
+            <top>0</top>
+            <width>1340</width>
+            <height>230</height>
+            <texture flipy="true">jellyelec-fade-bottom.png</texture>
+            <colordiffuse>D9FFFFFF</colordiffuse>
+        </control>
+
         <!-- Top bar: wordmark, libraries, weather, clock and Settings -->
         <control type="label">
             <left>96</left>
@@ -51,6 +61,7 @@
             <height>64</height>
             <aligny>center</aligny>
             <font>JE_Brand</font>
+            <shadowcolor>B3000000</shadowcolor>
             <textcolor>FFF2F2F5</textcolor>
             <label>Jelly[COLOR FFAA5CC3]ELEC[/COLOR]</label>
         </control>
@@ -58,7 +69,8 @@
         <!-- Library bar: one button per library, sized to its name; library_bar.py fills them
              and hides the spare ones. Focused: a blue pill. The library the rows are from,
              when the bar isn't focused: a blue underline (colour set per button by
-             library_bar.py) and white text. Slides along to keep the focused one in view. -->
+             library_bar.py) and white text. Slides along to keep the focused one in view. Left and right
+             wrap around through the Settings button. -->
         <control type="grouplist" id="100">
             <left>300</left>
             <top>40</top>
@@ -66,6 +78,7 @@
             <height>64</height>
             <orientation>horizontal</orientation>
             <itemgap>4</itemgap>
+            <onleft>110</onleft>
             <onright>110</onright>
             <ondown>150</ondown>
             <scrolltime tween="cubic" easing="out">260</scrolltime>
@@ -76,6 +89,7 @@
                 <align>center</align>
                 <aligny>center</aligny>
                 <font>JE_Label</font>
+                <shadowcolor>B3000000</shadowcolor>
                 <textcolor>FFB7B9C6</textcolor>
                 <focusedcolor>FFFFFFFF</focusedcolor>
                 <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
@@ -89,6 +103,7 @@
                 <align>center</align>
                 <aligny>center</aligny>
                 <font>JE_Label</font>
+                <shadowcolor>B3000000</shadowcolor>
                 <textcolor>FFB7B9C6</textcolor>
                 <focusedcolor>FFFFFFFF</focusedcolor>
                 <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
@@ -102,6 +117,7 @@
                 <align>center</align>
                 <aligny>center</aligny>
                 <font>JE_Label</font>
+                <shadowcolor>B3000000</shadowcolor>
                 <textcolor>FFB7B9C6</textcolor>
                 <focusedcolor>FFFFFFFF</focusedcolor>
                 <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
@@ -115,6 +131,7 @@
                 <align>center</align>
                 <aligny>center</aligny>
                 <font>JE_Label</font>
+                <shadowcolor>B3000000</shadowcolor>
                 <textcolor>FFB7B9C6</textcolor>
                 <focusedcolor>FFFFFFFF</focusedcolor>
                 <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
@@ -128,6 +145,7 @@
                 <align>center</align>
                 <aligny>center</aligny>
                 <font>JE_Label</font>
+                <shadowcolor>B3000000</shadowcolor>
                 <textcolor>FFB7B9C6</textcolor>
                 <focusedcolor>FFFFFFFF</focusedcolor>
                 <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
@@ -141,6 +159,7 @@
                 <align>center</align>
                 <aligny>center</aligny>
                 <font>JE_Label</font>
+                <shadowcolor>B3000000</shadowcolor>
                 <textcolor>FFB7B9C6</textcolor>
                 <focusedcolor>FFFFFFFF</focusedcolor>
                 <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
@@ -154,6 +173,7 @@
                 <align>center</align>
                 <aligny>center</aligny>
                 <font>JE_Label</font>
+                <shadowcolor>B3000000</shadowcolor>
                 <textcolor>FFB7B9C6</textcolor>
                 <focusedcolor>FFFFFFFF</focusedcolor>
                 <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
@@ -167,6 +187,7 @@
                 <align>center</align>
                 <aligny>center</aligny>
                 <font>JE_Label</font>
+                <shadowcolor>B3000000</shadowcolor>
                 <textcolor>FFB7B9C6</textcolor>
                 <focusedcolor>FFFFFFFF</focusedcolor>
                 <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
@@ -180,6 +201,7 @@
                 <align>center</align>
                 <aligny>center</aligny>
                 <font>JE_Label</font>
+                <shadowcolor>B3000000</shadowcolor>
                 <textcolor>FFB7B9C6</textcolor>
                 <focusedcolor>FFFFFFFF</focusedcolor>
                 <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
@@ -193,6 +215,7 @@
                 <align>center</align>
                 <aligny>center</aligny>
                 <font>JE_Label</font>
+                <shadowcolor>B3000000</shadowcolor>
                 <textcolor>FFB7B9C6</textcolor>
                 <focusedcolor>FFFFFFFF</focusedcolor>
                 <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
@@ -206,6 +229,7 @@
                 <align>center</align>
                 <aligny>center</aligny>
                 <font>JE_Label</font>
+                <shadowcolor>B3000000</shadowcolor>
                 <textcolor>FFB7B9C6</textcolor>
                 <focusedcolor>FFFFFFFF</focusedcolor>
                 <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
@@ -219,6 +243,7 @@
                 <align>center</align>
                 <aligny>center</aligny>
                 <font>JE_Label</font>
+                <shadowcolor>B3000000</shadowcolor>
                 <textcolor>FFB7B9C6</textcolor>
                 <focusedcolor>FFFFFFFF</focusedcolor>
                 <texturefocus border="30,0,30,0">jellyelec-library-focus.png</texturefocus>
@@ -251,6 +276,7 @@
                 <height>64</height>
                 <aligny>center</aligny>
                 <font>JE_Label</font>
+                <shadowcolor>B3000000</shadowcolor>
                 <textcolor>FFD5D6DE</textcolor>
                 <label>$INFO[Weather.Temperature]</label>
                 <visible>!String.IsEmpty(Window.Property(weather_icon))</visible>
@@ -260,6 +286,7 @@
                 <height>64</height>
                 <aligny>center</aligny>
                 <font>JE_Label</font>
+                <shadowcolor>B3000000</shadowcolor>
                 <textcolor>FFD5D6DE</textcolor>
                 <label>$INFO[Weather.Temperature]$INFO[Weather.Conditions,  ·  ]</label>
                 <visible>String.IsEmpty(Window.Property(weather_icon))</visible>
@@ -273,6 +300,7 @@
             <align>right</align>
             <aligny>center</aligny>
             <font>JE_Clock</font>
+            <shadowcolor>B3000000</shadowcolor>
             <textcolor>FFF2F2F5</textcolor>
             <label>$INFO[System.Time]</label>
         </control>
@@ -286,6 +314,7 @@
             <texturefocus colordiffuse="FF00A4DC">jellyelec-pill.png</texturefocus>
             <texturenofocus colordiffuse="17FFFFFF">jellyelec-pill.png</texturenofocus>
             <onleft>100</onleft>
+            <onright>1001</onright>
             <ondown>150</ondown>
         </control>
         <control type="image">

@@ -254,7 +254,7 @@ def _weather_step():
     choice = _show_step(
         heading="Setup · Weather",
         title="Show the weather?",
-        body="JellyELEC can show the weather for your location, using the Gismeteo weather "
+        body="JellyELEC can show the weather for your location, using the Open-Meteo weather "
              "add-on from Kodi's add-on repository. It needs no account.",
         options=["Set up the weather", "No thanks"],
     )

@@ -191,10 +191,21 @@ def parse_date(text):
 
 
 def clock_text(moment):
-    """6:05 PM, in the box's local time."""
+    """6:05 PM or 18:05, in the box's local time, as Kodi's regional settings say."""
     local = moment.astimezone()
+    if _uses_24_hour_clock():
+        return f"{local.hour}:{local.minute:02d}"
     hour = local.hour % 12 or 12
     return f"{hour}:{local.minute:02d} {'AM' if local.hour < 12 else 'PM'}"
+
+
+def _uses_24_hour_clock():
+    """True if Kodi's time format (Settings > Regional, or JellyELEC's Clock) is 24-hour."""
+    try:
+        import xbmc  # only on the box; elsewhere (tests) times are 12-hour
+    except ImportError:
+        return False
+    return "%p" not in xbmc.getRegion("time")
 
 
 def time_range_text(start, end):
