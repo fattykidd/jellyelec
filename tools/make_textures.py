@@ -113,8 +113,6 @@ def main():
     # solid at the bottom, where the rows start.
     save(fade(512, [(0, 255), (0.22, 217), (0.55, 0), (1, 0)], horizontal=True), "jellyelec-fade-left.png")
     save(fade(512, [(0, 0), (1, 255)], horizontal=False), "jellyelec-fade-bottom.png")
-    # The library bar's left edge: solid, clearing over its width.
-    save(fade(64, [(0, 255), (0.35, 255), (1, 0)], horizontal=True), "jellyelec-fade-edge.png")
     # Stretchable with <texture border="...">: pills and pill outlines for the library bar,
     # rings for focused cards.
     save(rounded_box(64, 32), "jellyelec-pill.png")
