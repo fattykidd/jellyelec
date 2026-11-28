@@ -8,7 +8,8 @@ IR and CEC remotes, and to remotes that send keyboard keys over Kodi's network c
 
 There are two:
   - The main key map is always installed. Guide and the page keys do nothing during
-    movies and episodes, since nothing is listening then.
+    movies and episodes, since nothing is listening then. It also makes OK close the
+    player process info that the OSD's Player info button opens.
   - The Live TV key map is only installed while a channel is playing, because it takes
     over Up and Down, which skip forward and back in movies.
 """
@@ -49,6 +50,17 @@ KEYMAP = f"""<?xml version="1.0" encoding="UTF-8"?>
             <pageminus>{_request(CHANNEL_DOWN_REQUEST)}</pageminus>
         </remote>
     </FullscreenVideo>
+    <!-- The OSD's Player info shows Kodi's player process info, which then takes the keys but
+         does nothing with OK; OK closes it, like a second press of Player info. -->
+    <playerprocessinfo>
+        <keyboard>
+            <return>PlayerProcessInfo</return>
+            <enter>PlayerProcessInfo</enter>
+        </keyboard>
+        <remote>
+            <select>PlayerProcessInfo</select>
+        </remote>
+    </playerprocessinfo>
 </keymap>
 """
 

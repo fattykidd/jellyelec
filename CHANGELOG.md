@@ -2,6 +2,11 @@
 
 Every add-on version is listed from 0.0.77 on. Earlier versions are summarised by area.
 
+## 0.0.90
+- Player: the OSD's buttons sit on a near-black pill, with a lighter fill and full-white icons,
+  and the focused button's name is larger and brighter.
+- OK closes Player info's stats (JellyELEC's key map sends OK there to the close command).
+
 ## 0.0.89
 - Estuary's top bar (logo, chapter, a second clock) no longer shows over playing video: its
   overlay window is replaced with an empty one.
