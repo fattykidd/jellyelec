@@ -144,6 +144,37 @@
                     <colordiffuse>D9FFFFFF</colordiffuse>
                     <texture background="true" diffuse="jellyelec-mask-poster.png">$INFO[ListItem.Art(poster)]</texture>
                 </control>
+                <!-- A collection showing a borrowed movie poster: darkened, with its own name -->
+                <control type="group">
+                    <visible>String.IsEqual(ListItem.Property(borrowed_poster),true)</visible>
+                    <control type="image">
+                        <left>12</left>
+                        <top>16</top>
+                        <width>180</width>
+                        <height>270</height>
+                        <texture diffuse="jellyelec-mask-poster.png">jellyelec-fade-bottom.png</texture>
+                    </control>
+                    <control type="label">
+                        <left>24</left>
+                        <top>176</top>
+                        <width>156</width>
+                        <height>24</height>
+                        <align>center</align>
+                        <font>JE_Kicker</font>
+                        <textcolor>FFC99BDA</textcolor>
+                        <label>COLLECTION</label>
+                    </control>
+                    <control type="textbox">
+                        <left>22</left>
+                        <top>200</top>
+                        <width>160</width>
+                        <height>80</height>
+                        <align>center</align>
+                        <font>JE_TitleSmall</font>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <label>$INFO[ListItem.Label]</label>
+                    </control>
+                </control>
             </itemlayout>
             <focusedlayout width="204" height="330">
                 <control type="image">
@@ -161,6 +192,37 @@
                     <height>270</height>
                     <aspectratio>scale</aspectratio>
                     <texture background="true" diffuse="jellyelec-mask-poster.png">$INFO[ListItem.Art(poster)]</texture>
+                </control>
+                <!-- A collection showing a borrowed movie poster: darkened, with its own name -->
+                <control type="group">
+                    <visible>String.IsEqual(ListItem.Property(borrowed_poster),true)</visible>
+                    <control type="image">
+                        <left>12</left>
+                        <top>16</top>
+                        <width>180</width>
+                        <height>270</height>
+                        <texture diffuse="jellyelec-mask-poster.png">jellyelec-fade-bottom.png</texture>
+                    </control>
+                    <control type="label">
+                        <left>24</left>
+                        <top>176</top>
+                        <width>156</width>
+                        <height>24</height>
+                        <align>center</align>
+                        <font>JE_Kicker</font>
+                        <textcolor>FFC99BDA</textcolor>
+                        <label>COLLECTION</label>
+                    </control>
+                    <control type="textbox">
+                        <left>22</left>
+                        <top>200</top>
+                        <width>160</width>
+                        <height>80</height>
+                        <align>center</align>
+                        <font>JE_TitleSmall</font>
+                        <textcolor>FFFFFFFF</textcolor>
+                        <label>$INFO[ListItem.Label]</label>
+                    </control>
                 </control>
             </focusedlayout>
         </control>

@@ -10,21 +10,17 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-from resources.lib import versions
 from resources.lib.api import JellyfinError
 from resources.lib.detail import show_details
-from resources.lib.formatting import clock_text, media_summary
+from resources.lib.formatting import clock_text
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log
-from resources.lib.listitems import media_item
+from resources.lib.listitems import backdrop_url, media_item, poster_url
+from resources.lib.media_details import MediaSummaryLoader
 
 # Control IDs, matching jellyelec-library.xml.
 POSTER_GRID = 500
 
 CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
-
-# The focused title's resolution and audio come from a request of their own, made once focus
-# has rested on it this long, so scrolling past posters doesn't send a request for each.
-MEDIA_DETAILS_DELAY_SECONDS = 0.4
 
 # Add-on setting: show each movie collection once in the grid, in place of its movies.
 GROUP_COLLECTIONS_SETTING = "group_collections"
@@ -66,15 +62,15 @@ class LibraryWindow(xbmcgui.WindowXML):
     item_type = None
 
     _loaded = False
-    _media_timer = None
+    _media = None
+    _closing = False
 
     def onInit(self):
         # onInit runs again after the detail page closes; load only once.
         if self._loaded:
             return
         self._loaded = True
-        self._media_summaries = {}  # item ID -> "4K · Dolby Vision · Dolby TrueHD Atmos 7.1"
-        self._media_timer = None
+        self._media = MediaSummaryLoader(self.client, self._show_media_summary)
         self.setProperty("library_name", self.library_name)
         self._load()
 
@@ -86,7 +82,8 @@ class LibraryWindow(xbmcgui.WindowXML):
                 grid.selectItem(0)
                 self._show_focused_details(grid.getListItem(0))
             else:
-                self._cancel_media_request()
+                self._closing = True
+                self._media.cancel()
                 self.close()
             return
         self._show_focused_details()
@@ -125,6 +122,7 @@ class LibraryWindow(xbmcgui.WindowXML):
         if items:
             self.setFocusId(POSTER_GRID)
             self._show_focused_details(grid.getListItem(0))
+            self._fill_in_collection_artwork(items)
 
     def _fetch_items(self):
         if self.item_type == COLLECTION:
@@ -145,32 +143,48 @@ class LibraryWindow(xbmcgui.WindowXML):
             ends = f"Ends at {clock_text(datetime.now().astimezone() + timedelta(seconds=int(remaining)))}"
         self.setProperty("focused_ends", ends)
 
-        item_id = item.getProperty("id")
         if not remaining:  # a show or collection: no single file to describe
             self.setProperty("focused_media", "")
+            self._media.cancel()
             return
-        if item_id in self._media_summaries:
-            self.setProperty("focused_media", self._media_summaries[item_id])
-            return
-        self.setProperty("focused_media", "")
-        self._cancel_media_request()
-        self._media_timer = threading.Timer(MEDIA_DETAILS_DELAY_SECONDS, self._fetch_media_summary, (item_id,))
-        self._media_timer.daemon = True
-        self._media_timer.start()
+        self.setProperty("focused_media", self._media.request(item.getProperty("id")) or "")
 
-    def _fetch_media_summary(self, item_id):
-        try:
-            data = self.client.get_item(item_id)
-        except JellyfinError as error:
-            log(f"Couldn't get the media details of {item_id}: {error}", xbmc.LOGWARNING)
-            return
-        summary = media_summary(data, versions.chosen_source(data))
-        self._media_summaries[item_id] = summary
+    def _show_media_summary(self, item_id, summary):
         selected = self.getControl(POSTER_GRID).getSelectedItem()
         if selected is not None and selected.getProperty("id") == item_id:
             self.setProperty("focused_media", summary)
 
-    def _cancel_media_request(self):
-        if self._media_timer is not None:
-            self._media_timer.cancel()
-            self._media_timer = None
+    # Collection artwork -------------------------------------------------------------
+
+    def _fill_in_collection_artwork(self, items):
+        """Collections without artwork of their own borrow their first movie's poster and
+        backdrop. Done in the background, as it takes a request per collection."""
+        bare = [
+            (index, item) for index, item in enumerate(items)
+            if item.get("Type") == COLLECTION and not item.get("ImageTags", {}).get("Primary")
+        ]
+        if bare:
+            log(f"{len(bare)} collections have no poster; borrowing their first movie's.")
+            threading.Thread(target=self._borrow_artwork, args=(bare,), daemon=True).start()
+
+    def _borrow_artwork(self, bare):
+        grid = self.getControl(POSTER_GRID)
+        for index, collection in bare:
+            if self._closing:
+                return
+            try:
+                movies = self.client.get_collection_items(collection["Id"])
+            except JellyfinError as error:
+                log(f"Couldn't look inside collection {collection.get('Name')}: {error}", xbmc.LOGWARNING)
+                continue
+            first = next((movie for movie in movies if poster_url(self.client, movie)), None)
+            if first is None:
+                continue
+            art = {"poster": poster_url(self.client, first)}
+            if not collection.get("BackdropImageTags"):
+                art["fanart"] = backdrop_url(self.client, first)
+            list_item = grid.getListItem(index)
+            if list_item.getProperty("id") == collection["Id"]:
+                list_item.setArt({kind: url for kind, url in art.items() if url})
+                # The poster is a movie's, so the tile shows the collection's name over it.
+                list_item.setProperty("borrowed_poster", "true")

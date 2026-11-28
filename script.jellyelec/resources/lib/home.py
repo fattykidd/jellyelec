@@ -13,7 +13,8 @@ from resources.lib.kodi import ADDON_NAME, log
 from resources.lib.library import show_library
 from resources.lib.live_tv import show_live_tv
 from resources.lib.library_bar import LibraryBar
-from resources.lib.listitems import backdrop_url, logo_url, media_item
+from resources.lib.media_details import MediaSummaryLoader
+from resources.lib.listitems import PLAYABLE_TYPES, backdrop_url, logo_url, media_item
 from resources.lib.settings_screen import SIGN_OUT, show_settings
 
 # Control IDs, matching jellyelec-home.xml. The library bar's are in library_bar.py.
@@ -56,6 +57,8 @@ class HomeWindow(xbmcgui.WindowXML):
             self._loaded = True
             self._row_data = {row: {} for row in ROWS}
             self._bar = LibraryBar(self)
+            self._media = MediaSummaryLoader(self.client, self._show_media_summary)
+            self._spot_id = None
             self._load_libraries()
 
     def onAction(self, action):
@@ -194,6 +197,18 @@ class HomeWindow(xbmcgui.WindowXML):
         self.setProperty("spot_meta", "  ·  ".join(part for part in details if part))
         self.setProperty("spot_plot", data.get("Overview", ""))
         self.setProperty("spot_backdrop", (backdrop_url(self.client, data) if data else None) or "")
+
+        # Resolution and audio: for something played in one go, asked for once focus rests.
+        self._spot_id = data.get("Id")
+        if data.get("Type") in PLAYABLE_TYPES:
+            self.setProperty("spot_media", self._media.request(data["Id"]) or "")
+        else:
+            self._media.cancel()
+            self.setProperty("spot_media", "")
+
+    def _show_media_summary(self, item_id, summary):
+        if item_id == self._spot_id:
+            self.setProperty("spot_media", summary)
 
     # Details --------------------------------------------------------------------
 

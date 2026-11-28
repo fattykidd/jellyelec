@@ -308,12 +308,12 @@
                 <visible>String.IsEmpty(Window.Property(spot_logo))</visible>
             </control>
             <!-- Details, stacked: an episode's own line (when there is one), the details line
-                 with Ends at, then the plot. -->
+                 with Ends at, resolution and audio (when known), then the plot. -->
             <control type="grouplist">
                 <left>0</left>
                 <top>182</top>
                 <width>1100</width>
-                <height>270</height>
+                <height>320</height>
                 <orientation>vertical</orientation>
                 <itemgap>6</itemgap>
                 <control type="label">
@@ -330,6 +330,14 @@
                     <font>JE_Label</font>
                     <textcolor>FFD5D6DE</textcolor>
                     <label>$INFO[Window.Property(spot_meta)]</label>
+                </control>
+                <control type="label">
+                    <width>1100</width>
+                    <height>36</height>
+                    <font>JE_LabelBold</font>
+                    <textcolor>FFF2F2F5</textcolor>
+                    <label>$INFO[Window.Property(spot_media)]</label>
+                    <visible>!String.IsEmpty(Window.Property(spot_media))</visible>
                 </control>
                 <control type="textbox">
                     <width>860</width>
