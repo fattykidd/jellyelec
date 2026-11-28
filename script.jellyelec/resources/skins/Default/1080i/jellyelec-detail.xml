@@ -3,8 +3,8 @@
     JellyELEC detail page for a movie, show or episode (the v2 look, like the home screen).
     Control IDs here must match the constants in resources/lib/detail.py:
       300  the buttons (a grouplist):
-           301 Play / Resume, 302 From start, 303 Trailer, 304 Version (hidden when their label
-           is empty), 305 Watched and 306 Favourite (toggles)
+           301 Play / Resume, 302 From start, 303 Trailer, 304 Version, 307 Media info,
+           308 Artwork (each hidden when its label is empty), 305 Watched and 306 Favourite (toggles)
       450  scrolling stack of rows, one row tall:
            410 Seasons (shows), 420 Cast and crew, 430 More like this, 400 Special features
     The top half is filled by detail.py through window properties.
@@ -374,6 +374,36 @@
                 <label>$INFO[Window.Property(version_label)]</label>
                 <ondown>450</ondown>
                 <visible>!String.IsEmpty(Window.Property(version_label))</visible>
+            </control>
+            <control type="button" id="307">
+                <width min="150" max="700">auto</width>
+                <height>64</height>
+                <textoffsetx>34</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Label</font>
+                <textcolor>FFD5D6DE</textcolor>
+                <focusedcolor>FFFFFFFF</focusedcolor>
+                <texturefocus border="32" colordiffuse="FF00A4DC">jellyelec-pill.png</texturefocus>
+                <texturenofocus border="32" colordiffuse="24FFFFFF">jellyelec-pill.png</texturenofocus>
+                <label>$INFO[Window.Property(media_info_label)]</label>
+                <ondown>450</ondown>
+                <visible>!String.IsEmpty(Window.Property(media_info_label))</visible>
+            </control>
+            <control type="button" id="308">
+                <width min="150" max="700">auto</width>
+                <height>64</height>
+                <textoffsetx>34</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Label</font>
+                <textcolor>FFD5D6DE</textcolor>
+                <focusedcolor>FFFFFFFF</focusedcolor>
+                <texturefocus border="32" colordiffuse="FF00A4DC">jellyelec-pill.png</texturefocus>
+                <texturenofocus border="32" colordiffuse="24FFFFFF">jellyelec-pill.png</texturenofocus>
+                <label>$INFO[Window.Property(artwork_label)]</label>
+                <ondown>450</ondown>
+                <visible>!String.IsEmpty(Window.Property(artwork_label))</visible>
             </control>
             <!-- Watched: a check, filled in once watched -->
             <control type="radiobutton" id="305">

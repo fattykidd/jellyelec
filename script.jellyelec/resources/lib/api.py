@@ -200,15 +200,23 @@ class JellyfinClient:
         method = "POST" if favorite else "DELETE"
         self._user_item_request(method, "UserFavoriteItems", "FavoriteItems", item_id)
 
-    def image_url(self, item_id, image_type, tag, max_width=None, max_height=None):
-        """Address of an item's image, resized by the server. Images don't need sign-in."""
+    def get_images(self, item_id):
+        """Every image the item has: [{ImageType, ImageIndex, ImageTag, Width, Height}]."""
+        return self._request("GET", f"/Items/{item_id}/Images") or []
+
+    def image_url(self, item_id, image_type, tag, max_width=None, max_height=None, index=None):
+        """Address of an item's image, resized by the server. Images don't need sign-in.
+
+        index: which one, for types an item can have several of (backdrops). Leave it out for the first.
+        """
         params = {"tag": tag, "quality": 90}
         if max_width:
             params["maxWidth"] = max_width
         if max_height:
             params["maxHeight"] = max_height
         query = urllib.parse.urlencode(params)
-        return f"{self.server_url}/Items/{item_id}/Images/{image_type}?{query}"
+        number = f"/{index}" if index else ""
+        return f"{self.server_url}/Items/{item_id}/Images/{image_type}{number}?{query}"
 
     # Playback ---------------------------------------------------------------
 

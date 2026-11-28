@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    JellyELEC Media info panel, opened from a detail page's Media info button.
+    Control IDs here must match the constants in resources/lib/info_panels.py:
+      1200  the cards: the file, then each video, audio and subtitle track
+    The title and badges are filled by info_panels.py through window properties.
+-->
+<window>
+    <defaultcontrol always="true">1200</defaultcontrol>
+    <controls>
+
+        <!-- Covers the page underneath -->
+        <control type="image">
+            <left>0</left>
+            <top>0</top>
+            <width>1920</width>
+            <height>1080</height>
+            <texture>jellyelec-white.png</texture>
+            <colordiffuse>F50B0C11</colordiffuse>
+        </control>
+
+        <control type="label">
+            <left>96</left>
+            <top>60</top>
+            <width>1200</width>
+            <height>36</height>
+            <font>JE_Kicker</font>
+            <textcolor>FFAA5CC3</textcolor>
+            <label>MEDIA INFO</label>
+        </control>
+        <control type="label">
+            <left>96</left>
+            <top>96</top>
+            <width>1500</width>
+            <height>80</height>
+            <aligny>center</aligny>
+            <font>JE_TitleSmall</font>
+            <textcolor>FFF2F2F5</textcolor>
+            <label>$INFO[Window.Property(title)]</label>
+        </control>
+        <control type="label">
+            <left>1530</left>
+            <top>40</top>
+            <width>294</width>
+            <height>64</height>
+            <align>right</align>
+            <aligny>center</aligny>
+            <font>JE_Clock</font>
+            <textcolor>FFF2F2F5</textcolor>
+            <label>$INFO[System.Time]</label>
+        </control>
+
+        <!-- The title's resolution, HDR and audio, as on the detail page -->
+        <control type="grouplist">
+            <left>96</left>
+            <top>190</top>
+            <width>1700</width>
+            <height>36</height>
+            <orientation>horizontal</orientation>
+            <itemgap>10</itemgap>
+            <control type="button">
+                <width min="44" max="420">auto</width>
+                <height>36</height>
+                <textoffsetx>12</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Kicker</font>
+                <textcolor>FFF2F2F5</textcolor>
+                <disabledcolor>FFF2F2F5</disabledcolor>
+                <texturenofocus border="10">jellyelec-badge-filled.png</texturenofocus>
+                <texturefocus border="10">jellyelec-badge-filled.png</texturefocus>
+                <enable>false</enable>
+                <label>$INFO[Window.Property(detail_badge_1)]</label>
+                <visible>!String.IsEmpty(Window.Property(detail_badge_1))</visible>
+            </control>
+            <control type="button">
+                <width min="44" max="420">auto</width>
+                <height>36</height>
+                <textoffsetx>12</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Kicker</font>
+                <textcolor>FFF2F2F5</textcolor>
+                <disabledcolor>FFF2F2F5</disabledcolor>
+                <texturenofocus border="10">jellyelec-badge-filled.png</texturenofocus>
+                <texturefocus border="10">jellyelec-badge-filled.png</texturefocus>
+                <enable>false</enable>
+                <label>$INFO[Window.Property(detail_badge_2)]</label>
+                <visible>!String.IsEmpty(Window.Property(detail_badge_2))</visible>
+            </control>
+            <control type="button">
+                <width min="44" max="420">auto</width>
+                <height>36</height>
+                <textoffsetx>12</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Kicker</font>
+                <textcolor>FFF2F2F5</textcolor>
+                <disabledcolor>FFF2F2F5</disabledcolor>
+                <texturenofocus border="10">jellyelec-badge-filled.png</texturenofocus>
+                <texturefocus border="10">jellyelec-badge-filled.png</texturefocus>
+                <enable>false</enable>
+                <label>$INFO[Window.Property(detail_badge_3)]</label>
+                <visible>!String.IsEmpty(Window.Property(detail_badge_3))</visible>
+            </control>
+            <control type="button">
+                <width min="44" max="420">auto</width>
+                <height>36</height>
+                <textoffsetx>12</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Kicker</font>
+                <textcolor>FFF2F2F5</textcolor>
+                <disabledcolor>FFF2F2F5</disabledcolor>
+                <texturenofocus border="10">jellyelec-badge-filled.png</texturenofocus>
+                <texturefocus border="10">jellyelec-badge-filled.png</texturefocus>
+                <enable>false</enable>
+                <label>$INFO[Window.Property(detail_badge_4)]</label>
+                <visible>!String.IsEmpty(Window.Property(detail_badge_4))</visible>
+            </control>
+        </control>
+
+        <!-- One card each, side by side; left and right move through them -->
+        <control type="list" id="1200">
+            <left>84</left>
+            <top>270</top>
+            <width>1836</width>
+            <height>740</height>
+            <orientation>horizontal</orientation>
+            <scrolltime tween="cubic" easing="out">220</scrolltime>
+            <itemlayout width="548" height="740">
+                        <control type="image">
+                            <left>12</left>
+                            <top>12</top>
+                            <width>516</width>
+                            <height>696</height>
+                            <texture border="18">jellyelec-chip.png</texture>
+                        </control>
+                        <control type="label">
+                            <left>40</left>
+                            <top>36</top>
+                            <width>460</width>
+                            <height>44</height>
+                            <font>JE_Heading</font>
+                            <textcolor>FFF2F2F5</textcolor>
+                            <label>$INFO[ListItem.Label]</label>
+                        </control>
+                        <control type="label">
+                            <left>40</left>
+                            <top>82</top>
+                            <width>460</width>
+                            <height>32</height>
+                            <font>JE_Small</font>
+                            <textcolor>FF8D90A0</textcolor>
+                            <scroll>false</scroll>
+                            <label>$INFO[ListItem.Property(subheading)]</label>
+                        </control>
+                        <control type="textbox">
+                            <left>40</left>
+                            <top>132</top>
+                            <width>460</width>
+                            <height>556</height>
+                            <font>JE_Small</font>
+                            <textcolor>FFF2F2F5</textcolor>
+                            <label>$INFO[ListItem.Property(body)]</label>
+                        </control>
+            </itemlayout>
+            <focusedlayout width="548" height="740">
+                        <control type="image">
+                            <left>4</left>
+                            <top>4</top>
+                            <width>532</width>
+                            <height>712</height>
+                            <texture border="18">jellyelec-ring.png</texture>
+                            <colordiffuse>FFAA5CC3</colordiffuse>
+                            <visible>Control.HasFocus(1200)</visible>
+                        </control>
+                        <control type="image">
+                            <left>12</left>
+                            <top>12</top>
+                            <width>516</width>
+                            <height>696</height>
+                            <texture border="18">jellyelec-chip.png</texture>
+                        </control>
+                        <control type="label">
+                            <left>40</left>
+                            <top>36</top>
+                            <width>460</width>
+                            <height>44</height>
+                            <font>JE_Heading</font>
+                            <textcolor>FFF2F2F5</textcolor>
+                            <label>$INFO[ListItem.Label]</label>
+                        </control>
+                        <control type="label">
+                            <left>40</left>
+                            <top>82</top>
+                            <width>460</width>
+                            <height>32</height>
+                            <font>JE_Small</font>
+                            <textcolor>FFC3C5D0</textcolor>
+                            <scroll>true</scroll>
+                            <label>$INFO[ListItem.Property(subheading)]</label>
+                        </control>
+                        <control type="textbox">
+                            <left>40</left>
+                            <top>132</top>
+                            <width>460</width>
+                            <height>556</height>
+                            <font>JE_Small</font>
+                            <textcolor>FFF2F2F5</textcolor>
+                            <label>$INFO[ListItem.Property(body)]</label>
+                        </control>
+            </focusedlayout>
+        </control>
+
+    </controls>
+</window>

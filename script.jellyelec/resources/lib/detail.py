@@ -2,7 +2,8 @@
 
 The top half: clear logo (or title), details with Ends at, resolution and audio badges,
 studio and genre chips, the directors, and the plot. Under that, a row of pill buttons: Play or Resume, From start,
-Trailer, Version, then Watched and Favourite toggles, which are saved to Jellyfin.
+Trailer, Version, Media info and Artwork, then Watched and Favourite toggles, which are saved
+to Jellyfin.
 
 The bottom half: rows of Seasons (shows), Cast and crew, More like this and Special features.
 Rows without anything in them hide themselves.
@@ -14,6 +15,7 @@ import xbmc
 import xbmcgui
 
 from resources.lib import media_details, versions
+from resources.lib.info_panels import show_artwork, show_media_info
 from resources.lib.api import TICKS_PER_SECOND, JellyfinError
 from resources.lib.formatting import (
     directors_line,
@@ -45,6 +47,8 @@ TRAILER_BUTTON = 303
 VERSION_BUTTON = 304
 WATCHED_BUTTON = 305
 FAVOURITE_BUTTON = 306
+MEDIA_INFO_BUTTON = 307
+ARTWORK_BUTTON = 308
 
 SPECIAL_FEATURES_ROW = 400
 SEASONS_ROW = 410
@@ -109,6 +113,10 @@ class DetailWindow(xbmcgui.WindowXML):
             play(self.client, self._trailers[0], start_seconds=0)
         elif control_id == VERSION_BUTTON:
             self._choose_version()
+        elif control_id == MEDIA_INFO_BUTTON:
+            show_media_info(self._item, versions.chosen_source(self._item))
+        elif control_id == ARTWORK_BUTTON:
+            show_artwork(self.client, self._item)
         elif control_id == WATCHED_BUTTON:
             self._toggle_watched()
         elif control_id == FAVOURITE_BUTTON:
@@ -214,6 +222,10 @@ class DetailWindow(xbmcgui.WindowXML):
         self.setProperty("from_start_label", from_start)
         self.setProperty("trailer_label", "Trailer" if self._trailers else "")
         self.setProperty("version_label", self._version_label())
+        # Media info needs a file to describe; shows have none of their own.
+        has_file = not self._is_series() and versions.chosen_source(self._item) is not None
+        self.setProperty("media_info_label", "Media info" if has_file else "")
+        self.setProperty("artwork_label", "Artwork")
 
         user_data = self._item.get("UserData") or {}
         self.getControl(WATCHED_BUTTON).setSelected(bool(user_data.get("Played")))
