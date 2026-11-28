@@ -8,6 +8,7 @@ from resources.lib.formatting import (
     elapsed_and_length,
     extra_type_name,
     parse_date,
+    remaining_ticks,
     runtime_text,
     spotlight_meta,
     time_range_text,
@@ -21,6 +22,9 @@ EXTRA_THUMB_WIDTH = 480
 EPISODE_THUMB_WIDTH = 480
 CHANNEL_LOGO_WIDTH = 300
 LOGO_WIDTH = 720
+
+# Item types that are played in one go (not shows or collections).
+PLAYABLE_TYPES = ("Movie", "Episode", "Video", "MusicVideo")
 
 
 def media_item(client, data):
@@ -37,6 +41,9 @@ def media_item(client, data):
     item.setArt({kind: url for kind, url in art.items() if url})
     # Year, age rating, runtime and community rating, for screens that show the focused item.
     item.setProperty("meta", spotlight_meta(data))
+    # How long is left to watch, for Ends at; only for things that are played in one go.
+    if data.get("Type") in PLAYABLE_TYPES:
+        item.setProperty("remaining_seconds", str(remaining_ticks(data) // TICKS_PER_SECOND))
 
     tag = item.getVideoInfoTag()
     tag.setTitle(data.get("Name", ""))

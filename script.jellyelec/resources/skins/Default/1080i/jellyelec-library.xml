@@ -71,15 +71,16 @@
             <label>$INFO[System.Time]</label>
         </control>
 
-        <!-- The focused title: clearlogo (or name), details and the start of the plot -->
+        <!-- The focused title: clearlogo (or name), details with Ends at, resolution and
+             audio (filled in by library.py once focus rests), and the start of the plot -->
         <control type="group">
             <left>96</left>
-            <top>122</top>
+            <top>118</top>
             <control type="image">
                 <left>0</left>
                 <top>0</top>
                 <width>560</width>
-                <height>120</height>
+                <height>108</height>
                 <aspectratio align="left" aligny="center">keep</aspectratio>
                 <fadetime>300</fadetime>
                 <texture background="true">$INFO[Container(500).ListItem.Art(clearlogo)]</texture>
@@ -89,7 +90,7 @@
                 <left>0</left>
                 <top>0</top>
                 <width>1000</width>
-                <height>120</height>
+                <height>108</height>
                 <aligny>center</aligny>
                 <font>JE_Title</font>
                 <textcolor>FFF2F2F5</textcolor>
@@ -98,16 +99,25 @@
             </control>
             <control type="label">
                 <left>0</left>
-                <top>134</top>
+                <top>118</top>
                 <width>1100</width>
                 <height>36</height>
                 <font>JE_Label</font>
                 <textcolor>FFD5D6DE</textcolor>
-                <label>$INFO[Container(500).ListItem.Property(meta)]</label>
+                <label>$INFO[Container(500).ListItem.Property(meta)]$INFO[Window.Property(focused_ends),  ·  ,]</label>
+            </control>
+            <control type="label">
+                <left>0</left>
+                <top>156</top>
+                <width>1100</width>
+                <height>36</height>
+                <font>JE_LabelBold</font>
+                <textcolor>FFF2F2F5</textcolor>
+                <label>$INFO[Window.Property(focused_media)]</label>
             </control>
             <control type="textbox">
                 <left>0</left>
-                <top>178</top>
+                <top>198</top>
                 <width>860</width>
                 <height>74</height>
                 <font>JE_Body</font>
