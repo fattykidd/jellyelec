@@ -24,7 +24,8 @@ from resources.lib.kodi import ADDON_PATH, log
 PATCH_DIR = os.path.join(ADDON_PATH, "resources", "skin_patch")
 MEDIA_DIR = os.path.join(ADDON_PATH, "resources", "skins", "Default", "media")
 # The skin's own screens that JellyELEC replaces, from PATCH_DIR.
-SKIN_WINDOWS = ("Startup.xml", "VideoFullScreen.xml", "VideoOSD.xml", "DialogSeekBar.xml")
+SKIN_WINDOWS = ("Startup.xml", "VideoFullScreen.xml", "VideoOSD.xml", "DialogSeekBar.xml",
+                "Custom_1109_TopBarOverlay.xml")
 # Textures those screens use, from MEDIA_DIR: the OSD's icons, and these.
 SKIN_TEXTURES = ("jellyelec-pill.png", "jellyelec-white.png", "jellyelec-fade-bottom.png",
                  "jellyelec-badge-filled.png")

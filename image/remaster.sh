@@ -155,7 +155,7 @@ skin_media="$ADDON_DIR/resources/skins/Default/media"
 for skin in "${SKINS[@]}"; do
     skin_dir="$work/system/usr/share/kodi/addons/$skin"
     [ -d "$skin_dir/xml" ] || continue
-    for window in Startup.xml VideoFullScreen.xml VideoOSD.xml DialogSeekBar.xml; do
+    for window in Startup.xml VideoFullScreen.xml VideoOSD.xml DialogSeekBar.xml Custom_1109_TopBarOverlay.xml; do
         install -o root -g root -m 0644 "$ADDON_DIR/resources/skin_patch/$window" "$skin_dir/xml/$window"
     done
     mkdir -p "$skin_dir/media"

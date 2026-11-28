@@ -2,6 +2,12 @@
 
 Every add-on version is listed from 0.0.77 on. Earlier versions are summarised by area.
 
+## 0.0.89
+- Estuary's top bar (logo, chapter, a second clock) no longer shows over playing video: its
+  overlay window is replaced with an empty one.
+- Player info keeps the OSD open underneath, faded out: OK hides the stats again, and closing
+  the OSD closes them too.
+
 ## 0.0.88
 - Player info closes the OSD and shows Kodi's player process info on its own; the seek bar
   stays hidden while it's up.

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    In place of Estuary's top bar overlay (JellyELEC copies it in; see skin_patch.py), which
+    showed the clear logo, chapter, clock and Ends at along the top whenever the seek bar was
+    up. JellyELEC's seek bar shows all of that itself, so this window is never shown.
+-->
+<window type="dialog" id="1109">
+    <visible>false</visible>
+    <controls>
+    </controls>
+</window>
