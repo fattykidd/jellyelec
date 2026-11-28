@@ -2,6 +2,10 @@
 
 Every add-on version is listed from 0.0.77 on. Earlier versions are summarised by area.
 
+## 0.0.88
+- Player info closes the OSD and shows Kodi's player process info on its own; the seek bar
+  stays hidden while it's up.
+
 ## 0.0.87
 - Player: the seek bar and OSD are much darker behind their text and buttons, so they read
   over bright scenes.

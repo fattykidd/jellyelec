@@ -4,10 +4,11 @@
     Kodi shows it over full-screen video while seeking or paused, just after a skip, and under
     the OSD. The title's logo, name and badges come from properties JellyELEC sets on the home
     window while it plays something (osd_info.py); for anything else, Kodi's own title shows.
-    Hidden while one of JellyELEC's panels (chapters, audio, subtitles) is open.
+    Hidden while one of JellyELEC's panels (chapters, audio, subtitles) is open, and while
+    Kodi's player process info (the OSD's Player info) is showing, which sits in the same place.
 -->
 <window>
-    <visible>Window.IsActive(fullscreenvideo) + [Player.Seeking | Player.DisplayAfterSeek | Player.Paused | Player.Forwarding | Player.Rewinding | Player.ShowInfo | Window.IsActive(videoosd)] + String.IsEmpty(Window(Home).Property(script.jellyelec.osd_panel))</visible>
+    <visible>Window.IsActive(fullscreenvideo) + [Player.Seeking | Player.DisplayAfterSeek | Player.Paused | Player.Forwarding | Player.Rewinding | Player.ShowInfo | Window.IsActive(videoosd)] + String.IsEmpty(Window(Home).Property(script.jellyelec.osd_panel)) + !Window.IsVisible(playerprocessinfo)</visible>
     <animation effect="fade" time="200">WindowOpen</animation>
     <animation effect="fade" time="200">WindowClose</animation>
     <controls>

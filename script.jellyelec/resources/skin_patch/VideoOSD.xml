@@ -158,6 +158,7 @@
                 <textureradioofffocus>jellyelec-osd-info.png</textureradioofffocus>
                 <textureradiooffnofocus colordiffuse="E6F2F2F5">jellyelec-osd-info.png</textureradiooffnofocus>
                 <onclick condition="Window.IsVisible(playerprocessinfo)">Dialog.Close(playerprocessinfo)</onclick>
+                <onclick condition="!Window.IsVisible(playerprocessinfo)">Dialog.Close(videoosd)</onclick>
                 <onclick condition="!Window.IsVisible(playerprocessinfo)">ActivateWindow(playerprocessinfo)</onclick>
             </control>
             <control type="radiobutton" id="108">
