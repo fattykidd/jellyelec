@@ -115,6 +115,75 @@
                 <textcolor>FFF2F2F5</textcolor>
                 <label>$INFO[Window.Property(focused_media)]</label>
             </control>
+            <!-- The same details as badges (Settings > Media details); one of the two is empty -->
+            <control type="grouplist">
+                <left>0</left>
+                <top>156</top>
+                <width>1100</width>
+                <height>36</height>
+                <orientation>horizontal</orientation>
+                <itemgap>10</itemgap>
+                    <control type="button">
+                        <width min="44" max="420">auto</width>
+                        <height>36</height>
+                        <textoffsetx>12</textoffsetx>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <font>JE_Kicker</font>
+                        <textcolor>FFF2F2F5</textcolor>
+                        <disabledcolor>FFF2F2F5</disabledcolor>
+                        <texturenofocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturenofocus>
+                        <texturefocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturefocus>
+                        <enable>false</enable>
+                        <label>$INFO[Window.Property(focused_badge_1)]</label>
+                        <visible>!String.IsEmpty(Window.Property(focused_badge_1))</visible>
+                    </control>
+                    <control type="button">
+                        <width min="44" max="420">auto</width>
+                        <height>36</height>
+                        <textoffsetx>12</textoffsetx>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <font>JE_Kicker</font>
+                        <textcolor>FFF2F2F5</textcolor>
+                        <disabledcolor>FFF2F2F5</disabledcolor>
+                        <texturenofocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturenofocus>
+                        <texturefocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturefocus>
+                        <enable>false</enable>
+                        <label>$INFO[Window.Property(focused_badge_2)]</label>
+                        <visible>!String.IsEmpty(Window.Property(focused_badge_2))</visible>
+                    </control>
+                    <control type="button">
+                        <width min="44" max="420">auto</width>
+                        <height>36</height>
+                        <textoffsetx>12</textoffsetx>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <font>JE_Kicker</font>
+                        <textcolor>FFF2F2F5</textcolor>
+                        <disabledcolor>FFF2F2F5</disabledcolor>
+                        <texturenofocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturenofocus>
+                        <texturefocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturefocus>
+                        <enable>false</enable>
+                        <label>$INFO[Window.Property(focused_badge_3)]</label>
+                        <visible>!String.IsEmpty(Window.Property(focused_badge_3))</visible>
+                    </control>
+                    <control type="button">
+                        <width min="44" max="420">auto</width>
+                        <height>36</height>
+                        <textoffsetx>12</textoffsetx>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <font>JE_Kicker</font>
+                        <textcolor>FFF2F2F5</textcolor>
+                        <disabledcolor>FFF2F2F5</disabledcolor>
+                        <texturenofocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturenofocus>
+                        <texturefocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturefocus>
+                        <enable>false</enable>
+                        <label>$INFO[Window.Property(focused_badge_4)]</label>
+                        <visible>!String.IsEmpty(Window.Property(focused_badge_4))</visible>
+                    </control>
+            </control>
             <control type="textbox">
                 <left>0</left>
                 <top>198</top>

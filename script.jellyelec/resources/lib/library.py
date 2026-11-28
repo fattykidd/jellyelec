@@ -15,7 +15,7 @@ from resources.lib.detail import show_details
 from resources.lib.formatting import clock_text
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log
 from resources.lib.listitems import backdrop_url, media_item, poster_url
-from resources.lib.media_details import MediaSummaryLoader
+from resources.lib import media_details
 
 # Control IDs, matching jellyelec-library.xml.
 POSTER_GRID = 500
@@ -70,7 +70,7 @@ class LibraryWindow(xbmcgui.WindowXML):
         if self._loaded:
             return
         self._loaded = True
-        self._media = MediaSummaryLoader(self.client, self._show_media_summary)
+        self._media = media_details.MediaInfoLoader(self.client, self._show_media_info)
         self.setProperty("library_name", self.library_name)
         self._load()
 
@@ -144,15 +144,15 @@ class LibraryWindow(xbmcgui.WindowXML):
         self.setProperty("focused_ends", ends)
 
         if not remaining:  # a show or collection: no single file to describe
-            self.setProperty("focused_media", "")
             self._media.cancel()
+            media_details.show(self, "focused", None)
             return
-        self.setProperty("focused_media", self._media.request(item.getProperty("id")) or "")
+        media_details.show(self, "focused", self._media.request(item.getProperty("id")))
 
-    def _show_media_summary(self, item_id, summary):
+    def _show_media_info(self, item_id, info):
         selected = self.getControl(POSTER_GRID).getSelectedItem()
         if selected is not None and selected.getProperty("id") == item_id:
-            self.setProperty("focused_media", summary)
+            media_details.show(self, "focused", info)
 
     # Collection artwork -------------------------------------------------------------
 

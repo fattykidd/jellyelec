@@ -339,6 +339,74 @@
                     <label>$INFO[Window.Property(spot_media)]</label>
                     <visible>!String.IsEmpty(Window.Property(spot_media))</visible>
                 </control>
+                <!-- The same details as badges (Settings > Media details); one of the two is empty -->
+                <control type="grouplist">
+                    <width>1100</width>
+                    <height>36</height>
+                    <orientation>horizontal</orientation>
+                    <itemgap>10</itemgap>
+                    <visible>!String.IsEmpty(Window.Property(spot_badge_1))</visible>
+                        <control type="button">
+                            <width min="44" max="420">auto</width>
+                            <height>36</height>
+                            <textoffsetx>12</textoffsetx>
+                            <align>center</align>
+                            <aligny>center</aligny>
+                            <font>JE_Kicker</font>
+                            <textcolor>FFF2F2F5</textcolor>
+                            <disabledcolor>FFF2F2F5</disabledcolor>
+                            <texturenofocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturenofocus>
+                            <texturefocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturefocus>
+                            <enable>false</enable>
+                            <label>$INFO[Window.Property(spot_badge_1)]</label>
+                            <visible>!String.IsEmpty(Window.Property(spot_badge_1))</visible>
+                        </control>
+                        <control type="button">
+                            <width min="44" max="420">auto</width>
+                            <height>36</height>
+                            <textoffsetx>12</textoffsetx>
+                            <align>center</align>
+                            <aligny>center</aligny>
+                            <font>JE_Kicker</font>
+                            <textcolor>FFF2F2F5</textcolor>
+                            <disabledcolor>FFF2F2F5</disabledcolor>
+                            <texturenofocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturenofocus>
+                            <texturefocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturefocus>
+                            <enable>false</enable>
+                            <label>$INFO[Window.Property(spot_badge_2)]</label>
+                            <visible>!String.IsEmpty(Window.Property(spot_badge_2))</visible>
+                        </control>
+                        <control type="button">
+                            <width min="44" max="420">auto</width>
+                            <height>36</height>
+                            <textoffsetx>12</textoffsetx>
+                            <align>center</align>
+                            <aligny>center</aligny>
+                            <font>JE_Kicker</font>
+                            <textcolor>FFF2F2F5</textcolor>
+                            <disabledcolor>FFF2F2F5</disabledcolor>
+                            <texturenofocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturenofocus>
+                            <texturefocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturefocus>
+                            <enable>false</enable>
+                            <label>$INFO[Window.Property(spot_badge_3)]</label>
+                            <visible>!String.IsEmpty(Window.Property(spot_badge_3))</visible>
+                        </control>
+                        <control type="button">
+                            <width min="44" max="420">auto</width>
+                            <height>36</height>
+                            <textoffsetx>12</textoffsetx>
+                            <align>center</align>
+                            <aligny>center</aligny>
+                            <font>JE_Kicker</font>
+                            <textcolor>FFF2F2F5</textcolor>
+                            <disabledcolor>FFF2F2F5</disabledcolor>
+                            <texturenofocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturenofocus>
+                            <texturefocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturefocus>
+                            <enable>false</enable>
+                            <label>$INFO[Window.Property(spot_badge_4)]</label>
+                            <visible>!String.IsEmpty(Window.Property(spot_badge_4))</visible>
+                        </control>
+                </control>
                 <control type="textbox">
                     <width>860</width>
                     <height>176</height>

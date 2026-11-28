@@ -13,6 +13,7 @@ from resources.lib import (
     box_name,
     build_info,
     device_options,
+    media_details,
     output_setup,
     remote_control,
     updater,
@@ -46,6 +47,7 @@ CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
 # Row keys.
 CONNECTION = "connection"
 COLLECTIONS = "collections"
+MEDIA_DETAILS = "media_details"
 DOLBY_VISION = "dolby_vision"
 GUIDE_CORNER = "guide_corner"
 GUIDE_OK = "guide_ok"
@@ -103,6 +105,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             CONNECTION: self._change_connection,
             DOLBY_VISION: self._check_dolby_vision,
             COLLECTIONS: self._toggle_collections,
+            MEDIA_DETAILS: self._toggle_media_details,
             GUIDE_CORNER: self._change_guide_corner,
             GUIDE_OK: self._change_guide_ok,
             REMOTE_CONTROL: self._toggle_remote_control,
@@ -144,6 +147,9 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                  "Grouped" if xbmcaddon.Addon().getSettingBool(GROUP_COLLECTIONS_SETTING) else "Every movie listed",
                  "Grouped shows each collection once in a movie library, in place of the movies in it. "
                  "Opening it lists its movies."),
+            _row(MEDIA_DETAILS, "Media details", media_details.style(),
+                 "How a title's resolution, HDR format and audio are shown on the home screen and in "
+                 "libraries: as badges, or as one line of text."),
             _row(GUIDE_CORNER, "Live TV guide: live picture", xbmcaddon.Addon().getSetting(GUIDE_CORNER_SETTING),
                  "Which top corner the live picture sits in while the guide is open."),
             _row(GUIDE_OK, "Live TV guide: OK on another channel", xbmcaddon.Addon().getSetting(GUIDE_OK_SETTING),
@@ -224,6 +230,9 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
     def _toggle_collections(self):
         addon = xbmcaddon.Addon()
         addon.setSettingBool(GROUP_COLLECTIONS_SETTING, not addon.getSettingBool(GROUP_COLLECTIONS_SETTING))
+
+    def _toggle_media_details(self):
+        _toggle_setting(media_details.STYLE_SETTING, media_details.STYLES)
 
     def _change_guide_corner(self):
         _toggle_setting(GUIDE_CORNER_SETTING, GUIDE_CORNERS)

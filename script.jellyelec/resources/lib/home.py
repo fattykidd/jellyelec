@@ -13,7 +13,7 @@ from resources.lib.kodi import ADDON_NAME, log
 from resources.lib.library import show_library
 from resources.lib.live_tv import show_live_tv
 from resources.lib.library_bar import LibraryBar
-from resources.lib.media_details import MediaSummaryLoader
+from resources.lib import media_details
 from resources.lib.listitems import PLAYABLE_TYPES, backdrop_url, logo_url, media_item
 from resources.lib.settings_screen import SIGN_OUT, show_settings
 
@@ -57,7 +57,7 @@ class HomeWindow(xbmcgui.WindowXML):
             self._loaded = True
             self._row_data = {row: {} for row in ROWS}
             self._bar = LibraryBar(self)
-            self._media = MediaSummaryLoader(self.client, self._show_media_summary)
+            self._media = media_details.MediaInfoLoader(self.client, self._show_media_info)
             self._spot_id = None
             self._load_libraries()
 
@@ -201,14 +201,14 @@ class HomeWindow(xbmcgui.WindowXML):
         # Resolution and audio: for something played in one go, asked for once focus rests.
         self._spot_id = data.get("Id")
         if data.get("Type") in PLAYABLE_TYPES:
-            self.setProperty("spot_media", self._media.request(data["Id"]) or "")
+            media_details.show(self, "spot", self._media.request(data["Id"]))
         else:
             self._media.cancel()
-            self.setProperty("spot_media", "")
+            media_details.show(self, "spot", None)
 
-    def _show_media_summary(self, item_id, summary):
+    def _show_media_info(self, item_id, info):
         if item_id == self._spot_id:
-            self.setProperty("spot_media", summary)
+            media_details.show(self, "spot", info)
 
     # Details --------------------------------------------------------------------
 

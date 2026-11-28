@@ -125,6 +125,22 @@ def media_summary(item, source=None):
 
     source: which version to describe. Leave it out for the first.
     """
+    resolution, dynamic_range, audio_name, layout = _media_parts(item, source)
+    audio = f"{audio_name} {layout}".strip()
+    return "  ·  ".join(part for part in (resolution, dynamic_range, audio) if part)
+
+
+def media_badges(item, source=None):
+    """The same as media_summary, as short badges: ["4K", "DOLBY VISION", "DOLBY TRUEHD ATMOS", "7.1"].
+
+    The resolution keeps its own case, as "1080p" reads better than "1080P".
+    """
+    resolution, *rest = _media_parts(item, source)
+    return [part for part in [resolution, *(part.upper() for part in rest)] if part]
+
+
+def _media_parts(item, source):
+    """(resolution, HDR format, audio codec, channel layout); "" for any that isn't known."""
     if source is None:
         sources = item.get("MediaSources") or []
         source = sources[0] if sources else None
@@ -135,15 +151,10 @@ def media_summary(item, source=None):
     audio = next((stream for stream in audio_streams if stream.get("IsDefault")), None)
     audio = audio or (audio_streams[0] if audio_streams else None)
 
-    parts = []
-    if video:
-        parts.append(_resolution(video))
-        dynamic_range = _dynamic_range(video)
-        if dynamic_range:
-            parts.append(dynamic_range)
-    if audio:
-        parts.append(_audio(audio))
-    return "  ·  ".join(part for part in parts if part)
+    resolution = _resolution(video) if video else ""
+    dynamic_range = _dynamic_range(video) if video else ""
+    audio_name, layout = _audio(audio) if audio else ("", "")
+    return resolution, dynamic_range, audio_name, layout
 
 
 def watch_status(item):
@@ -230,6 +241,7 @@ def _dynamic_range(video):
 
 
 def _audio(audio):
+    """(codec name, channel layout), such as ("Dolby TrueHD Atmos", "7.1")."""
     codec = (audio.get("Codec") or "").lower()
     profile = audio.get("Profile") or ""
 
@@ -248,4 +260,4 @@ def _audio(audio):
     layout = (audio.get("ChannelLayout") or "").split("(")[0].strip()
     if not layout:
         layout = CHANNEL_LAYOUTS.get(audio.get("Channels"), "")
-    return f"{name} {layout}".strip()
+    return name, layout

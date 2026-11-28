@@ -120,6 +120,9 @@ def main():
     save(rounded_ring(64, 32, 3), "jellyelec-pill-ring.png")
     save(library_focus_pill(), "jellyelec-library-focus.png")
     save(library_underline(), "jellyelec-library-underline.png")
+    # Media badges (4K, DOLBY VISION...): an outline, stretched with border="10".
+    save(smooth(64, 36, lambda draw, s: draw.rounded_rectangle(
+        (0, 0, 64 * s - 1, 36 * s - 1), radius=8 * s, outline=WHITE, width=2 * s)), "jellyelec-badge.png")
     # Rounded corners for posters, used as <texture diffuse="...">.
     save(card_mask(180, 270, 12), "jellyelec-mask-poster.png")
     save(cogs_icon(96), "jellyelec-icon-settings.png")
