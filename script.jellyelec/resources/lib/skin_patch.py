@@ -1,7 +1,7 @@
 """Keeping JellyELEC's startup screen, player screens and fonts in the skin Kodi actually uses.
 
 JellyELEC images patch the skins built into the system: the startup screen shows JellyELEC's
-splash instead of Kodi's home screen, the OSD and seek bar shown over playing video are
+splash instead of Kodi's home screen, the full-screen video window, OSD and seek bar are
 JellyELEC's (with the textures they use), and JellyELEC's fonts are added. But a skin can also be
 installed or updated into Kodi's own add-on folder (/storage/.kodi/addons), and Kodi then uses
 that copy instead, without the patches, so Kodi's home screen flashes up at boot again.
@@ -24,7 +24,7 @@ from resources.lib.kodi import ADDON_PATH, log
 PATCH_DIR = os.path.join(ADDON_PATH, "resources", "skin_patch")
 MEDIA_DIR = os.path.join(ADDON_PATH, "resources", "skins", "Default", "media")
 # The skin's own screens that JellyELEC replaces, from PATCH_DIR.
-SKIN_WINDOWS = ("Startup.xml", "VideoOSD.xml", "DialogSeekBar.xml")
+SKIN_WINDOWS = ("Startup.xml", "VideoFullScreen.xml", "VideoOSD.xml", "DialogSeekBar.xml")
 # Textures those screens use, from MEDIA_DIR: the OSD's icons, and these.
 SKIN_TEXTURES = ("jellyelec-pill.png", "jellyelec-white.png", "jellyelec-fade-bottom.png",
                  "jellyelec-badge-filled.png")

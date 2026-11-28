@@ -23,7 +23,8 @@
 #     - adds the JellyELEC add-on as a built-in add-on that's always enabled
 #     - adds the files in image/overlay/: first-boot settings and the update block
 #     - replaces the skins' startup screen with script.jellyelec/resources/skin_patch/Startup.xml (no Kodi home screen at boot),
-#       and their OSD and seek bar with JellyELEC's (VideoOSD.xml, DialogSeekBar.xml, and the textures they use)
+#       and their full-screen video window, OSD and seek bar with JellyELEC's (VideoFullScreen.xml,
+#       VideoOSD.xml, DialogSeekBar.xml, and the textures they use)
 #     - adds JellyELEC's fonts (script.jellyelec/resources/skin_patch/fonts/) to the skins, defined in each Font.xml
 #     - uses JellyELEC's splash for Kodi's splash screen, and turns that screen on
 #     - for new installs: names Kodi JellyELEC, turns off automatic add-on updates, and
@@ -149,12 +150,12 @@ chown -R root:root "$work/system/usr/share/kodi/addons/$ADDON_ID" "$work/system/
 
 step "Replacing the skins' startup screen and player screens"
 # The same files skin_patch.py keeps in a skin installed into /storage: Startup.xml (no Kodi
-# home screen at boot), and the OSD and seek bar over playing video, with their textures.
+# home screen at boot), and the full-screen video window, OSD and seek bar, with their textures.
 skin_media="$ADDON_DIR/resources/skins/Default/media"
 for skin in "${SKINS[@]}"; do
     skin_dir="$work/system/usr/share/kodi/addons/$skin"
     [ -d "$skin_dir/xml" ] || continue
-    for window in Startup.xml VideoOSD.xml DialogSeekBar.xml; do
+    for window in Startup.xml VideoFullScreen.xml VideoOSD.xml DialogSeekBar.xml; do
         install -o root -g root -m 0644 "$ADDON_DIR/resources/skin_patch/$window" "$skin_dir/xml/$window"
     done
     mkdir -p "$skin_dir/media"

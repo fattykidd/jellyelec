@@ -12,13 +12,22 @@
     <animation effect="fade" time="200">WindowClose</animation>
     <controls>
 
-        <!-- Darkens the bottom of the picture -->
+        <!-- Darkens the bottom of the picture: a fade down to the logo, then nearly solid behind
+             the progress, the times and the OSD's buttons, so they read over bright scenes -->
         <control type="image">
             <left>0</left>
-            <top>480</top>
+            <top>400</top>
             <width>1920</width>
-            <height>600</height>
+            <height>400</height>
             <texture>jellyelec-fade-bottom.png</texture>
+        </control>
+        <control type="image">
+            <left>0</left>
+            <top>799</top>
+            <width>1920</width>
+            <height>281</height>
+            <texture>jellyelec-white.png</texture>
+            <colordiffuse>F00B0C11</colordiffuse>
         </control>
 
         <control type="label">
@@ -191,7 +200,7 @@
             <font>JE_Label</font>
             <shadowcolor>E6000000</shadowcolor>
             <textcolor>FFD5D6DE</textcolor>
-            <label>$INFO[Player.ChapterName]</label>
+            <label>Chapter $INFO[Player.Chapter] of $INFO[Player.ChapterCount]</label>
             <visible>Integer.IsGreater(Player.ChapterCount,1)</visible>
         </control>
         <control type="label">

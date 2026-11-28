@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    JellyELEC's full-screen video window, in place of the skin's (JellyELEC copies it in; see
+    skin_patch.py). The skin's own showed a bar of its own at the top whenever the seek bar or
+    OSD was up; JellyELEC's seek bar (DialogSeekBar.xml) and OSD (VideoOSD.xml) say it all, so
+    this only shows when the video is buffering, and the zoom and aspect messages Kodi writes
+    into labels 10 to 12 when the view mode changes.
+-->
+<window>
+    <controls>
+        <control type="group">
+            <left>96</left>
+            <top>40</top>
+            <control type="label" id="10">
+                <top>0</top>
+                <width>1200</width>
+                <height>40</height>
+                <font>JE_LabelBold</font>
+                <shadowcolor>E6000000</shadowcolor>
+                <textcolor>FFF2F2F5</textcolor>
+            </control>
+            <control type="label" id="11">
+                <top>40</top>
+                <width>1200</width>
+                <height>36</height>
+                <font>JE_Small</font>
+                <shadowcolor>E6000000</shadowcolor>
+                <textcolor>FFD5D6DE</textcolor>
+            </control>
+            <control type="label" id="12">
+                <top>76</top>
+                <width>1200</width>
+                <height>36</height>
+                <font>JE_Small</font>
+                <shadowcolor>E6000000</shadowcolor>
+                <textcolor>FFD5D6DE</textcolor>
+            </control>
+        </control>
+        <control type="group">
+            <visible>Player.Caching</visible>
+            <control type="image">
+                <left>1460</left>
+                <top>40</top>
+                <width>400</width>
+                <height>64</height>
+                <texture border="32">jellyelec-pill.png</texture>
+                <colordiffuse>E60B0C11</colordiffuse>
+            </control>
+        <control type="label">
+            <left>1460</left>
+            <top>40</top>
+            <width>400</width>
+            <height>64</height>
+            <align>center</align>
+            <aligny>center</aligny>
+            <font>JE_Label</font>
+            <shadowcolor>E6000000</shadowcolor>
+            <textcolor>FFF2F2F5</textcolor>
+            <label>Buffering…  $INFO[Player.CacheLevel]%</label>
+        </control>
+        </control>
+    </controls>
+</window>

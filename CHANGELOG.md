@@ -2,6 +2,14 @@
 
 Every add-on version is listed from 0.0.77 on. Earlier versions are summarised by area.
 
+## 0.0.87
+- Player: the seek bar and OSD are much darker behind their text and buttons, so they read
+  over bright scenes.
+- Player info opens Kodi's player process info (and closes it on a second press).
+- The skin's own full-screen top bar no longer shows above JellyELEC's; the full-screen window
+  only shows buffering and Kodi's zoom and aspect messages.
+- The seek bar shows "Chapter 4 of 20" (some files name chapters by their time).
+
 ## 0.0.86
 - The player has JellyELEC's own OSD and seek bar in place of the skin's.
   - Seek bar: clear logo or title, episode or year line, badges, a Jellyfin-blue progress bar,
