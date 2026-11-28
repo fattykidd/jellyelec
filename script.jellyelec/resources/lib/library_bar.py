@@ -74,6 +74,16 @@ class LibraryBar:
         if self._libraries:
             self._window.setFocusId(FIRST_BUTTON_ID + self._selected)
 
+    def wrap_around(self, control_id):
+        """Make Left on control_id go to the last library, so the bar wraps around through it.
+
+        The skin can't do this itself: pointing at the bar's grouplist puts focus back on
+        whichever library had it last, and which button is last depends on the libraries.
+        """
+        if self._libraries:
+            last = self._button(len(self._libraries) - 1)
+            self._window.getControl(control_id).controlLeft(last)
+
     def _paint(self):
         for index, library in enumerate(self._libraries):
             is_selected = index == self._selected

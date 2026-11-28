@@ -106,6 +106,8 @@ class HomeWindow(xbmcgui.WindowXML):
             libraries = []
 
         self._bar.fill(libraries)
+        # Left from Settings goes round to the last library (Right goes to the first).
+        self._bar.wrap_around(SETTINGS_BUTTON)
         self._show_selected_library()
         # With no libraries, Settings is the way to sort the box out.
         if libraries:
