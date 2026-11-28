@@ -9,6 +9,7 @@ from resources.lib.formatting import (
     extra_type_name,
     parse_date,
     runtime_text,
+    spotlight_meta,
     time_range_text,
     unwatched_text,
     watch_status,
@@ -28,8 +29,14 @@ def media_item(client, data):
     item.setProperty("id", data["Id"])
     item.setProperty("type", data.get("Type", ""))
 
-    art = {"poster": poster_url(client, data), "fanart": backdrop_url(client, data)}
+    art = {
+        "poster": poster_url(client, data),
+        "fanart": backdrop_url(client, data),
+        "clearlogo": logo_url(client, data),
+    }
     item.setArt({kind: url for kind, url in art.items() if url})
+    # Year, age rating, runtime and community rating, for screens that show the focused item.
+    item.setProperty("meta", spotlight_meta(data))
 
     tag = item.getVideoInfoTag()
     tag.setTitle(data.get("Name", ""))
