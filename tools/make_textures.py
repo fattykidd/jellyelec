@@ -154,7 +154,74 @@ def heart_icon(size, filled):
     return smooth(size, size, draw_heart)
 
 
-# Weather -----------------------------------------------------------------------------
+# Player OSD ---------------------------------------------------------------------------
+
+FONTS = MEDIA.parent.parent.parent / "skin_patch" / "fonts"
+
+
+def osd_icons():
+    """The OSD buttons' icons, white on clear, drawn on a 24-unit grid like the others."""
+    from PIL import ImageFont
+
+    def stroke(unit):
+        return round(2 * unit)
+
+    def play(draw, u):
+        draw.polygon([(8 * u, 5 * u), (19 * u, 12 * u), (8 * u, 19 * u)], fill=WHITE)
+
+    def pause(draw, u):
+        for left in (6.5, 14):
+            draw.rounded_rectangle((left * u, 5 * u, (left + 3.5) * u, 19 * u), radius=1.2 * u, fill=WHITE)
+
+    def stop(draw, u):
+        draw.rounded_rectangle((6 * u, 6 * u, 18 * u, 18 * u), radius=2 * u, fill=WHITE)
+
+    def skip(seconds, forward):
+        def draw_skip(draw, u):
+            # An open circle with an arrowhead at its top, and the seconds inside.
+            box = (3.5 * u, 3.5 * u, 20.5 * u, 20.5 * u)
+            if forward:
+                draw.arc(box, start=-60, end=250, fill=WHITE, width=stroke(u))
+                draw.polygon([(14.8 * u, 3.9 * u), (11.4 * u, 1.2 * u), (11.6 * u, 6.8 * u)], fill=WHITE)
+            else:
+                draw.arc(box, start=-70, end=240, fill=WHITE, width=stroke(u))
+                draw.polygon([(9.2 * u, 3.9 * u), (12.6 * u, 1.2 * u), (12.4 * u, 6.8 * u)], fill=WHITE)
+            font = ImageFont.truetype(str(FONTS / "Inter-SemiBold.otf"), round(7.2 * u))
+            draw.text((12 * u, 12.6 * u), str(seconds), font=font, fill=WHITE, anchor="mm")
+        return draw_skip
+
+    def chapters(draw, u):
+        for y in (6.5, 12, 17.5):
+            draw.ellipse((3.6 * u, (y - 1.4) * u, 6.4 * u, (y + 1.4) * u), fill=WHITE)
+            draw.rounded_rectangle((9 * u, (y - 1) * u, 21 * u, (y + 1) * u), radius=1 * u, fill=WHITE)
+
+    def audio(draw, u):
+        draw.polygon([(3 * u, 9 * u), (7 * u, 9 * u), (12 * u, 4.5 * u), (12 * u, 19.5 * u),
+                      (7 * u, 15 * u), (3 * u, 15 * u)], fill=WHITE)
+        for radius in (4, 7.5):
+            draw.arc(((12 - radius) * u, (12 - radius) * u, (12 + radius) * u, (12 + radius) * u),
+                     start=-50, end=50, fill=WHITE, width=stroke(u))
+
+    def subtitles(draw, u):
+        draw.rounded_rectangle((2.5 * u, 4.5 * u, 21.5 * u, 19.5 * u), radius=3 * u, outline=WHITE, width=stroke(u))
+        for y, (start, end) in ((11, (6, 12.5)), (11, (14.5, 18)), (15, (6, 9.5)), (15, (11.5, 18))):
+            draw.rounded_rectangle((start * u, (y - 1) * u, end * u, (y + 1) * u), radius=1 * u, fill=WHITE)
+
+    def info(draw, u):
+        draw.ellipse((3 * u, 3 * u, 21 * u, 21 * u), outline=WHITE, width=stroke(u))
+        draw.ellipse((10.7 * u, 6.6 * u, 13.3 * u, 9.2 * u), fill=WHITE)
+        draw.rounded_rectangle((10.9 * u, 10.6 * u, 13.1 * u, 17.4 * u), radius=1 * u, fill=WHITE)
+
+    icons = {
+        "play": play, "pause": pause, "stop": stop, "back": skip(10, False), "forward": skip(30, True),
+        "chapters": chapters, "audio": audio, "subtitles": subtitles, "info": info,
+    }
+    for name, draw_icon in icons.items():
+        def paint(draw, s, draw_icon=draw_icon):
+            draw_icon(draw, 96 * s / 24)
+        save(smooth(96, 96, paint), f"jellyelec-osd-{name}.png")
+
+
 # Weather -----------------------------------------------------------------------------
 
 def weather_icons():
@@ -260,6 +327,7 @@ def main():
     save(heart_icon(96, filled=False), "jellyelec-icon-heart.png")
     save(heart_icon(96, filled=True), "jellyelec-icon-heart-on.png")
     weather_icons()
+    osd_icons()
 
 
 if __name__ == "__main__":

@@ -1,7 +1,8 @@
-"""Keeping JellyELEC's startup screen and fonts in the skin Kodi actually uses.
+"""Keeping JellyELEC's startup screen, player screens and fonts in the skin Kodi actually uses.
 
 JellyELEC images patch the skins built into the system: the startup screen shows JellyELEC's
-splash instead of Kodi's home screen, and JellyELEC's fonts are added. But a skin can also be
+splash instead of Kodi's home screen, the OSD and seek bar shown over playing video are
+JellyELEC's (with the textures they use), and JellyELEC's fonts are added. But a skin can also be
 installed or updated into Kodi's own add-on folder (/storage/.kodi/addons), and Kodi then uses
 that copy instead, without the patches, so Kodi's home screen flashes up at boot again.
 
@@ -21,7 +22,13 @@ from resources.lib import kodi_settings
 from resources.lib.kodi import ADDON_PATH, log
 
 PATCH_DIR = os.path.join(ADDON_PATH, "resources", "skin_patch")
-STARTUP_SCREEN = os.path.join(PATCH_DIR, "Startup.xml")
+MEDIA_DIR = os.path.join(ADDON_PATH, "resources", "skins", "Default", "media")
+# The skin's own screens that JellyELEC replaces, from PATCH_DIR.
+SKIN_WINDOWS = ("Startup.xml", "VideoOSD.xml", "DialogSeekBar.xml")
+# Textures those screens use, from MEDIA_DIR: the OSD's icons, and these.
+SKIN_TEXTURES = ("jellyelec-pill.png", "jellyelec-white.png", "jellyelec-fade-bottom.png",
+                 "jellyelec-badge-filled.png")
+OSD_ICON_PREFIX = "jellyelec-osd-"
 FONT_DEFINITIONS = os.path.join(PATCH_DIR, "jellyelec-fonts.xml")
 FONTS_DIR = os.path.join(PATCH_DIR, "fonts")
 FONT_FILE_ENDINGS = (".ttf", ".otf")
@@ -42,19 +49,31 @@ def patch_active_skin():
     if not os.path.isdir(os.path.join(skin_dir, "xml")):
         return False  # the system's own copy, patched when the image was made
 
-    changed = _patch_startup_screen(skin_dir)
+    changed = _patch_windows(skin_dir)
     changed = _patch_fonts(skin_dir) or changed
     if changed:
-        log(f"Patched {skin_id} in Kodi's add-on folder (startup screen, fonts); "
+        log(f"Patched {skin_id} in Kodi's add-on folder (startup screen, player screens, fonts); "
             "it takes effect from the next start.")
     return changed
 
 
-def _patch_startup_screen(skin_dir):
-    target = os.path.join(skin_dir, "xml", "Startup.xml")
-    if _same_contents(STARTUP_SCREEN, target):
+def _patch_windows(skin_dir):
+    """Copy in JellyELEC's screens, and the textures they use, where they differ."""
+    changed = False
+    for name in SKIN_WINDOWS:
+        changed = _copy_if_changed(os.path.join(PATCH_DIR, name), os.path.join(skin_dir, "xml", name)) or changed
+    textures = list(SKIN_TEXTURES) + [name for name in os.listdir(MEDIA_DIR) if name.startswith(OSD_ICON_PREFIX)]
+    media = os.path.join(skin_dir, "media")
+    os.makedirs(media, exist_ok=True)
+    for name in textures:
+        changed = _copy_if_changed(os.path.join(MEDIA_DIR, name), os.path.join(media, name)) or changed
+    return changed
+
+
+def _copy_if_changed(source, target):
+    if _same_contents(source, target):
         return False
-    shutil.copyfile(STARTUP_SCREEN, target)
+    shutil.copyfile(source, target)
     return True
 
 

@@ -9,10 +9,18 @@ import uuid
 import xbmc
 import xbmcgui
 
-from resources.lib import versions
+from resources.lib import osd_info, player_tracks, versions
 from resources.lib.api import TICKS_PER_SECOND, JellyfinError
 from resources.lib.chapters import STOP, choose_chapter
 from resources.lib.formatting import format_time
+from resources.lib.jsonrpc import JsonRpcError
+from resources.lib.key_requests import (
+    AUDIO_REQUEST,
+    CHAPTERS_REQUEST,
+    SUBTITLES_REQUEST,
+    clear_requests,
+    take_request,
+)
 from resources.lib.kodi import log, notify
 from resources.lib.listitems import media_item
 
@@ -50,6 +58,7 @@ def play(client, data, start_seconds=None):
     session = PlaybackSession(
         client,
         data,
+        source,
         item_id=data["Id"],
         media_source_id=source["Id"],
         play_session_id=info.get("PlaySessionId") or uuid.uuid4().hex,
@@ -77,9 +86,10 @@ def _pick_source(sources, item_id):
 class PlaybackSession:
     """One playback of one item: starts it, watches it, and reports to Jellyfin."""
 
-    def __init__(self, client, data, item_id, media_source_id, play_session_id):
+    def __init__(self, client, data, source, item_id, media_source_id, play_session_id):
         self.client = client
         self.data = data
+        self.source = source
         self.item_id = item_id
         self.media_source_id = media_source_id
         self.play_session_id = play_session_id
@@ -87,16 +97,22 @@ class PlaybackSession:
         self._monitor = xbmc.Monitor()
 
     def run(self, item, url, start_seconds):
-        self._player.play(url, item)
-        if not wait_for_video(self._player, self._monitor):
-            notify("Couldn't play this file.")
-            return
+        clear_requests()
+        osd_info.show(self.client, self.data, self.source)
+        try:
+            self._player.play(url, item)
+            if not wait_for_video(self._player, self._monitor):
+                notify("Couldn't play this file.")
+                return
 
-        position = start_seconds
-        self._report("start", position)
-        position = self._watch(position)
-        self._report("stopped", position)
-        log(f"Playback stopped at {format_time(position)}.")
+            position = start_seconds
+            self._report("start", position)
+            position = self._watch(position)
+            self._report("stopped", position)
+            log(f"Playback stopped at {format_time(position)}.")
+        finally:
+            osd_info.clear()
+            clear_requests()
 
     def _watch(self, position):
         """Report progress until playback ends. Returns the last known position in seconds."""
@@ -111,6 +127,7 @@ class PlaybackSession:
             if self._back_pressed():
                 self._show_chapters(position)
                 continue
+            self._handle_request(position)
 
             is_paused = xbmc.getCondVisibility("Player.Paused")
             if checks_since_report >= PROGRESS_INTERVAL_SECONDS * CHECKS_PER_SECOND or is_paused != was_paused:
@@ -123,7 +140,22 @@ class PlaybackSession:
             checks_since_report += 1
         return position
 
-    # Back and the chapter list --------------------------------------------------------
+    # The OSD's buttons, Back and the chapter list ---------------------------------------
+
+    def _handle_request(self, position):
+        """Chapters, Audio or Subtitles, picked on the OSD."""
+        request = take_request()
+        try:
+            if request == CHAPTERS_REQUEST:
+                self._show_chapters(position)
+            elif request == AUDIO_REQUEST:
+                with osd_info.panel_open():
+                    player_tracks.choose_audio(self.source)
+            elif request == SUBTITLES_REQUEST:
+                with osd_info.panel_open():
+                    player_tracks.choose_subtitles(self.source)
+        except JsonRpcError as error:
+            log(f"Couldn't list the tracks: {error}", xbmc.LOGWARNING)
 
     def _back_pressed(self):
         """True if Back took Kodi out of full-screen while the video is still playing.
@@ -141,7 +173,8 @@ class PlaybackSession:
 
     def _show_chapters(self, position):
         go_fullscreen(self._monitor)
-        choice = choose_chapter(self.client, self.data, position)
+        with osd_info.panel_open():
+            choice = choose_chapter(self.client, self.data, position)
         if choice == STOP:
             log("Stopped from the chapter list.")
             self._player.stop()

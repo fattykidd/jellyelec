@@ -3,7 +3,9 @@
 While video is full-screen, Kodi handles every key itself and add-ons never see them.
 JellyELEC's key map (keymap.py) turns the keys it cares about into a property on Kodi's
 home window instead, and whichever JellyELEC player is running picks it up from there:
-live_playback.py for Live TV.
+live_playback.py for Live TV, playback.py for everything else.
+
+The player OSD's Chapters, Audio and Subtitles buttons send requests the same way.
 """
 
 import xbmcgui
@@ -17,6 +19,9 @@ REQUEST_PROPERTY = f"{ADDON_ID}.request"
 GUIDE_REQUEST = "guide"
 CHANNEL_UP_REQUEST = "channelup"
 CHANNEL_DOWN_REQUEST = "channeldown"
+CHAPTERS_REQUEST = "chapters"
+AUDIO_REQUEST = "audio"
+SUBTITLES_REQUEST = "subtitles"
 
 
 def take_request():

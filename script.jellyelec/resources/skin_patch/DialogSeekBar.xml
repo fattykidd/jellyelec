@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    JellyELEC's seek bar, in place of the skin's own (JellyELEC copies it in; see skin_patch.py).
+    Kodi shows it over full-screen video while seeking or paused, just after a skip, and under
+    the OSD. The title's logo, name and badges come from properties JellyELEC sets on the home
+    window while it plays something (osd_info.py); for anything else, Kodi's own title shows.
+    Hidden while one of JellyELEC's panels (chapters, audio, subtitles) is open.
+-->
+<window>
+    <visible>Window.IsActive(fullscreenvideo) + [Player.Seeking | Player.DisplayAfterSeek | Player.Paused | Player.Forwarding | Player.Rewinding | Player.ShowInfo | Window.IsActive(videoosd)] + String.IsEmpty(Window(Home).Property(script.jellyelec.osd_panel))</visible>
+    <animation effect="fade" time="200">WindowOpen</animation>
+    <animation effect="fade" time="200">WindowClose</animation>
+    <controls>
+
+        <!-- Darkens the bottom of the picture -->
+        <control type="image">
+            <left>0</left>
+            <top>480</top>
+            <width>1920</width>
+            <height>600</height>
+            <texture>jellyelec-fade-bottom.png</texture>
+        </control>
+
+        <control type="label">
+            <left>96</left>
+            <top>572</top>
+            <width>600</width>
+            <height>36</height>
+            <font>JE_Kicker</font>
+            <shadowcolor>E6000000</shadowcolor>
+            <textcolor>FF00A4DC</textcolor>
+            <label>PAUSED</label>
+            <visible>Player.Paused</visible>
+        </control>
+
+        <!-- Clear logo, or the title -->
+        <control type="image">
+            <left>96</left>
+            <top>612</top>
+            <width>560</width>
+            <height>136</height>
+            <aspectratio align="left" aligny="bottom">keep</aspectratio>
+            <texture background="true">$INFO[Window(Home).Property(script.jellyelec.osd_logo)]</texture>
+            <visible>!String.IsEmpty(Window(Home).Property(script.jellyelec.osd_logo))</visible>
+        </control>
+        <control type="label">
+            <left>96</left>
+            <top>612</top>
+            <width>1400</width>
+            <height>136</height>
+            <aligny>bottom</aligny>
+            <font>JE_TitleSmall</font>
+            <shadowcolor>E6000000</shadowcolor>
+            <textcolor>FFF2F2F5</textcolor>
+            <label>$INFO[Window(Home).Property(script.jellyelec.osd_title)]</label>
+            <visible>String.IsEmpty(Window(Home).Property(script.jellyelec.osd_logo)) + !String.IsEmpty(Window(Home).Property(script.jellyelec.osd_title))</visible>
+        </control>
+        <control type="label">
+            <left>96</left>
+            <top>612</top>
+            <width>1400</width>
+            <height>136</height>
+            <aligny>bottom</aligny>
+            <font>JE_TitleSmall</font>
+            <shadowcolor>E6000000</shadowcolor>
+            <textcolor>FFF2F2F5</textcolor>
+            <label>$INFO[VideoPlayer.Title]</label>
+            <visible>String.IsEmpty(Window(Home).Property(script.jellyelec.osd_logo)) + String.IsEmpty(Window(Home).Property(script.jellyelec.osd_title))</visible>
+        </control>
+
+        <!-- S1 E2 · Name, or year · rating; then the badges -->
+        <control type="grouplist">
+            <left>96</left>
+            <top>764</top>
+            <width>1728</width>
+            <height>40</height>
+            <orientation>horizontal</orientation>
+            <itemgap>16</itemgap>
+            <control type="label">
+                <width>auto</width>
+                <height>40</height>
+                <aligny>center</aligny>
+                <font>JE_Label</font>
+                <shadowcolor>E6000000</shadowcolor>
+                <textcolor>FFD5D6DE</textcolor>
+                <label>$INFO[Window(Home).Property(script.jellyelec.osd_subtitle)]</label>
+                <visible>!String.IsEmpty(Window(Home).Property(script.jellyelec.osd_subtitle))</visible>
+            </control>
+            <control type="button">
+                <width min="44" max="420">auto</width>
+                <height>36</height>
+                <textoffsetx>12</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Kicker</font>
+                <textcolor>FFF2F2F5</textcolor>
+                <disabledcolor>FFF2F2F5</disabledcolor>
+                <texturenofocus border="10">jellyelec-badge-filled.png</texturenofocus>
+                <texturefocus border="10">jellyelec-badge-filled.png</texturefocus>
+                <enable>false</enable>
+                <label>$INFO[Window(Home).Property(script.jellyelec.osd_badge_1)]</label>
+                <visible>!String.IsEmpty(Window(Home).Property(script.jellyelec.osd_badge_1))</visible>
+            </control>
+            <control type="button">
+                <width min="44" max="420">auto</width>
+                <height>36</height>
+                <textoffsetx>12</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Kicker</font>
+                <textcolor>FFF2F2F5</textcolor>
+                <disabledcolor>FFF2F2F5</disabledcolor>
+                <texturenofocus border="10">jellyelec-badge-filled.png</texturenofocus>
+                <texturefocus border="10">jellyelec-badge-filled.png</texturefocus>
+                <enable>false</enable>
+                <label>$INFO[Window(Home).Property(script.jellyelec.osd_badge_2)]</label>
+                <visible>!String.IsEmpty(Window(Home).Property(script.jellyelec.osd_badge_2))</visible>
+            </control>
+            <control type="button">
+                <width min="44" max="420">auto</width>
+                <height>36</height>
+                <textoffsetx>12</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Kicker</font>
+                <textcolor>FFF2F2F5</textcolor>
+                <disabledcolor>FFF2F2F5</disabledcolor>
+                <texturenofocus border="10">jellyelec-badge-filled.png</texturenofocus>
+                <texturefocus border="10">jellyelec-badge-filled.png</texturefocus>
+                <enable>false</enable>
+                <label>$INFO[Window(Home).Property(script.jellyelec.osd_badge_3)]</label>
+                <visible>!String.IsEmpty(Window(Home).Property(script.jellyelec.osd_badge_3))</visible>
+            </control>
+            <control type="button">
+                <width min="44" max="420">auto</width>
+                <height>36</height>
+                <textoffsetx>12</textoffsetx>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>JE_Kicker</font>
+                <textcolor>FFF2F2F5</textcolor>
+                <disabledcolor>FFF2F2F5</disabledcolor>
+                <texturenofocus border="10">jellyelec-badge-filled.png</texturenofocus>
+                <texturefocus border="10">jellyelec-badge-filled.png</texturefocus>
+                <enable>false</enable>
+                <label>$INFO[Window(Home).Property(script.jellyelec.osd_badge_4)]</label>
+                <visible>!String.IsEmpty(Window(Home).Property(script.jellyelec.osd_badge_4))</visible>
+            </control>
+        </control>
+
+        <!-- Progress -->
+        <control type="progress">
+            <left>96</left>
+            <top>830</top>
+            <width>1728</width>
+            <height>8</height>
+            <texturebg colordiffuse="40FFFFFF">jellyelec-white.png</texturebg>
+            <midtexture colordiffuse="FF00A4DC">jellyelec-white.png</midtexture>
+            <info>Player.Progress</info>
+        </control>
+
+        <!-- The time (or, while seeking, where the seek will land); the chapter; Ends at and length -->
+        <control type="label">
+            <left>96</left>
+            <top>852</top>
+            <width>500</width>
+            <height>40</height>
+            <font>JE_LabelBold</font>
+            <shadowcolor>E6000000</shadowcolor>
+            <textcolor>FFF2F2F5</textcolor>
+            <label>$INFO[Player.Time]</label>
+            <visible>!Player.Seeking</visible>
+        </control>
+        <control type="label">
+            <left>96</left>
+            <top>852</top>
+            <width>500</width>
+            <height>40</height>
+            <font>JE_LabelBold</font>
+            <shadowcolor>E6000000</shadowcolor>
+            <textcolor>FF00A4DC</textcolor>
+            <label>$INFO[Player.SeekTime]</label>
+            <visible>Player.Seeking</visible>
+        </control>
+        <control type="label">
+            <left>560</left>
+            <top>852</top>
+            <width>800</width>
+            <height>40</height>
+            <align>center</align>
+            <font>JE_Label</font>
+            <shadowcolor>E6000000</shadowcolor>
+            <textcolor>FFD5D6DE</textcolor>
+            <label>$INFO[Player.ChapterName]</label>
+            <visible>Integer.IsGreater(Player.ChapterCount,1)</visible>
+        </control>
+        <control type="label">
+            <left>1224</left>
+            <top>852</top>
+            <width>600</width>
+            <height>40</height>
+            <align>right</align>
+            <font>JE_Label</font>
+            <shadowcolor>E6000000</shadowcolor>
+            <textcolor>FFD5D6DE</textcolor>
+            <label>$INFO[Player.FinishTime,Ends at ,  ·  ]$INFO[Player.Duration]</label>
+        </control>
+
+    </controls>
+</window>

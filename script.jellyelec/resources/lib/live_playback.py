@@ -14,8 +14,12 @@ import urllib.parse
 import xbmc
 import xbmcgui
 
+from resources.lib import osd_info, player_tracks
 from resources.lib.api import JellyfinError
+from resources.lib.jsonrpc import JsonRpcError
 from resources.lib.key_requests import (
+    AUDIO_REQUEST,
+    SUBTITLES_REQUEST,
     CHANNEL_DOWN_REQUEST,
     CHANNEL_UP_REQUEST,
     GUIDE_REQUEST,
@@ -200,6 +204,14 @@ class LiveSession:
             self._change_channel_by(1)
         elif request == CHANNEL_DOWN_REQUEST:
             self._change_channel_by(-1)
+        elif request in (AUDIO_REQUEST, SUBTITLES_REQUEST):
+            # From the OSD's buttons. Channels' tracks have no Jellyfin names; Kodi's are used.
+            choose = player_tracks.choose_audio if request == AUDIO_REQUEST else player_tracks.choose_subtitles
+            try:
+                with osd_info.panel_open():
+                    choose()
+            except JsonRpcError as error:
+                log(f"Live TV: couldn't list the tracks: {error}", xbmc.LOGWARNING)
 
     def _change_channel_by(self, step):
         """Channel Up/Down, wrapping around at either end of the list."""
