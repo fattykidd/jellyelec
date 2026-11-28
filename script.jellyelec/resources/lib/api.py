@@ -111,7 +111,7 @@ class JellyfinClient:
             "MediaTypes": "Video",
             "Fields": "Overview",
             "ImageTypeLimit": 1,
-            "EnableImageTypes": "Primary,Backdrop,Logo",
+            "EnableImageTypes": "Primary,Backdrop,Logo,Thumb",
         })
         return self._request("GET", f"/Users/{self.user_id}/Items/Resume?{query}")["Items"]
 
@@ -123,7 +123,7 @@ class JellyfinClient:
             "GroupItems": "true",
             "Fields": "Overview",
             "ImageTypeLimit": 1,
-            "EnableImageTypes": "Primary,Backdrop,Logo",
+            "EnableImageTypes": "Primary,Backdrop,Logo,Thumb",
         })
         return self._request("GET", f"/Users/{self.user_id}/Items/Latest?{query}") or []
 
@@ -234,7 +234,7 @@ class JellyfinClient:
             "SortOrder": "Ascending",
             "Fields": "Overview",
             "ImageTypeLimit": 1,
-            "EnableImageTypes": "Primary,Backdrop,Logo",
+            "EnableImageTypes": "Primary,Backdrop,Logo,Thumb",
             **(extra or {}),
         }
         if item_type:
@@ -249,7 +249,7 @@ class JellyfinClient:
             "UserId": self.user_id,
             "Fields": "Overview",
             "ImageTypeLimit": 1,
-            "EnableImageTypes": "Primary,Backdrop,Logo",
+            "EnableImageTypes": "Primary,Backdrop,Logo,Thumb",
             **extra_params,
         }
         query = urllib.parse.urlencode(params)

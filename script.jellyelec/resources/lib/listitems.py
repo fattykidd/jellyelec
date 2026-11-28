@@ -18,6 +18,8 @@ from resources.lib.formatting import (
 
 POSTER_HEIGHT = 450
 BACKDROP_WIDTH = 1280
+# Landscape cards (Continue Watching, Next Up) are 384x216 on screen; twice that keeps them sharp.
+CARD_WIDTH = 768
 EXTRA_THUMB_WIDTH = 480
 EPISODE_THUMB_WIDTH = 480
 CHANNEL_LOGO_WIDTH = 300
@@ -37,6 +39,7 @@ def media_item(client, data):
         "poster": poster_url(client, data),
         "fanart": backdrop_url(client, data),
         "clearlogo": logo_url(client, data),
+        "landscape": card_url(client, data),
     }
     item.setArt({kind: url for kind, url in art.items() if url})
     # Year, age rating, runtime and community rating, for screens that show the focused item.
@@ -44,6 +47,10 @@ def media_item(client, data):
     # How long is left to watch, for Ends at; only for things that are played in one go.
     if data.get("Type") in PLAYABLE_TYPES:
         item.setProperty("remaining_seconds", str(remaining_ticks(data) // TICKS_PER_SECOND))
+    # The two lines under a landscape card.
+    title, subtitle = card_lines(data)
+    item.setProperty("card_title", title)
+    item.setProperty("card_subtitle", subtitle)
 
     tag = item.getVideoInfoTag()
     tag.setTitle(data.get("Name", ""))
@@ -52,6 +59,10 @@ def media_item(client, data):
         tag.setYear(int(data["ProductionYear"]))
     if data.get("RunTimeTicks"):
         tag.setDuration(int(data["RunTimeTicks"] // TICKS_PER_SECOND))
+        position = (data.get("UserData") or {}).get("PlaybackPositionTicks") or 0
+        if position:
+            # Shown as the progress bar on landscape cards (ListItem.PercentPlayed).
+            tag.setResumePoint(position / TICKS_PER_SECOND, data["RunTimeTicks"] / TICKS_PER_SECOND)
 
     if data.get("Type") == "Series":
         tag.setMediaType("tvshow")
@@ -153,6 +164,37 @@ def poster_url(client, data):
     if tag:
         return client.image_url(data["Id"], "Primary", tag, max_height=POSTER_HEIGHT)
     return series_poster
+
+
+def card_url(client, data):
+    """A landscape picture for a card: an episode's still, a title's own thumb, or its backdrop."""
+    if data.get("Type") == "Episode":
+        return episode_thumb_url(client, data)
+    tag = data.get("ImageTags", {}).get("Thumb")
+    if tag:
+        return client.image_url(data["Id"], "Thumb", tag, max_width=CARD_WIDTH)
+    return backdrop_url(client, data)
+
+
+def card_lines(data):
+    """The title and second line under a landscape card.
+
+    An episode: its show, then "S1 E3 · Episode name". Anything else: its name, then how
+    long is left (once started) or how long it runs.
+    """
+    if data.get("Type") == "Episode":
+        numbers = []
+        if data.get("ParentIndexNumber") is not None:
+            numbers.append(f"S{data['ParentIndexNumber']}")
+        if data.get("IndexNumber") is not None:
+            numbers.append(f"E{data['IndexNumber']}")
+        parts = [" ".join(numbers), data.get("Name", "")]
+        return data.get("SeriesName", ""), "  ·  ".join(part for part in parts if part)
+    remaining = remaining_ticks(data)
+    runtime = data.get("RunTimeTicks") or 0
+    if remaining and remaining < runtime:
+        return data.get("Name", ""), f"{runtime_text(remaining)} left"
+    return data.get("Name", ""), runtime_text(runtime) if runtime else ""
 
 
 def episode_thumb_url(client, data):

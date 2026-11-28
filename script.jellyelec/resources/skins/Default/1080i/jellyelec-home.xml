@@ -5,8 +5,8 @@
       100  library bar (a grouplist of buttons 1001-1012, one per library)
       110  Settings button
       150  scrolling stack of rows
-      200  Continue Watching row
-      205  Next Up row (TV libraries only)
+      200  Continue Watching row (landscape cards)
+      205  Next Up row (TV libraries only; landscape cards)
       210  Recently Added row
       220  Random row
     The spotlight is filled by home.py through window properties (spot_*).
@@ -464,23 +464,51 @@
                     <height>306</height>
                     <orientation>horizontal</orientation>
                     <scrolltime tween="cubic" easing="out">220</scrolltime>
-                    <itemlayout width="204" height="306">
+                    <itemlayout width="408" height="306">
                         <control type="image">
                             <left>12</left>
                             <top>16</top>
-                            <width>180</width>
-                            <height>270</height>
+                            <width>384</width>
+                            <height>216</height>
                             <aspectratio>scale</aspectratio>
                             <colordiffuse>D9FFFFFF</colordiffuse>
-                            <texture background="true" diffuse="jellyelec-mask-poster.png">$INFO[ListItem.Art(poster)]</texture>
+                            <texture background="true" diffuse="jellyelec-mask-landscape.png">$INFO[ListItem.Art(landscape)]</texture>
+                        </control>
+                        <control type="progress">
+                            <left>24</left>
+                            <top>218</top>
+                            <width>360</width>
+                            <height>6</height>
+                            <texturebg colordiffuse="80000000">jellyelec-white.png</texturebg>
+                            <midtexture colordiffuse="FFD5D6DE">jellyelec-white.png</midtexture>
+                            <info>ListItem.PercentPlayed</info>
+                            <visible>Integer.IsGreater(ListItem.PercentPlayed,0)</visible>
+                        </control>
+                        <control type="label">
+                            <left>14</left>
+                            <top>240</top>
+                            <width>380</width>
+                            <height>30</height>
+                            <font>JE_LabelBold</font>
+                            <textcolor>FFD5D6DE</textcolor>
+                            <label>$INFO[ListItem.Property(card_title)]</label>
+                        </control>
+                        <control type="label">
+                            <left>14</left>
+                            <top>270</top>
+                            <width>380</width>
+                            <height>28</height>
+                            <font>JE_Small</font>
+                            <textcolor>FF8D90A0</textcolor>
+                            <label>$INFO[ListItem.Property(card_subtitle)]</label>
                         </control>
                     </itemlayout>
-                    <focusedlayout width="204" height="306">
+                    <focusedlayout width="408" height="306">
                         <control type="image">
                             <left>4</left>
                             <top>8</top>
-                            <width>196</width>
-                            <height>286</height>
+                            <width>400</width>
+                            <height>232</height>
                             <texture border="18">jellyelec-ring.png</texture>
                             <colordiffuse>FFAA5CC3</colordiffuse>
                             <visible>Control.HasFocus(200)</visible>
@@ -488,10 +516,38 @@
                         <control type="image">
                             <left>12</left>
                             <top>16</top>
-                            <width>180</width>
-                            <height>270</height>
+                            <width>384</width>
+                            <height>216</height>
                             <aspectratio>scale</aspectratio>
-                            <texture background="true" diffuse="jellyelec-mask-poster.png">$INFO[ListItem.Art(poster)]</texture>
+                            <texture background="true" diffuse="jellyelec-mask-landscape.png">$INFO[ListItem.Art(landscape)]</texture>
+                        </control>
+                        <control type="progress">
+                            <left>24</left>
+                            <top>218</top>
+                            <width>360</width>
+                            <height>6</height>
+                            <texturebg colordiffuse="80000000">jellyelec-white.png</texturebg>
+                            <midtexture colordiffuse="FFAA5CC3">jellyelec-white.png</midtexture>
+                            <info>ListItem.PercentPlayed</info>
+                            <visible>Integer.IsGreater(ListItem.PercentPlayed,0)</visible>
+                        </control>
+                        <control type="label">
+                            <left>14</left>
+                            <top>240</top>
+                            <width>380</width>
+                            <height>30</height>
+                            <font>JE_LabelBold</font>
+                            <textcolor>FFF2F2F5</textcolor>
+                            <label>$INFO[ListItem.Property(card_title)]</label>
+                        </control>
+                        <control type="label">
+                            <left>14</left>
+                            <top>270</top>
+                            <width>380</width>
+                            <height>28</height>
+                            <font>JE_Small</font>
+                            <textcolor>FF8D90A0</textcolor>
+                            <label>$INFO[ListItem.Property(card_subtitle)]</label>
                         </control>
                     </focusedlayout>
                 </control>
@@ -519,23 +575,51 @@
                     <height>306</height>
                     <orientation>horizontal</orientation>
                     <scrolltime tween="cubic" easing="out">220</scrolltime>
-                    <itemlayout width="204" height="306">
+                    <itemlayout width="408" height="306">
                         <control type="image">
                             <left>12</left>
                             <top>16</top>
-                            <width>180</width>
-                            <height>270</height>
+                            <width>384</width>
+                            <height>216</height>
                             <aspectratio>scale</aspectratio>
                             <colordiffuse>D9FFFFFF</colordiffuse>
-                            <texture background="true" diffuse="jellyelec-mask-poster.png">$INFO[ListItem.Art(poster)]</texture>
+                            <texture background="true" diffuse="jellyelec-mask-landscape.png">$INFO[ListItem.Art(landscape)]</texture>
+                        </control>
+                        <control type="progress">
+                            <left>24</left>
+                            <top>218</top>
+                            <width>360</width>
+                            <height>6</height>
+                            <texturebg colordiffuse="80000000">jellyelec-white.png</texturebg>
+                            <midtexture colordiffuse="FFD5D6DE">jellyelec-white.png</midtexture>
+                            <info>ListItem.PercentPlayed</info>
+                            <visible>Integer.IsGreater(ListItem.PercentPlayed,0)</visible>
+                        </control>
+                        <control type="label">
+                            <left>14</left>
+                            <top>240</top>
+                            <width>380</width>
+                            <height>30</height>
+                            <font>JE_LabelBold</font>
+                            <textcolor>FFD5D6DE</textcolor>
+                            <label>$INFO[ListItem.Property(card_title)]</label>
+                        </control>
+                        <control type="label">
+                            <left>14</left>
+                            <top>270</top>
+                            <width>380</width>
+                            <height>28</height>
+                            <font>JE_Small</font>
+                            <textcolor>FF8D90A0</textcolor>
+                            <label>$INFO[ListItem.Property(card_subtitle)]</label>
                         </control>
                     </itemlayout>
-                    <focusedlayout width="204" height="306">
+                    <focusedlayout width="408" height="306">
                         <control type="image">
                             <left>4</left>
                             <top>8</top>
-                            <width>196</width>
-                            <height>286</height>
+                            <width>400</width>
+                            <height>232</height>
                             <texture border="18">jellyelec-ring.png</texture>
                             <colordiffuse>FFAA5CC3</colordiffuse>
                             <visible>Control.HasFocus(205)</visible>
@@ -543,10 +627,38 @@
                         <control type="image">
                             <left>12</left>
                             <top>16</top>
-                            <width>180</width>
-                            <height>270</height>
+                            <width>384</width>
+                            <height>216</height>
                             <aspectratio>scale</aspectratio>
-                            <texture background="true" diffuse="jellyelec-mask-poster.png">$INFO[ListItem.Art(poster)]</texture>
+                            <texture background="true" diffuse="jellyelec-mask-landscape.png">$INFO[ListItem.Art(landscape)]</texture>
+                        </control>
+                        <control type="progress">
+                            <left>24</left>
+                            <top>218</top>
+                            <width>360</width>
+                            <height>6</height>
+                            <texturebg colordiffuse="80000000">jellyelec-white.png</texturebg>
+                            <midtexture colordiffuse="FFAA5CC3">jellyelec-white.png</midtexture>
+                            <info>ListItem.PercentPlayed</info>
+                            <visible>Integer.IsGreater(ListItem.PercentPlayed,0)</visible>
+                        </control>
+                        <control type="label">
+                            <left>14</left>
+                            <top>240</top>
+                            <width>380</width>
+                            <height>30</height>
+                            <font>JE_LabelBold</font>
+                            <textcolor>FFF2F2F5</textcolor>
+                            <label>$INFO[ListItem.Property(card_title)]</label>
+                        </control>
+                        <control type="label">
+                            <left>14</left>
+                            <top>270</top>
+                            <width>380</width>
+                            <height>28</height>
+                            <font>JE_Small</font>
+                            <textcolor>FF8D90A0</textcolor>
+                            <label>$INFO[ListItem.Property(card_subtitle)]</label>
                         </control>
                     </focusedlayout>
                 </control>

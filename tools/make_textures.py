@@ -125,6 +125,7 @@ def main():
         (0, 0, 64 * s - 1, 36 * s - 1), radius=8 * s, outline=WHITE, width=2 * s)), "jellyelec-badge.png")
     # Rounded corners for posters, used as <texture diffuse="...">.
     save(card_mask(180, 270, 12), "jellyelec-mask-poster.png")
+    save(card_mask(384, 216, 14), "jellyelec-mask-landscape.png")
     save(cogs_icon(96), "jellyelec-icon-settings.png")
 
 
