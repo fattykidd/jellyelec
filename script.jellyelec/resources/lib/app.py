@@ -24,6 +24,7 @@ def run(splash):
         return
     if setup.is_complete():
         # Finishes video processor mode once dovi.ko has been added after setup.
+        output_setup.upgrade_to_vp_mode()
         output_setup.apply_pending_dolby_vision()
         device_options.keep_box_name()
         closing_steps_due = False

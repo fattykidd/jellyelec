@@ -6,7 +6,7 @@ import xbmc
 import xbmcaddon
 
 from resources.lib import build_info, kodi_settings
-from resources.lib.kodi import log
+from resources.lib.kodi import PROFILE_PATH, log
 
 # The three answers to "How is this box connected?", in the order they're offered.
 TV = "tv"
@@ -64,7 +64,20 @@ PASSTHROUGH_FORMATS = (
 # Kodi's speaker layouts, numbered 1 (2.0) to 10 (7.1).
 SPEAKERS_7_1 = 10
 
+DOLBY_VISION_PREFIX = "coreelec.amlogic.dolbyvision."
 DOLBY_VISION_TYPE = "coreelec.amlogic.dolbyvision.type"
+
+# p3i T5 and later: "VP mode", made for external video processors. The box still decodes
+# Dolby Vision (FEL included) but skips the Dolby library's tone mapping, and sends the result
+# as HDR10 with the title's real brightness information; the processor does all the tone
+# mapping. Found by label, as pannal chose the IDs. 4:2:2 is what capture cards take natively.
+VP_OUTPUT_LABEL = "Output Signal Type for Video Processor"
+VP_OUTPUT_CHOICE = "HDR10 422"
+DV_MODE_LABEL = "DV Mode"
+DV_MODE_CHOICE = "On Demand"
+
+# Marks a box whose video processor setup has been redone for VP mode (see upgrade_to_vp_mode).
+VP_MODE_MARKER = os.path.join(PROFILE_PATH, "dolby_vision_vp_mode")
 # How forks label the LLDV (low-latency Dolby Vision) type: "Player Led (LLDV)" on CoreELEC,
 # "Player Led (DV as DV-LL 422 12 Bit)" on p3i.
 LLDV_LABELS = ("LLDV", "DV-LL")
@@ -123,6 +136,10 @@ def apply_pending_dolby_vision():
         return True
 
     _log_dolby_vision_choices()
+    if kodi_settings.find_id(VP_OUTPUT_LABEL, DOLBY_VISION_PREFIX):
+        return _apply_vp_mode()
+
+    # Before p3i T5: LLDV, where the box tone maps to the display chain's brightness.
     # The type goes first: it decides which VS10 settings CoreELEC shows.
     lldv_offered = any(kodi_settings.has_choice(DOLBY_VISION_TYPE, label) for label in LLDV_LABELS)
     if lldv_offered:
@@ -143,6 +160,40 @@ def apply_pending_dolby_vision():
         _set_dolby_vision_pending(False)
         log("Video processor mode: Dolby Vision set to LLDV with VS10 off.")
     return worked
+
+
+def _apply_vp_mode():
+    """Video processor mode on p3i T5 and later: DV Mode On Demand, VP output as HDR10 4:2:2,
+    VS10 off. Returns False if Kodi refused a change."""
+    vp_setting = kodi_settings.find_id(VP_OUTPUT_LABEL, DOLBY_VISION_PREFIX)
+    mode_setting = kodi_settings.find_id(DV_MODE_LABEL, DOLBY_VISION_PREFIX, exact=True)
+    worked = True
+    if mode_setting:
+        worked = _try(kodi_settings.set_by_label, mode_setting, DV_MODE_CHOICE)
+    # The VP output goes before VS10: it decides which VS10 settings CoreELEC shows.
+    worked = _try(kodi_settings.set_by_label, vp_setting, VP_OUTPUT_CHOICE) and worked
+    for setting_id in VS10_SETTINGS:
+        if not kodi_settings.choices(setting_id):
+            continue
+        worked = _try(kodi_settings.set_by_label, setting_id, "Off", exact=True) and worked
+    if worked:
+        _set_dolby_vision_pending(False)
+        log(f"Video processor mode: Dolby Vision passed to the processor untouched "
+            f"({vp_setting} set to {VP_OUTPUT_CHOICE}), VS10 off.")
+    return worked
+
+
+def upgrade_to_vp_mode():
+    """Once per box: in video processor mode, set the Dolby Vision settings to be made again,
+    so a box set up before VP mode existed (or before this version) moves to it."""
+    if os.path.exists(VP_MODE_MARKER):
+        return
+    if current_connection() == VIDEO_PROCESSOR:
+        log("Video processor mode: making the Dolby Vision settings again, for VP mode.")
+        _set_dolby_vision_pending(True)
+    os.makedirs(PROFILE_PATH, exist_ok=True)
+    with open(VP_MODE_MARKER, "w", encoding="utf-8") as file:
+        file.write("1\n")
 
 
 def waiting_for_lldv():
@@ -210,11 +261,9 @@ def _set_dolby_vision_pending(pending):
 
 
 def _log_dolby_vision_choices():
-    """Write this build's Dolby Vision choices to the log, to help when a fork labels them differently."""
-    for setting_id in (DOLBY_VISION_TYPE, *VS10_SETTINGS):
-        try:
-            options = kodi_settings.choices(setting_id)
-        except kodi_settings.KodiSettingError:
-            options = []
-        shown = ", ".join(f"{value}={label}" for value, label in options) or "not available"
-        log(f"{setting_id}: {shown}")
+    """Write this build's Dolby Vision settings and their choices to the log, to help when a
+    fork adds settings or labels them differently."""
+    for setting in kodi_settings.settings_with_prefix(DOLBY_VISION_PREFIX):
+        options = setting.get("options") or []
+        shown = ", ".join(f"{option['value']}={option['label']}" for option in options) or "no choices"
+        log(f"{setting['id']} ({setting.get('label', '')}): {shown}")

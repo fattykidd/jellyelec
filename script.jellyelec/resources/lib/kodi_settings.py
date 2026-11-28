@@ -59,6 +59,24 @@ def choices(setting_id):
     return []
 
 
+def settings_with_prefix(prefix):
+    """Every setting whose ID starts with prefix, as Kodi describes it (id, label, options...)."""
+    return [setting for setting in _all_settings() if setting.get("id", "").startswith(prefix)]
+
+
+def find_id(label, prefix="", exact=False):
+    """The ID of the setting whose on-screen label matches label, or None.
+
+    For settings whose IDs a fork may choose freely: the label is what's shown in Kodi's
+    settings, so it's what pannal's notes and the screen agree on. Only IDs starting with
+    prefix are looked at.
+    """
+    for setting in _all_settings():
+        if setting.get("id", "").startswith(prefix) and _label_matches(setting.get("label", ""), label, exact):
+            return setting["id"]
+    return None
+
+
 def has_choice(setting_id, wanted_label):
     """True if one of the setting's choices has wanted_label in its label (ignoring case)."""
     return any(_label_matches(label, wanted_label, False) for _value, label in choices(setting_id))
