@@ -227,17 +227,43 @@
             </control>
         </control>
 
-        <control type="label">
+        <!-- Weather: JellyELEC's icon for the conditions (weather.py) and the temperature,
+             right-aligned up to the clock. Without an icon, the conditions are written out. -->
+        <control type="grouplist">
             <left>1310</left>
             <top>40</top>
             <width>220</width>
             <height>64</height>
+            <orientation>horizontal</orientation>
             <align>right</align>
-            <aligny>center</aligny>
-            <font>JE_Label</font>
-            <textcolor>FFD5D6DE</textcolor>
-            <label>$INFO[Weather.Temperature]$INFO[Weather.Conditions,  ·  ]</label>
+            <itemgap>10</itemgap>
             <visible>Weather.IsFetched</visible>
+            <control type="image">
+                <width>34</width>
+                <height>64</height>
+                <aspectratio>keep</aspectratio>
+                <texture>$INFO[Window.Property(weather_icon)]</texture>
+                <colordiffuse>FFD5D6DE</colordiffuse>
+                <visible>!String.IsEmpty(Window.Property(weather_icon))</visible>
+            </control>
+            <control type="label">
+                <width>auto</width>
+                <height>64</height>
+                <aligny>center</aligny>
+                <font>JE_Label</font>
+                <textcolor>FFD5D6DE</textcolor>
+                <label>$INFO[Weather.Temperature]</label>
+                <visible>!String.IsEmpty(Window.Property(weather_icon))</visible>
+            </control>
+            <control type="label">
+                <width>auto</width>
+                <height>64</height>
+                <aligny>center</aligny>
+                <font>JE_Label</font>
+                <textcolor>FFD5D6DE</textcolor>
+                <label>$INFO[Weather.Temperature]$INFO[Weather.Conditions,  ·  ]</label>
+                <visible>String.IsEmpty(Window.Property(weather_icon))</visible>
+            </control>
         </control>
         <control type="label">
             <left>1540</left>

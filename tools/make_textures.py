@@ -107,6 +107,69 @@ def cogs_icon(size):
     return smooth(size, size, draw_cogs)
 
 
+# Weather -----------------------------------------------------------------------------
+
+def weather_icons():
+    """Simple white weather glyphs on a 24-unit grid, drawn filled so they read at 36px."""
+    def sun(draw, u, cx=12, cy=12, r=4.2, rays=True):
+        draw.ellipse(((cx - r) * u, (cy - r) * u, (cx + r) * u, (cy + r) * u), fill=WHITE)
+        if rays:
+            for k in range(8):
+                a = math.radians(k * 45)
+                draw.line(((cx + 6.4 * math.cos(a)) * u, (cy + 6.4 * math.sin(a)) * u,
+                           (cx + 8.8 * math.cos(a)) * u, (cy + 8.8 * math.sin(a)) * u),
+                          fill=WHITE, width=round(1.6 * u))
+
+    def moon(draw, u, cx=12, cy=12, r=7):
+        draw.ellipse(((cx - r) * u, (cy - r) * u, (cx + r) * u, (cy + r) * u), fill=WHITE)
+        draw.ellipse(((cx - r + 4.5) * u, (cy - r - 2.5) * u, (cx + r + 4.5) * u, (cy + r - 2.5) * u),
+                     fill=(255, 255, 255, 0))
+
+    def cloud(draw, u, dx=0.0, dy=0.0, gap=False):
+        shapes = [(4, 10, 12, 18), (8, 5, 17, 14), (13, 9, 21, 17)]
+        fill = (255, 255, 255, 0) if gap else WHITE
+        grow = 1.4 if gap else 0
+        for x0, y0, x1, y1 in shapes:
+            draw.ellipse(((x0 + dx - grow) * u, (y0 + dy - grow) * u, (x1 + dx + grow) * u, (y1 + dy + grow) * u), fill=fill)
+        draw.rectangle(((8 + dx - grow) * u, (13 + dy - grow) * u, (17 + dx + grow) * u, (18 + dy + grow) * u), fill=fill)
+
+    def drops(draw, u):
+        for x in (8, 12, 16):
+            draw.line(((x + 1) * u, 19.5 * u, x * u, 22.5 * u), fill=WHITE, width=round(1.6 * u))
+
+    def flakes(draw, u):
+        for x in (8, 12, 16):
+            draw.ellipse(((x - 1.1) * u, 20 * u, (x + 1.1) * u, 22.2 * u), fill=WHITE)
+
+    def bolt(draw, u):
+        draw.polygon([(13 * u, 17 * u), (9.5 * u, 21 * u), (12 * u, 21 * u), (10.5 * u, 24 * u),
+                      (15 * u, 19.5 * u), (12.5 * u, 19.5 * u), (14 * u, 17 * u)], fill=WHITE)
+
+    def lines(draw, u, rows, lengths):
+        for y, (x0, x1) in zip(rows, lengths):
+            draw.line((x0 * u, y * u, x1 * u, y * u), fill=WHITE, width=round(1.8 * u))
+
+    def up(cloud_dy=-3):
+        return lambda draw, u: cloud(draw, u, dy=cloud_dy)
+
+    icons = {
+        "sun": lambda d, u: sun(d, u),
+        "moon": lambda d, u: moon(d, u),
+        "cloud": lambda d, u: cloud(d, u, dy=1),
+        "partly": lambda d, u: (sun(d, u, 9, 9, 3.6, rays=False), cloud(d, u, 2, 4, gap=True), cloud(d, u, 2, 4)),
+        "partly-night": lambda d, u: (moon(d, u, 9, 9, 5.5), cloud(d, u, 2, 4, gap=True), cloud(d, u, 2, 4)),
+        "rain": lambda d, u: (up()(d, u), drops(d, u)),
+        "snow": lambda d, u: (up()(d, u), flakes(d, u)),
+        "storm": lambda d, u: (up(-4)(d, u), bolt(d, u)),
+        "fog": lambda d, u: lines(d, u, (7, 12, 17), ((4, 20), (2, 18), (6, 22))),
+        "wind": lambda d, u: lines(d, u, (8, 12, 16), ((3, 17), (5, 21), (3, 14))),
+    }
+    for name, draw_icon in icons.items():
+        def paint(draw, s, draw_icon=draw_icon):
+            draw_icon(draw, 96 * s / 24)
+        save(smooth(96, 96, paint), f"jellyelec-weather-{name}.png")
+
+
 def main():
     print(f"Writing to {MEDIA}")
     # Over the backdrop: solid on the left, clear by just past the middle; clear at the top,
@@ -127,6 +190,7 @@ def main():
     save(card_mask(180, 270, 12), "jellyelec-mask-poster.png")
     save(card_mask(384, 216, 14), "jellyelec-mask-landscape.png")
     save(cogs_icon(96), "jellyelec-icon-settings.png")
+    weather_icons()
 
 
 if __name__ == "__main__":

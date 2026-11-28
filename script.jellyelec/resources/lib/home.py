@@ -13,7 +13,7 @@ from resources.lib.kodi import ADDON_NAME, log
 from resources.lib.library import show_library
 from resources.lib.live_tv import show_live_tv
 from resources.lib.library_bar import LibraryBar
-from resources.lib import media_details
+from resources.lib import media_details, weather
 from resources.lib.listitems import PLAYABLE_TYPES, backdrop_url, logo_url, media_item
 from resources.lib.settings_screen import SIGN_OUT, show_settings
 
@@ -57,6 +57,7 @@ class HomeWindow(xbmcgui.WindowXML):
             self._loaded = True
             self._row_data = {row: {} for row in ROWS}
             self._bar = LibraryBar(self)
+            self.setProperty("weather_icon", weather.icon())
             self._media = media_details.MediaInfoLoader(self.client, self._show_media_info)
             self._spot_id = None
             self._load_libraries()
@@ -69,6 +70,10 @@ class HomeWindow(xbmcgui.WindowXML):
         if action_id == xbmcgui.ACTION_CONTEXT_MENU:
             self._confirm_sign_out()
             return
+
+        # Kodi refreshes the weather now and then; picking up a change on the next key press is
+        # soon enough, and cheap.
+        self.setProperty("weather_icon", weather.icon())
 
         focus = self.getFocusId()
         if self._bar.follow_focus(focus):
