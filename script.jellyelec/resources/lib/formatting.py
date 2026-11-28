@@ -136,21 +136,16 @@ def episode_heading(item):
     return "  ·  ".join(part for part in parts if part)
 
 
-def genres_line(item, limit=4):
-    """Science Fiction  ·  Action  ·  Adventure"""
-    return "  ·  ".join((item.get("Genres") or [])[:limit])
-
-
-def credits_line(item):
-    """Directed by Joss Whedon  ·  Marvel Studios: who made it, and the studio (or network)."""
+def directors_line(item):
+    """Directed by Joss Whedon (and a second director, if there is one)."""
     directors = [person["Name"] for person in item.get("People") or [] if person.get("Type") == "Director"]
+    return "Directed by " + ", ".join(directors[:2]) if directors else ""
+
+
+def studio_name(item):
+    """The first studio (or network, for a show), or ""."""
     studios = [studio["Name"] for studio in item.get("Studios") or [] if studio.get("Name")]
-    parts = []
-    if directors:
-        parts.append("Directed by " + ", ".join(directors[:2]))
-    if studios:
-        parts.append(", ".join(studios[:2]))
-    return "  ·  ".join(parts)
+    return studios[0] if studios else ""
 
 
 def initials(name):

@@ -1,7 +1,7 @@
 """The detail page for a movie, episode or show.
 
-The top half: clear logo (or title), details with Ends at, resolution and audio, genres,
-who made it, and the plot. Under that, a row of pill buttons: Play or Resume, From start,
+The top half: clear logo (or title), details with Ends at, resolution and audio badges,
+studio and genre chips, the directors, and the plot. Under that, a row of pill buttons: Play or Resume, From start,
 Trailer, Version, then Watched and Favourite toggles, which are saved to Jellyfin.
 
 The bottom half: rows of Seasons (shows), Cast and crew, More like this and Special features.
@@ -16,14 +16,14 @@ import xbmcgui
 from resources.lib import media_details, versions
 from resources.lib.api import TICKS_PER_SECOND, JellyfinError
 from resources.lib.formatting import (
-    credits_line,
+    directors_line,
     ends_at_text,
     episode_heading,
     format_time,
-    genres_line,
     media_badges,
     media_summary,
     spotlight_meta,
+    studio_name,
 )
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log
 from resources.lib.listitems import (
@@ -57,6 +57,9 @@ CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
 # Who appears in Cast and crew, and how many at most.
 CAST_TYPES = ("Actor", "GuestStar", "Director", "Writer")
 MAX_CAST = 40
+
+# Genre chips the skin has room for (detail_genre_1 to _4).
+MAX_GENRES = 4
 
 
 def show_details(client, item_id):
@@ -179,8 +182,12 @@ class DetailWindow(xbmcgui.WindowXML):
         self.setProperty("logo", logo_url(self.client, item) or "")
         self.setProperty("backdrop", backdrop_url(self.client, item) or "")
         self.setProperty("episode", episode_heading(item))
-        self.setProperty("genres", genres_line(item))
-        self.setProperty("credits", credits_line(item))
+        self.setProperty("directors", directors_line(item))
+        # The studio and genres, as chips.
+        self.setProperty("detail_studio", studio_name(item))
+        genres = (item.get("Genres") or [])[:MAX_GENRES]
+        for number in range(1, MAX_GENRES + 1):
+            self.setProperty(f"detail_genre_{number}", genres[number - 1] if number <= len(genres) else "")
         self.setProperty("plot", item.get("Overview", ""))
         self._show_meta()
 

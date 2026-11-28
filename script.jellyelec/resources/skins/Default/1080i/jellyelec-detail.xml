@@ -33,6 +33,15 @@
             <height>760</height>
             <texture>jellyelec-fade-left.png</texture>
         </control>
+        <!-- Again, lighter: the details sit over the fanart here, and need more darkness behind them -->
+        <control type="image">
+            <left>580</left>
+            <top>0</top>
+            <width>1340</width>
+            <height>760</height>
+            <texture>jellyelec-fade-left.png</texture>
+            <colordiffuse>99FFFFFF</colordiffuse>
+        </control>
         <control type="image">
             <left>0</left>
             <top>420</top>
@@ -88,18 +97,20 @@
         </control>
 
         <!-- Details, stacked; empty lines are skipped. The media details show as badges or as a
-             line of text (Settings > Media details); one of the two is always empty. -->
+             line of text (Settings > Media details); one of the two is always empty. Under them,
+             the studio and genres as chips. -->
         <control type="grouplist">
             <left>96</left>
             <top>246</top>
             <width>1100</width>
-            <height>340</height>
+            <height>232</height>
             <orientation>vertical</orientation>
-            <itemgap>6</itemgap>
+            <itemgap>8</itemgap>
                 <control type="label">
                     <width>1100</width>
                     <height>36</height>
                     <font>JE_LabelBold</font>
+                    <shadowcolor>E6000000</shadowcolor>
                     <textcolor>FFF2F2F5</textcolor>
                     <label>$INFO[Window.Property(episode)]</label>
                     <visible>!String.IsEmpty(Window.Property(episode))</visible>
@@ -108,7 +119,8 @@
                     <width>1100</width>
                     <height>36</height>
                     <font>JE_Label</font>
-                    <textcolor>FFD5D6DE</textcolor>
+                    <shadowcolor>E6000000</shadowcolor>
+                    <textcolor>FFE6E7EC</textcolor>
                     <label>$INFO[Window.Property(meta)]</label>
                     <visible>!String.IsEmpty(Window.Property(meta))</visible>
                 </control>
@@ -116,6 +128,7 @@
                     <width>1100</width>
                     <height>36</height>
                     <font>JE_LabelBold</font>
+                    <shadowcolor>E6000000</shadowcolor>
                     <textcolor>FFF2F2F5</textcolor>
                     <label>$INFO[Window.Property(detail_media)]</label>
                     <visible>!String.IsEmpty(Window.Property(detail_media))</visible>
@@ -135,8 +148,8 @@
                         <font>JE_Kicker</font>
                         <textcolor>FFF2F2F5</textcolor>
                         <disabledcolor>FFF2F2F5</disabledcolor>
-                        <texturenofocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturenofocus>
-                        <texturefocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturefocus>
+                        <texturenofocus border="10">jellyelec-badge-filled.png</texturenofocus>
+                        <texturefocus border="10">jellyelec-badge-filled.png</texturefocus>
                         <enable>false</enable>
                         <label>$INFO[Window.Property(detail_badge_1)]</label>
                         <visible>!String.IsEmpty(Window.Property(detail_badge_1))</visible>
@@ -150,8 +163,8 @@
                         <font>JE_Kicker</font>
                         <textcolor>FFF2F2F5</textcolor>
                         <disabledcolor>FFF2F2F5</disabledcolor>
-                        <texturenofocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturenofocus>
-                        <texturefocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturefocus>
+                        <texturenofocus border="10">jellyelec-badge-filled.png</texturenofocus>
+                        <texturefocus border="10">jellyelec-badge-filled.png</texturefocus>
                         <enable>false</enable>
                         <label>$INFO[Window.Property(detail_badge_2)]</label>
                         <visible>!String.IsEmpty(Window.Property(detail_badge_2))</visible>
@@ -165,8 +178,8 @@
                         <font>JE_Kicker</font>
                         <textcolor>FFF2F2F5</textcolor>
                         <disabledcolor>FFF2F2F5</disabledcolor>
-                        <texturenofocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturenofocus>
-                        <texturefocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturefocus>
+                        <texturenofocus border="10">jellyelec-badge-filled.png</texturenofocus>
+                        <texturefocus border="10">jellyelec-badge-filled.png</texturefocus>
                         <enable>false</enable>
                         <label>$INFO[Window.Property(detail_badge_3)]</label>
                         <visible>!String.IsEmpty(Window.Property(detail_badge_3))</visible>
@@ -180,37 +193,117 @@
                         <font>JE_Kicker</font>
                         <textcolor>FFF2F2F5</textcolor>
                         <disabledcolor>FFF2F2F5</disabledcolor>
-                        <texturenofocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturenofocus>
-                        <texturefocus border="10" colordiffuse="99F2F2F5">jellyelec-badge.png</texturefocus>
+                        <texturenofocus border="10">jellyelec-badge-filled.png</texturenofocus>
+                        <texturefocus border="10">jellyelec-badge-filled.png</texturefocus>
                         <enable>false</enable>
                         <label>$INFO[Window.Property(detail_badge_4)]</label>
                         <visible>!String.IsEmpty(Window.Property(detail_badge_4))</visible>
+                    </control>
+            </control>
+            <control type="grouplist">
+                <width>1100</width>
+                <height>36</height>
+                <orientation>horizontal</orientation>
+                <itemgap>10</itemgap>
+                <visible>!String.IsEmpty(Window.Property(detail_studio)) | !String.IsEmpty(Window.Property(detail_genre_1))</visible>
+                    <control type="button">
+                        <width min="60" max="520">auto</width>
+                        <height>36</height>
+                        <textoffsetx>18</textoffsetx>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <font>JE_Small</font>
+                        <textcolor>FFF2F2F5</textcolor>
+                        <disabledcolor>FFF2F2F5</disabledcolor>
+                        <texturenofocus border="18">jellyelec-chip.png</texturenofocus>
+                        <texturefocus border="18">jellyelec-chip.png</texturefocus>
+                        <enable>false</enable>
+                        <label>$INFO[Window.Property(detail_studio)]</label>
+                        <visible>!String.IsEmpty(Window.Property(detail_studio))</visible>
+                    </control>
+                    <control type="button">
+                        <width min="60" max="520">auto</width>
+                        <height>36</height>
+                        <textoffsetx>18</textoffsetx>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <font>JE_Small</font>
+                        <textcolor>FFF2F2F5</textcolor>
+                        <disabledcolor>FFF2F2F5</disabledcolor>
+                        <texturenofocus border="18">jellyelec-chip.png</texturenofocus>
+                        <texturefocus border="18">jellyelec-chip.png</texturefocus>
+                        <enable>false</enable>
+                        <label>$INFO[Window.Property(detail_genre_1)]</label>
+                        <visible>!String.IsEmpty(Window.Property(detail_genre_1))</visible>
+                    </control>
+                    <control type="button">
+                        <width min="60" max="520">auto</width>
+                        <height>36</height>
+                        <textoffsetx>18</textoffsetx>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <font>JE_Small</font>
+                        <textcolor>FFF2F2F5</textcolor>
+                        <disabledcolor>FFF2F2F5</disabledcolor>
+                        <texturenofocus border="18">jellyelec-chip.png</texturenofocus>
+                        <texturefocus border="18">jellyelec-chip.png</texturefocus>
+                        <enable>false</enable>
+                        <label>$INFO[Window.Property(detail_genre_2)]</label>
+                        <visible>!String.IsEmpty(Window.Property(detail_genre_2))</visible>
+                    </control>
+                    <control type="button">
+                        <width min="60" max="520">auto</width>
+                        <height>36</height>
+                        <textoffsetx>18</textoffsetx>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <font>JE_Small</font>
+                        <textcolor>FFF2F2F5</textcolor>
+                        <disabledcolor>FFF2F2F5</disabledcolor>
+                        <texturenofocus border="18">jellyelec-chip.png</texturenofocus>
+                        <texturefocus border="18">jellyelec-chip.png</texturefocus>
+                        <enable>false</enable>
+                        <label>$INFO[Window.Property(detail_genre_3)]</label>
+                        <visible>!String.IsEmpty(Window.Property(detail_genre_3))</visible>
+                    </control>
+                    <control type="button">
+                        <width min="60" max="520">auto</width>
+                        <height>36</height>
+                        <textoffsetx>18</textoffsetx>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <font>JE_Small</font>
+                        <textcolor>FFF2F2F5</textcolor>
+                        <disabledcolor>FFF2F2F5</disabledcolor>
+                        <texturenofocus border="18">jellyelec-chip.png</texturenofocus>
+                        <texturefocus border="18">jellyelec-chip.png</texturefocus>
+                        <enable>false</enable>
+                        <label>$INFO[Window.Property(detail_genre_4)]</label>
+                        <visible>!String.IsEmpty(Window.Property(detail_genre_4))</visible>
                     </control>
             </control>
                 <control type="label">
                     <width>1100</width>
                     <height>36</height>
                     <font>JE_Label</font>
-                    <textcolor>FFB7B9C6</textcolor>
-                    <label>$INFO[Window.Property(genres)]</label>
-                    <visible>!String.IsEmpty(Window.Property(genres))</visible>
+                    <shadowcolor>E6000000</shadowcolor>
+                    <textcolor>FFD5D6DE</textcolor>
+                    <label>$INFO[Window.Property(directors)]</label>
+                    <visible>!String.IsEmpty(Window.Property(directors))</visible>
                 </control>
-                <control type="label">
-                    <width>1100</width>
-                    <height>36</height>
-                    <font>JE_Label</font>
-                    <textcolor>FFB7B9C6</textcolor>
-                    <label>$INFO[Window.Property(credits)]</label>
-                    <visible>!String.IsEmpty(Window.Property(credits))</visible>
-                </control>
-            <control type="textbox">
-                <width>1000</width>
-                <height>140</height>
-                <autoscroll delay="6000" time="4000" repeat="8000">true</autoscroll>
-                <font>JE_Body</font>
-                <textcolor>FFC3C5D0</textcolor>
-                <label>$INFO[Window.Property(plot)]</label>
-            </control>
+        </control>
+
+        <!-- Plot, in its own space above the buttons -->
+        <control type="textbox">
+            <left>96</left>
+            <top>484</top>
+            <width>1000</width>
+            <height>108</height>
+            <autoscroll delay="6000" time="4000" repeat="8000">true</autoscroll>
+            <font>JE_Body</font>
+            <shadowcolor>E6000000</shadowcolor>
+            <textcolor>FFD5D6DE</textcolor>
+            <label>$INFO[Window.Property(plot)]</label>
         </control>
 
         <!-- Buttons: pills sized to their labels, Jellyfin blue when focused -->
@@ -469,10 +562,10 @@
                             <left>20</left>
                             <top>14</top>
                             <width>180</width>
-                            <height>180</height>
-                            <aspectratio aligny="top">scale</aspectratio>
+                            <height>270</height>
+                            <aspectratio>scale</aspectratio>
                             <colordiffuse>D9FFFFFF</colordiffuse>
-                            <texture background="true" diffuse="jellyelec-mask-round.png">$INFO[ListItem.Art(thumb)]</texture>
+                            <texture background="true" diffuse="jellyelec-mask-headshot.png">$INFO[ListItem.Art(thumb)]</texture>
                         </control>
                         <control type="label">
                             <left>4</left>
@@ -528,9 +621,9 @@
                             <left>20</left>
                             <top>14</top>
                             <width>180</width>
-                            <height>180</height>
-                            <aspectratio aligny="top">scale</aspectratio>
-                            <texture background="true" diffuse="jellyelec-mask-round.png">$INFO[ListItem.Art(thumb)]</texture>
+                            <height>270</height>
+                            <aspectratio>scale</aspectratio>
+                            <texture background="true" diffuse="jellyelec-mask-headshot.png">$INFO[ListItem.Art(thumb)]</texture>
                         </control>
                         <control type="label">
                             <left>4</left>

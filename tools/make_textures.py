@@ -243,6 +243,18 @@ def main():
          "jellyelec-mask-round.png")
     save(smooth(196, 196, lambda draw, s: draw.ellipse(
         (0, 0, 196 * s - 1, 196 * s - 1), outline=WHITE, width=4 * s)), "jellyelec-ring-round.png")
+    # Headshots are 2:3 photos; Kodi stretches a mask over the whole photo before cropping it,
+    # so the mask is 2:3 too, with the circle in its top part (where the face is).
+    save(smooth(180, 270, lambda draw, s: draw.ellipse((0, 0, 180 * s - 1, 180 * s - 1), fill=WHITE)),
+         "jellyelec-mask-headshot.png")
+    # Over fanart: badges and chips with a dark fill, so they stand out on bright pictures.
+    # Coloured here, so they're used without colordiffuse.
+    save(smooth(64, 36, lambda draw, s: draw.rounded_rectangle(
+        (0, 0, 64 * s - 1, 36 * s - 1), radius=8 * s, fill=(*BACKGROUND, 190),
+        outline=(242, 242, 245, 170), width=2 * s)), "jellyelec-badge-filled.png")
+    save(smooth(64, 36, lambda draw, s: draw.rounded_rectangle(
+        (0, 0, 64 * s - 1, 36 * s - 1), radius=18 * s, fill=(*BACKGROUND, 200),
+        outline=(255, 255, 255, 46), width=2 * s)), "jellyelec-chip.png")
     save(check_icon(96), "jellyelec-icon-check.png")
     save(check_circle_icon(96), "jellyelec-icon-check-on.png")
     save(heart_icon(96, filled=False), "jellyelec-icon-heart.png")
