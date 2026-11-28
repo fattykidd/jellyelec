@@ -5,7 +5,16 @@ import threading
 import xbmc
 import xbmcgui
 
-from resources.lib import after_update, appliance, device_options, output_setup, setup, storage, updater
+from resources.lib import (
+    after_update,
+    appliance,
+    device_options,
+    output_setup,
+    setup,
+    skin_patch,
+    storage,
+    updater,
+)
 from resources.lib.home import HomeWindow
 from resources.lib.keymap import install_keymap, remove_live_tv_keymap
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log
@@ -20,6 +29,7 @@ def run(splash):
     """
     install_keymap()
     remove_live_tv_keymap()
+    _keep_skin_patched()
     if after_update.finish_if_updated(splash):
         return
     if setup.is_complete():
@@ -57,6 +67,14 @@ def run(splash):
             return True
         elif next_step != SIGN_OUT:
             return
+
+
+def _keep_skin_patched():
+    """Keep the startup screen and fonts in the skin Kodi uses (see skin_patch.py)."""
+    try:
+        skin_patch.patch_active_skin()
+    except OSError as error:
+        log(f"Couldn't patch the skin: {error}", xbmc.LOGWARNING)
 
 
 def _check_for_updates_in_background():

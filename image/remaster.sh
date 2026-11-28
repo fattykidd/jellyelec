@@ -22,8 +22,8 @@
 #   SYSTEM (the read-only system)
 #     - adds the JellyELEC add-on as a built-in add-on that's always enabled
 #     - adds the files in image/overlay/: first-boot settings and the update block
-#     - replaces the skins' startup screen with image/skin/Startup.xml (no Kodi home screen at boot)
-#     - adds JellyELEC's fonts (image/skin/fonts/) to the skins, defined in each Font.xml
+#     - replaces the skins' startup screen with script.jellyelec/resources/skin_patch/Startup.xml (no Kodi home screen at boot)
+#     - adds JellyELEC's fonts (script.jellyelec/resources/skin_patch/fonts/) to the skins, defined in each Font.xml
 #     - uses JellyELEC's splash for Kodi's splash screen, and turns that screen on
 #     - for new installs: names Kodi JellyELEC, turns off automatic add-on updates, and
 #       allows installing add-ons from zip files
@@ -150,7 +150,7 @@ step "Replacing the skins' startup screen"
 for skin in "${SKINS[@]}"; do
     target="$work/system/usr/share/kodi/addons/$skin/xml/Startup.xml"
     if [ -f "$target" ]; then
-        cp "$IMAGE_DIR/skin/Startup.xml" "$target"
+        cp "$ADDON_DIR/resources/skin_patch/Startup.xml" "$target"
         echo "  $skin"
     fi
 done
@@ -161,8 +161,8 @@ step "Adding JellyELEC's fonts to the skins"
 for skin in "${SKINS[@]}"; do
     skin_dir="$work/system/usr/share/kodi/addons/$skin"
     [ -f "$skin_dir/xml/Font.xml" ] || continue
-    install -o root -g root -m 0644 "$IMAGE_DIR"/skin/fonts/*.otf "$IMAGE_DIR"/skin/fonts/*.ttf "$skin_dir/fonts/"
-    python3 - "$skin_dir/xml/Font.xml" "$IMAGE_DIR/skin/jellyelec-fonts.xml" <<'PYTHON'
+    install -o root -g root -m 0644 "$ADDON_DIR"/resources/skin_patch/fonts/*.otf "$ADDON_DIR"/resources/skin_patch/fonts/*.ttf "$skin_dir/fonts/"
+    python3 - "$skin_dir/xml/Font.xml" "$ADDON_DIR/resources/skin_patch/jellyelec-fonts.xml" <<'PYTHON'
 import re, sys
 font_xml, fragment = sys.argv[1], sys.argv[2]
 with open(fragment, encoding="utf-8") as file:

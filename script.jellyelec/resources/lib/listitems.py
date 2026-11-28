@@ -179,8 +179,9 @@ def card_url(client, data):
 def card_lines(data):
     """The title and second line under a landscape card.
 
-    An episode: its show, then "S1 E3 · Episode name". Anything else: its name, then how
-    long is left (once started) or how long it runs.
+    An episode: its show, then "S1 E3 · Episode name". A show or collection: its name, then
+    how many episodes are unwatched (or its year). Anything else: its name, then how long is
+    left (once started) or how long it runs.
     """
     if data.get("Type") == "Episode":
         numbers = []
@@ -190,6 +191,9 @@ def card_lines(data):
             numbers.append(f"E{data['IndexNumber']}")
         parts = [" ".join(numbers), data.get("Name", "")]
         return data.get("SeriesName", ""), "  ·  ".join(part for part in parts if part)
+    if data.get("Type") in ("Series", "BoxSet"):
+        # A show (Recently Added groups new episodes under it) or a collection.
+        return data.get("Name", ""), unwatched_text(data) or str(data.get("ProductionYear") or "")
     remaining = remaining_ticks(data)
     runtime = data.get("RunTimeTicks") or 0
     if remaining and remaining < runtime:

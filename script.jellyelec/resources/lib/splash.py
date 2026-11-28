@@ -4,7 +4,7 @@ It goes up the moment JellyELEC starts, so Kodi's own home screen isn't seen whi
 server is contacted, and it fills any gap between JellyELEC's other screens.
 
 When a screen like this closes, Kodi goes back to whatever was showing when it opened. In
-JellyELEC images that's arranged to be the startup screen (image/skin/Startup.xml), which
+JellyELEC images that's arranged to be the startup screen (resources/skin_patch/Startup.xml), which
 shows the same jellyfish, so closing the backdrop never reveals Kodi's home screen: not
 when JellyELEC restarts after an update, and not in any other gap.
 """

@@ -22,7 +22,7 @@ HOME_WINDOW_ID = 10000
 RUNNING_PROPERTY = "script.jellyelec.running"
 MAINTENANCE_PROPERTY = "script.jellyelec.maintenance"
 
-# Set by the startup screen in JellyELEC images (image/skin/Startup.xml). That screen shows
+# Set by the startup screen in JellyELEC images (resources/skin_patch/Startup.xml). That screen shows
 # the JellyELEC splash and stays up, instead of going on to Kodi's home screen; JellyELEC
 # opens over it, and this service moves on to the home screen when Kodi's menus are wanted.
 STARTUP_SCREEN_PROPERTY = "jellyelec.startup_screen"

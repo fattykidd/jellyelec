@@ -18,7 +18,7 @@
              the ocean; light rays shimmering; the triangle's glow breathing; the jellyfish
              bobbing and pulsing; the wordmark. Every animation starts from the still splash's
              look, so the boot splash hands over without a jump. The same layers are in
-             jellyelec-splash.xml (add-on) and image/skin/Startup.xml. -->
+             jellyelec-splash.xml (add-on) and resources/skin_patch/Startup.xml. -->
         <control type="image">
             <left>0</left>
             <top>0</top>

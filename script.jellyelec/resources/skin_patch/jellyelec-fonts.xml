@@ -1,6 +1,6 @@
 <!--
     JellyELEC's fonts, added to every fontset in the skin's Font.xml by remaster.sh.
-    The font files are in image/skin/fonts/ and go into the skin's fonts folder.
+    The font files are in skin_patch/fonts/ and go into the skin's fonts folder.
     Where these aren't installed (an add-on update on an older image), Kodi falls back to font13.
 -->
 <font><name>JE_Title</name><filename>Outfit-Bold.ttf</filename><size>88</size></font>

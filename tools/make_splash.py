@@ -11,7 +11,7 @@ Writes these 1920×1080 pictures into the add-on's skin media folder:
   jellyelec-splash.png     all of the above in one still picture: the boot and Kodi splash
 
 Every layer is full screen and lined up, so the animated screens (jellyelec-splash.xml in the
-add-on, image/skin/Startup.xml) just stack them. The still splash is the animation's first
+add-on, resources/skin_patch/Startup.xml) just stack them. The still splash is the animation's first
 frame, so it hands over to them without a jump.
 
 Needs Pillow, NumPy and the Inter font (Inter-Bold.otf, SIL Open Font License).
