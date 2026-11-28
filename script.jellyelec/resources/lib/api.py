@@ -179,6 +179,27 @@ class JellyfinClient:
         """Trailer files stored alongside the item (not online trailers)."""
         return self._request("GET", f"/Users/{self.user_id}/Items/{item_id}/LocalTrailers") or []
 
+    def get_similar(self, item_id, limit=16):
+        """Titles like this one, from the same libraries, as Jellyfin's "More like this" picks them."""
+        query = urllib.parse.urlencode({
+            "UserId": self.user_id,
+            "Limit": limit,
+            "Fields": "Overview",
+            "ImageTypeLimit": 1,
+            "EnableImageTypes": "Primary,Backdrop,Logo,Thumb",
+        })
+        return (self._request("GET", f"/Items/{item_id}/Similar?{query}") or {}).get("Items", [])
+
+    def set_played(self, item_id, played):
+        """Mark an item (or a whole show) watched or unwatched."""
+        method = "POST" if played else "DELETE"
+        self._user_item_request(method, "UserPlayedItems", "PlayedItems", item_id)
+
+    def set_favorite(self, item_id, favorite):
+        """Add an item to your favourites, or take it out."""
+        method = "POST" if favorite else "DELETE"
+        self._user_item_request(method, "UserFavoriteItems", "FavoriteItems", item_id)
+
     def image_url(self, item_id, image_type, tag, max_width=None, max_height=None):
         """Address of an item's image, resized by the server. Images don't need sign-in."""
         params = {"tag": tag, "quality": 90}
@@ -254,6 +275,17 @@ class JellyfinClient:
         }
         query = urllib.parse.urlencode(params)
         return self._request("GET", f"{path}?{query}")["Items"]
+
+    def _user_item_request(self, method, path, old_path, item_id):
+        """Watched and favourite changes. Jellyfin 10.9 moved these from /Users/{user}/{old_path}
+        to /{path}; the old addresses answer 404 on servers that have dropped them."""
+        query = urllib.parse.urlencode({"userId": self.user_id})
+        try:
+            self._request(method, f"/{path}/{item_id}?{query}")
+        except JellyfinError as error:
+            if "HTTP 404" not in str(error):
+                raise
+            self._request(method, f"/Users/{self.user_id}/{old_path}/{item_id}")
 
     @staticmethod
     def _playback_report(item_id, media_source_id, play_session_id, position_ticks, is_paused=False):

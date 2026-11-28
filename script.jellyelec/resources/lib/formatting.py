@@ -38,6 +38,9 @@ AUDIO_CODEC_NAMES = {
 
 CHANNEL_LAYOUTS = {1: "Mono", 2: "Stereo", 6: "5.1", 8: "7.1"}
 
+# Left off a name's initials: Robert Downey Jr. is RD.
+NAME_SUFFIXES = ("jr", "sr", "ii", "iii", "iv")
+
 
 def format_time(seconds):
     """1:02:03, or 2:03 when under an hour."""
@@ -118,6 +121,45 @@ def episode_line(item):
     if item.get("IndexNumber") is not None:
         parts.append(f"Episode {item['IndexNumber']}")
     return "  ·  ".join(parts)
+
+
+def episode_heading(item):
+    """S1 E2  ·  Episode name, for an episode's detail page. "" for anything else."""
+    if item.get("Type") != "Episode":
+        return ""
+    numbers = []
+    if item.get("ParentIndexNumber") is not None:
+        numbers.append(f"S{item['ParentIndexNumber']}")
+    if item.get("IndexNumber") is not None:
+        numbers.append(f"E{item['IndexNumber']}")
+    parts = [" ".join(numbers), item.get("Name", "")]
+    return "  ·  ".join(part for part in parts if part)
+
+
+def genres_line(item, limit=4):
+    """Science Fiction  ·  Action  ·  Adventure"""
+    return "  ·  ".join((item.get("Genres") or [])[:limit])
+
+
+def credits_line(item):
+    """Directed by Joss Whedon  ·  Marvel Studios: who made it, and the studio (or network)."""
+    directors = [person["Name"] for person in item.get("People") or [] if person.get("Type") == "Director"]
+    studios = [studio["Name"] for studio in item.get("Studios") or [] if studio.get("Name")]
+    parts = []
+    if directors:
+        parts.append("Directed by " + ", ".join(directors[:2]))
+    if studios:
+        parts.append(", ".join(studios[:2]))
+    return "  ·  ".join(parts)
+
+
+def initials(name):
+    """RD for Robert Downey Jr., for a cast member with no photo."""
+    words = [word for word in name.split() if word[:1].isalpha()]
+    if len(words) > 2 and words[-1].rstrip(".").lower() in NAME_SUFFIXES:
+        words = words[:-1]
+    letters = [word[0] for word in words]
+    return (letters[0] + letters[-1] if len(letters) > 1 else "".join(letters)).upper()
 
 
 def media_summary(item, source=None):

@@ -107,6 +107,54 @@ def cogs_icon(size):
     return smooth(size, size, draw_cogs)
 
 
+# Toggles on the detail page --------------------------------------------------------------
+
+CHECK_POINTS = ((6.5, 12.5), (10.2, 16.2), (17.5, 8.2))
+
+
+def check_icon(size):
+    """Watched, off: a plain check mark."""
+    def draw_check(draw, s):
+        unit = size * s / 24
+        points = [(x * unit, y * unit) for x, y in CHECK_POINTS]
+        draw.line(points, fill=WHITE, width=round(2.2 * unit), joint="curve")
+    return smooth(size, size, draw_check)
+
+
+def check_circle_icon(size):
+    """Watched, on: a solid circle with the check mark cut out of it."""
+    image = smooth(size, size, lambda draw, s: draw.ellipse(
+        (1.5 * size * s / 24, 1.5 * size * s / 24, 22.5 * size * s / 24, 22.5 * size * s / 24), fill=WHITE))
+    hole = check_icon(size)
+    alpha = image.getchannel("A")
+    cut = Image.eval(hole.getchannel("A"), lambda value: 255 - value)
+    image.putalpha(Image.composite(alpha, Image.new("L", alpha.size, 0), cut))
+    return image
+
+
+def heart_shape(unit):
+    """A heart on the 24-unit grid, as a polygon."""
+    points = []
+    for step in range(120):
+        t = 2 * math.pi * step / 120
+        x = 16 * math.sin(t) ** 3
+        y = 13 * math.cos(t) - 5 * math.cos(2 * t) - 2 * math.cos(3 * t) - math.cos(4 * t)
+        points.append(((12 + x * 0.58) * unit, (11.2 - y * 0.58) * unit))
+    return points
+
+
+def heart_icon(size, filled):
+    """Favourite: an outline heart when off, a solid one when on."""
+    def draw_heart(draw, s):
+        unit = size * s / 24
+        if filled:
+            draw.polygon(heart_shape(unit), fill=WHITE)
+        else:
+            draw.line(heart_shape(unit) + heart_shape(unit)[:2], fill=WHITE, width=round(1.9 * unit), joint="curve")
+    return smooth(size, size, draw_heart)
+
+
+# Weather -----------------------------------------------------------------------------
 # Weather -----------------------------------------------------------------------------
 
 def weather_icons():
@@ -190,6 +238,15 @@ def main():
     save(card_mask(180, 270, 12), "jellyelec-mask-poster.png")
     save(card_mask(384, 216, 14), "jellyelec-mask-landscape.png")
     save(cogs_icon(96), "jellyelec-icon-settings.png")
+    # Cast headshots: round, with a round ring when focused.
+    save(smooth(180, 180, lambda draw, s: draw.ellipse((0, 0, 180 * s - 1, 180 * s - 1), fill=WHITE)),
+         "jellyelec-mask-round.png")
+    save(smooth(196, 196, lambda draw, s: draw.ellipse(
+        (0, 0, 196 * s - 1, 196 * s - 1), outline=WHITE, width=4 * s)), "jellyelec-ring-round.png")
+    save(check_icon(96), "jellyelec-icon-check.png")
+    save(check_circle_icon(96), "jellyelec-icon-check-on.png")
+    save(heart_icon(96, filled=False), "jellyelec-icon-heart.png")
+    save(heart_icon(96, filled=True), "jellyelec-icon-heart-on.png")
     weather_icons()
 
 

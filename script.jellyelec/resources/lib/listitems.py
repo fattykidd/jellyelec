@@ -7,6 +7,7 @@ from resources.lib.formatting import (
     clock_text,
     elapsed_and_length,
     extra_type_name,
+    initials,
     parse_date,
     remaining_ticks,
     runtime_text,
@@ -24,6 +25,8 @@ EXTRA_THUMB_WIDTH = 480
 EPISODE_THUMB_WIDTH = 480
 CHANNEL_LOGO_WIDTH = 300
 LOGO_WIDTH = 720
+# Cast headshots are 180px circles on screen.
+HEADSHOT_WIDTH = 360
 
 # Item types that are played in one go (not shows or collections).
 PLAYABLE_TYPES = ("Movie", "Episode", "Video", "MusicVideo")
@@ -93,6 +96,22 @@ def extra_item(client, data, fallback_thumb=None):
     thumb = client.image_url(data["Id"], "Primary", tag, max_width=EXTRA_THUMB_WIDTH) if tag else fallback_thumb
     if thumb:
         item.setArt({"thumb": thumb})
+    return item
+
+
+def person_item(client, person):
+    """A cast or crew member: headshot, name, and their role (or job, for crew)."""
+    name = person.get("Name", "")
+    item = xbmcgui.ListItem(label=name, offscreen=True)
+    item.setProperty("id", person.get("Id", ""))
+    item.setProperty("initials", initials(name))
+    if person.get("Type") in ("Actor", "GuestStar"):
+        item.setProperty("role", person.get("Role") or "")
+    else:
+        item.setProperty("role", person.get("Type", ""))
+    tag = person.get("PrimaryImageTag")
+    if tag and person.get("Id"):
+        item.setArt({"thumb": client.image_url(person["Id"], "Primary", tag, max_width=HEADSHOT_WIDTH)})
     return item
 
 
