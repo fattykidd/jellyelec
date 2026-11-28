@@ -1,7 +1,8 @@
 """The detail page for a movie, episode or show.
 
 The top half: clear logo (or title), details with Ends at, resolution and audio badges,
-studio and genre chips, the directors, and the plot. Under that, a row of pill buttons: Play or Resume, From start,
+studio, genre and director chips, and the plot. Picking a chip, or someone in Cast and crew,
+opens every title in your libraries that shares it, as in Jellyfin's web app. Under that, a row of pill buttons: Play or Resume, From start,
 Trailer, Version, Media info and Artwork, then Watched and Favourite toggles, which are saved
 to Jellyfin.
 
@@ -15,18 +16,16 @@ import xbmc
 import xbmcgui
 
 from resources.lib import media_details, versions
-from resources.lib.info_panels import show_artwork, show_media_info
 from resources.lib.api import TICKS_PER_SECOND, JellyfinError
 from resources.lib.formatting import (
-    directors_line,
     ends_at_text,
     episode_heading,
     format_time,
     media_badges,
     media_summary,
     spotlight_meta,
-    studio_name,
 )
+from resources.lib.info_panels import show_artwork, show_media_info
 from resources.lib.kodi import ADDON_NAME, ADDON_PATH, log
 from resources.lib.listitems import (
     PLAYABLE_TYPES,
@@ -50,6 +49,12 @@ FAVOURITE_BUTTON = 306
 MEDIA_INFO_BUTTON = 307
 ARTWORK_BUTTON = 308
 
+# Chips: the studio and genres (311-315), and the directors (321-322). Each opens the
+# titles in your libraries that share it.
+STUDIO_CHIP = 311
+GENRE_CHIPS = (312, 313, 314, 315)
+DIRECTOR_CHIPS = (321, 322)
+
 SPECIAL_FEATURES_ROW = 400
 SEASONS_ROW = 410
 CAST_ROW = 420
@@ -62,8 +67,10 @@ CLOSE_ACTIONS = (xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_PREVIOUS_MENU)
 CAST_TYPES = ("Actor", "GuestStar", "Director", "Writer")
 MAX_CAST = 40
 
-# Genre chips the skin has room for (detail_genre_1 to _4).
-MAX_GENRES = 4
+# What a chip opens, for get_titles_with().
+GENRE = "genre_id"
+STUDIO = "studio_id"
+PERSON = "person_id"
 
 
 def show_details(client, item_id):
@@ -86,6 +93,7 @@ class DetailWindow(xbmcgui.WindowXML):
     _next_episode = None  # for shows: the episode the Play button starts
     _trailers = ()
     _extras = None  # Jellyfin data for the special features, keyed by item ID
+    _chips = None  # {chip control ID: (GENRE, STUDIO or PERSON, Jellyfin ID, name)}
 
     # Kodi events ------------------------------------------------------------------
 
@@ -121,6 +129,10 @@ class DetailWindow(xbmcgui.WindowXML):
             self._toggle_watched()
         elif control_id == FAVOURITE_BUTTON:
             self._toggle_favourite()
+        elif self._chips and control_id in self._chips:
+            self._open_titles_with(*self._chips[control_id])
+        elif control_id == CAST_ROW:
+            self._open_selected_person()
         elif control_id == SEASONS_ROW:
             self._open_selected_season()
         elif control_id == SIMILAR_ROW:
@@ -190,18 +202,40 @@ class DetailWindow(xbmcgui.WindowXML):
         self.setProperty("logo", logo_url(self.client, item) or "")
         self.setProperty("backdrop", backdrop_url(self.client, item) or "")
         self.setProperty("episode", episode_heading(item))
-        self.setProperty("directors", directors_line(item))
-        # The studio and genres, as chips.
-        self.setProperty("detail_studio", studio_name(item))
-        genres = (item.get("Genres") or [])[:MAX_GENRES]
-        for number in range(1, MAX_GENRES + 1):
-            self.setProperty(f"detail_genre_{number}", genres[number - 1] if number <= len(genres) else "")
+        self._show_chips()
         self.setProperty("plot", item.get("Overview", ""))
         self._show_meta()
 
         source = versions.chosen_source(item)
         media = media_details.MediaInfo(media_summary(item, source), media_badges(item, source))
         media_details.show(self, "detail", media)
+
+    def _show_chips(self):
+        """The studio, genres and directors, each a chip that opens the titles sharing it.
+        Chips with nothing on them are hidden by the skin."""
+        item = self._item
+        studios = [(STUDIO, studio.get("Id"), studio.get("Name")) for studio in item.get("Studios") or []]
+        genres = [(GENRE, genre.get("Id"), genre.get("Name")) for genre in item.get("GenreItems") or []]
+        directors = [
+            (PERSON, person.get("Id"), person.get("Name"))
+            for person in item.get("People") or []
+            if person.get("Type") == "Director"
+        ]
+
+        self._chips = {}
+        slots = [
+            ("detail_studio", (STUDIO_CHIP,), studios),
+            ("detail_genre", GENRE_CHIPS, genres),
+            ("detail_director", DIRECTOR_CHIPS, directors),
+        ]
+        for prefix, control_ids, entries in slots:
+            entries = [entry for entry in entries if entry[1] and entry[2]]
+            for number, control_id in enumerate(control_ids, start=1):
+                entry = entries[number - 1] if number <= len(entries) else None
+                name = f"{prefix}_{number}" if len(control_ids) > 1 else prefix
+                self.setProperty(name, entry[2] if entry else "")
+                if entry:
+                    self._chips[control_id] = entry
 
     def _show_meta(self):
         """Year · rating · runtime (or time left) · community rating · Ends at."""
@@ -404,6 +438,18 @@ class DetailWindow(xbmcgui.WindowXML):
         if row.size():
             row.selectItem(min(position, row.size() - 1))
             self.setFocusId(SEASONS_ROW)
+
+    def _open_titles_with(self, kind, jellyfin_id, name):
+        """The titles in your libraries with this genre, from this studio, or with this person."""
+        # Imported here because the library grid opens detail pages itself.
+        from resources.lib.library import show_titles
+
+        show_titles(self.client, name, lambda: self.client.get_titles_with(**{kind: jellyfin_id}))
+
+    def _open_selected_person(self):
+        selected = self.getControl(CAST_ROW).getSelectedItem()
+        if selected is not None and selected.getProperty("id"):
+            self._open_titles_with(PERSON, selected.getProperty("id"), selected.getLabel())
 
     def _open_selected_similar(self):
         selected = self.getControl(SIMILAR_ROW).getSelectedItem()

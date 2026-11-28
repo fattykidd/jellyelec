@@ -136,18 +136,6 @@ def episode_heading(item):
     return "  ·  ".join(part for part in parts if part)
 
 
-def directors_line(item):
-    """Directed by Joss Whedon (and a second director, if there is one)."""
-    directors = [person["Name"] for person in item.get("People") or [] if person.get("Type") == "Director"]
-    return "Directed by " + ", ".join(directors[:2]) if directors else ""
-
-
-def studio_name(item):
-    """The first studio (or network, for a show), or ""."""
-    studios = [studio["Name"] for studio in item.get("Studios") or [] if studio.get("Name")]
-    return studios[0] if studios else ""
-
-
 def initials(name):
     """RD for Robert Downey Jr., for a cast member with no photo."""
     words = [word for word in name.split() if word[:1].isalpha()]

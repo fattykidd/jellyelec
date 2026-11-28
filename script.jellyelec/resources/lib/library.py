@@ -1,6 +1,8 @@
 """The library grid: every movie or show in one library, A to Z.
 
-The same screen shows a collection's movies, in release order, when a collection is opened.
+The same screen shows a collection's movies, in release order, when a collection is opened,
+and the titles with a genre, from a studio or with a person in them, when one of those is
+picked on a detail page.
 """
 
 import threading
@@ -40,12 +42,18 @@ def show_collection(client, collection_id, collection_name):
     _show_grid(client, collection_id, collection_name, COLLECTION)
 
 
-def _show_grid(client, parent_id, title, item_type):
+def show_titles(client, title, fetch):
+    """Open the grid for any list of titles: fetch() returns them, as Jellyfin data."""
+    _show_grid(client, None, title, None, fetch)
+
+
+def _show_grid(client, parent_id, title, item_type, fetch=None):
     window = LibraryWindow("jellyelec-library.xml", ADDON_PATH, "Default", "1080i")
     window.client = client
     window.library_id = parent_id
     window.library_name = title
     window.item_type = item_type
+    window.fetch = fetch
     window.doModal()
     del window
 
@@ -54,12 +62,14 @@ class LibraryWindow(xbmcgui.WindowXML):
     """Set client, library_id, library_name and item_type before calling doModal().
 
     For a collection, library_id is the collection's ID and item_type is COLLECTION.
+    For any other list of titles, set fetch instead: it's called to get them.
     """
 
     client = None
     library_id = None
     library_name = ""
     item_type = None
+    fetch = None
 
     _loaded = False
     _media = None
@@ -125,6 +135,8 @@ class LibraryWindow(xbmcgui.WindowXML):
             self._fill_in_collection_artwork(items)
 
     def _fetch_items(self):
+        if self.fetch is not None:
+            return self.fetch()
         if self.item_type == COLLECTION:
             return self.client.get_collection_items(self.library_id)
         group = self.item_type == MOVIE and xbmcaddon.Addon().getSettingBool(GROUP_COLLECTIONS_SETTING)

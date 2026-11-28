@@ -139,6 +139,27 @@ class JellyfinClient:
         extra = {"CollapseBoxSetItems": "true" if group_collections else "false"}
         return self._get_items(library_id, item_type, sort_by="SortName", extra=extra)
 
+    def get_titles_with(self, genre_id=None, studio_id=None, person_id=None):
+        """Every movie and show, across all libraries, with a genre, from a studio, or with a
+        person in its cast or crew, A to Z. Give one of the three."""
+        params = {
+            "Recursive": "true",
+            "IncludeItemTypes": "Movie,Series",
+            "SortBy": "SortName",
+            "SortOrder": "Ascending",
+            "Fields": "Overview",
+            "ImageTypeLimit": 1,
+            "EnableImageTypes": "Primary,Backdrop,Logo,Thumb",
+        }
+        if genre_id:
+            params["GenreIds"] = genre_id
+        if studio_id:
+            params["StudioIds"] = studio_id
+        if person_id:
+            params["PersonIds"] = person_id
+        query = urllib.parse.urlencode(params)
+        return self._request("GET", f"/Users/{self.user_id}/Items?{query}")["Items"]
+
     def get_collection_items(self, collection_id):
         """The movies (or shows) in a collection, in release order."""
         return self._get_items(

@@ -2,6 +2,8 @@
 <!--
     JellyELEC detail page for a movie, show or episode (the v2 look, like the home screen).
     Control IDs here must match the constants in resources/lib/detail.py:
+      310  studio and genre chips: 311 studio, 312-315 genres
+      320  Directed by, with 321-322 director chips
       300  the buttons (a grouplist):
            301 Play / Resume, 302 From start, 303 Trailer, 304 Version, 307 Media info,
            308 Artwork (each hidden when its label is empty), 305 Watched and 306 Favourite (toggles)
@@ -200,13 +202,16 @@
                         <visible>!String.IsEmpty(Window.Property(detail_badge_4))</visible>
                     </control>
             </control>
-            <control type="grouplist">
+            <!-- Studio and genre chips: each opens the titles that share it -->
+            <control type="grouplist" id="310">
                 <width>1100</width>
                 <height>36</height>
                 <orientation>horizontal</orientation>
                 <itemgap>10</itemgap>
+                <onup>310</onup>
+                <ondown>320</ondown>
                 <visible>!String.IsEmpty(Window.Property(detail_studio)) | !String.IsEmpty(Window.Property(detail_genre_1))</visible>
-                    <control type="button">
+                    <control type="button" id="311">
                         <width min="60" max="520">auto</width>
                         <height>36</height>
                         <textoffsetx>18</textoffsetx>
@@ -214,14 +219,15 @@
                         <aligny>center</aligny>
                         <font>JE_Small</font>
                         <textcolor>FFF2F2F5</textcolor>
-                        <disabledcolor>FFF2F2F5</disabledcolor>
+                        <focusedcolor>FFFFFFFF</focusedcolor>
                         <texturenofocus border="18">jellyelec-chip.png</texturenofocus>
-                        <texturefocus border="18">jellyelec-chip.png</texturefocus>
-                        <enable>false</enable>
+                        <texturefocus border="18" colordiffuse="FF00A4DC">jellyelec-pill.png</texturefocus>
                         <label>$INFO[Window.Property(detail_studio)]</label>
+                        <onup>310</onup>
+                        <ondown>320</ondown>
                         <visible>!String.IsEmpty(Window.Property(detail_studio))</visible>
                     </control>
-                    <control type="button">
+                    <control type="button" id="312">
                         <width min="60" max="520">auto</width>
                         <height>36</height>
                         <textoffsetx>18</textoffsetx>
@@ -229,14 +235,15 @@
                         <aligny>center</aligny>
                         <font>JE_Small</font>
                         <textcolor>FFF2F2F5</textcolor>
-                        <disabledcolor>FFF2F2F5</disabledcolor>
+                        <focusedcolor>FFFFFFFF</focusedcolor>
                         <texturenofocus border="18">jellyelec-chip.png</texturenofocus>
-                        <texturefocus border="18">jellyelec-chip.png</texturefocus>
-                        <enable>false</enable>
+                        <texturefocus border="18" colordiffuse="FF00A4DC">jellyelec-pill.png</texturefocus>
                         <label>$INFO[Window.Property(detail_genre_1)]</label>
+                        <onup>310</onup>
+                        <ondown>320</ondown>
                         <visible>!String.IsEmpty(Window.Property(detail_genre_1))</visible>
                     </control>
-                    <control type="button">
+                    <control type="button" id="313">
                         <width min="60" max="520">auto</width>
                         <height>36</height>
                         <textoffsetx>18</textoffsetx>
@@ -244,14 +251,15 @@
                         <aligny>center</aligny>
                         <font>JE_Small</font>
                         <textcolor>FFF2F2F5</textcolor>
-                        <disabledcolor>FFF2F2F5</disabledcolor>
+                        <focusedcolor>FFFFFFFF</focusedcolor>
                         <texturenofocus border="18">jellyelec-chip.png</texturenofocus>
-                        <texturefocus border="18">jellyelec-chip.png</texturefocus>
-                        <enable>false</enable>
+                        <texturefocus border="18" colordiffuse="FF00A4DC">jellyelec-pill.png</texturefocus>
                         <label>$INFO[Window.Property(detail_genre_2)]</label>
+                        <onup>310</onup>
+                        <ondown>320</ondown>
                         <visible>!String.IsEmpty(Window.Property(detail_genre_2))</visible>
                     </control>
-                    <control type="button">
+                    <control type="button" id="314">
                         <width min="60" max="520">auto</width>
                         <height>36</height>
                         <textoffsetx>18</textoffsetx>
@@ -259,14 +267,15 @@
                         <aligny>center</aligny>
                         <font>JE_Small</font>
                         <textcolor>FFF2F2F5</textcolor>
-                        <disabledcolor>FFF2F2F5</disabledcolor>
+                        <focusedcolor>FFFFFFFF</focusedcolor>
                         <texturenofocus border="18">jellyelec-chip.png</texturenofocus>
-                        <texturefocus border="18">jellyelec-chip.png</texturefocus>
-                        <enable>false</enable>
+                        <texturefocus border="18" colordiffuse="FF00A4DC">jellyelec-pill.png</texturefocus>
                         <label>$INFO[Window.Property(detail_genre_3)]</label>
+                        <onup>310</onup>
+                        <ondown>320</ondown>
                         <visible>!String.IsEmpty(Window.Property(detail_genre_3))</visible>
                     </control>
-                    <control type="button">
+                    <control type="button" id="315">
                         <width min="60" max="520">auto</width>
                         <height>36</height>
                         <textoffsetx>18</textoffsetx>
@@ -274,23 +283,66 @@
                         <aligny>center</aligny>
                         <font>JE_Small</font>
                         <textcolor>FFF2F2F5</textcolor>
-                        <disabledcolor>FFF2F2F5</disabledcolor>
+                        <focusedcolor>FFFFFFFF</focusedcolor>
                         <texturenofocus border="18">jellyelec-chip.png</texturenofocus>
-                        <texturefocus border="18">jellyelec-chip.png</texturefocus>
-                        <enable>false</enable>
+                        <texturefocus border="18" colordiffuse="FF00A4DC">jellyelec-pill.png</texturefocus>
                         <label>$INFO[Window.Property(detail_genre_4)]</label>
+                        <onup>310</onup>
+                        <ondown>320</ondown>
                         <visible>!String.IsEmpty(Window.Property(detail_genre_4))</visible>
                     </control>
             </control>
+            <!-- Directed by, with a chip for each director -->
+            <control type="grouplist" id="320">
+                <width>1100</width>
+                <height>36</height>
+                <orientation>horizontal</orientation>
+                <itemgap>10</itemgap>
+                <onup>310</onup>
+                <ondown>300</ondown>
+                <visible>!String.IsEmpty(Window.Property(detail_director_1))</visible>
                 <control type="label">
-                    <width>1100</width>
+                    <width>auto</width>
                     <height>36</height>
+                    <aligny>center</aligny>
                     <font>JE_Label</font>
                     <shadowcolor>E6000000</shadowcolor>
                     <textcolor>FFD5D6DE</textcolor>
-                    <label>$INFO[Window.Property(directors)]</label>
-                    <visible>!String.IsEmpty(Window.Property(directors))</visible>
+                    <label>Directed by</label>
                 </control>
+                    <control type="button" id="321">
+                        <width min="60" max="520">auto</width>
+                        <height>36</height>
+                        <textoffsetx>18</textoffsetx>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <font>JE_Small</font>
+                        <textcolor>FFF2F2F5</textcolor>
+                        <focusedcolor>FFFFFFFF</focusedcolor>
+                        <texturenofocus border="18">jellyelec-chip.png</texturenofocus>
+                        <texturefocus border="18" colordiffuse="FF00A4DC">jellyelec-pill.png</texturefocus>
+                        <label>$INFO[Window.Property(detail_director_1)]</label>
+                        <onup>310</onup>
+                        <ondown>300</ondown>
+                        <visible>!String.IsEmpty(Window.Property(detail_director_1))</visible>
+                    </control>
+                    <control type="button" id="322">
+                        <width min="60" max="520">auto</width>
+                        <height>36</height>
+                        <textoffsetx>18</textoffsetx>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <font>JE_Small</font>
+                        <textcolor>FFF2F2F5</textcolor>
+                        <focusedcolor>FFFFFFFF</focusedcolor>
+                        <texturenofocus border="18">jellyelec-chip.png</texturenofocus>
+                        <texturefocus border="18" colordiffuse="FF00A4DC">jellyelec-pill.png</texturefocus>
+                        <label>$INFO[Window.Property(detail_director_2)]</label>
+                        <onup>310</onup>
+                        <ondown>300</ondown>
+                        <visible>!String.IsEmpty(Window.Property(detail_director_2))</visible>
+                    </control>
+            </control>
         </control>
 
         <!-- Plot, in its own space above the buttons -->
@@ -314,6 +366,7 @@
             <height>64</height>
             <orientation>horizontal</orientation>
             <itemgap>14</itemgap>
+            <onup>320</onup>
             <ondown>450</ondown>
             <control type="button" id="301">
                 <width min="150" max="700">auto</width>
@@ -327,6 +380,7 @@
                 <texturefocus border="32" colordiffuse="FF00A4DC">jellyelec-pill.png</texturefocus>
                 <texturenofocus border="32" colordiffuse="24FFFFFF">jellyelec-pill.png</texturenofocus>
                 <label>$INFO[Window.Property(play_label)]</label>
+                <onup>320</onup>
                 <ondown>450</ondown>
                 <visible>!String.IsEmpty(Window.Property(play_label))</visible>
             </control>
@@ -342,6 +396,7 @@
                 <texturefocus border="32" colordiffuse="FF00A4DC">jellyelec-pill.png</texturefocus>
                 <texturenofocus border="32" colordiffuse="24FFFFFF">jellyelec-pill.png</texturenofocus>
                 <label>$INFO[Window.Property(from_start_label)]</label>
+                <onup>320</onup>
                 <ondown>450</ondown>
                 <visible>!String.IsEmpty(Window.Property(from_start_label))</visible>
             </control>
@@ -357,6 +412,7 @@
                 <texturefocus border="32" colordiffuse="FF00A4DC">jellyelec-pill.png</texturefocus>
                 <texturenofocus border="32" colordiffuse="24FFFFFF">jellyelec-pill.png</texturenofocus>
                 <label>$INFO[Window.Property(trailer_label)]</label>
+                <onup>320</onup>
                 <ondown>450</ondown>
                 <visible>!String.IsEmpty(Window.Property(trailer_label))</visible>
             </control>
@@ -372,6 +428,7 @@
                 <texturefocus border="32" colordiffuse="FF00A4DC">jellyelec-pill.png</texturefocus>
                 <texturenofocus border="32" colordiffuse="24FFFFFF">jellyelec-pill.png</texturenofocus>
                 <label>$INFO[Window.Property(version_label)]</label>
+                <onup>320</onup>
                 <ondown>450</ondown>
                 <visible>!String.IsEmpty(Window.Property(version_label))</visible>
             </control>
@@ -387,6 +444,7 @@
                 <texturefocus border="32" colordiffuse="FF00A4DC">jellyelec-pill.png</texturefocus>
                 <texturenofocus border="32" colordiffuse="24FFFFFF">jellyelec-pill.png</texturenofocus>
                 <label>$INFO[Window.Property(media_info_label)]</label>
+                <onup>320</onup>
                 <ondown>450</ondown>
                 <visible>!String.IsEmpty(Window.Property(media_info_label))</visible>
             </control>
@@ -402,6 +460,7 @@
                 <texturefocus border="32" colordiffuse="FF00A4DC">jellyelec-pill.png</texturefocus>
                 <texturenofocus border="32" colordiffuse="24FFFFFF">jellyelec-pill.png</texturenofocus>
                 <label>$INFO[Window.Property(artwork_label)]</label>
+                <onup>320</onup>
                 <ondown>450</ondown>
                 <visible>!String.IsEmpty(Window.Property(artwork_label))</visible>
             </control>
@@ -420,6 +479,7 @@
                 <textureradioonnofocus colordiffuse="FF00A4DC">jellyelec-icon-check-on.png</textureradioonnofocus>
                 <textureradioofffocus colordiffuse="FFFFFFFF">jellyelec-icon-check.png</textureradioofffocus>
                 <textureradiooffnofocus colordiffuse="D9D5D6DE">jellyelec-icon-check.png</textureradiooffnofocus>
+                <onup>320</onup>
                 <ondown>450</ondown>
             </control>
             <!-- Favourite: a heart, filled in once a favourite -->
@@ -437,6 +497,7 @@
                 <textureradioonnofocus colordiffuse="FFE0457B">jellyelec-icon-heart-on.png</textureradioonnofocus>
                 <textureradioofffocus colordiffuse="FFFFFFFF">jellyelec-icon-heart.png</textureradioofffocus>
                 <textureradiooffnofocus colordiffuse="D9D5D6DE">jellyelec-icon-heart.png</textureradiooffnofocus>
+                <onup>320</onup>
                 <ondown>450</ondown>
             </control>
         </control>
