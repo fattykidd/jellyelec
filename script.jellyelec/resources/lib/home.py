@@ -161,8 +161,13 @@ class HomeWindow(xbmcgui.WindowXML):
 
         self._row_data[row_id] = {item["Id"]: item for item in items}
         row = self.getControl(row_id)
-        row.reset()
+        # Add the new items before taking the old ones out. Emptied, even for a moment, a row
+        # hides itself; the stack of rows then shifts, and Kodi doesn't always scroll it back to
+        # the focused row, which leaves the row above showing in its place.
+        old_count = row.size()
         row.addItems([media_item(self.client, item) for item in items])
+        for _ in range(old_count):
+            row.removeItem(0)
 
     def _open_selected_library(self):
         selected = self._selected_library()
